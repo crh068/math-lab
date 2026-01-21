@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多項式除法(直式) - 智能對齊版</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --primary: #4f46e5;
+            --highlight-col: #fef9c3;
+            --product-bg: #f0f9ff;
+            --remainder-bg: #fff1f2;
+            --border-color: #cbd5e1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            color: #334155;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Controls */
+        .control-panel {
+            background: white; padding: 1rem 1.5rem; border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center;
+            align-items: center; margin-bottom: 2rem; z-index: 50;
+            max-width: 98%;
+            position: sticky; top: 10px;
+        }
+
+        .input-group { 
+            display: flex; align-items: center; gap: 2px; 
+            background: #f1f5f9; padding: 8px 12px; border-radius: 12px; 
+            border: 1px solid #e2e8f0;
+        }
+
+        .poly-label { font-size: 1rem; color: #64748b; margin-right: 8px; font-weight: bold;}
+
+        input { 
+            width: 45px; padding: 5px; text-align: center; 
+            border: 1px solid var(--border-color); border-radius: 6px; 
+            font-weight: bold; font-size: 1.2rem; color: #1e293b;
+        }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px #c7d2fe; }
+
+        span.unit { font-size: 1rem; color: #64748b; font-weight: bold; font-family: 'Times New Roman', Times, serif; }
+        span.poly-plus { font-weight: bold; color: #94a3b8; font-size: 1.1rem; margin: 0 2px; user-select: none; }
+
+        button {
+            padding: 12px 28px; border-radius: 10px; border: none; cursor: pointer;
+            font-size: 1.1rem; font-weight: bold; transition: all 0.2s; white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        #btn-action { background-color: #10b981; color: white; min-width: 180px; }
+        #btn-action:hover { background-color: #059669; transform: translateY(-1px); }
+        #btn-action:disabled { background-color: #94a3b8; cursor: not-allowed; transform: none; }
+        #btn-action.btn-reset { background-color: #64748b; } 
+        #btn-random { background-color: #f59e0b; color: white; }
+        #btn-random:hover { background-color: #d97706; transform: translateY(-1px); }
+
+        /* Grid Layout */
+        .calc-container {
+            display: inline-grid;
+            grid-template-columns: 60px 60px 60px 20px 80px 80px 80px 80px; 
+            gap: 4px 2px; 
+            background: white; padding: 40px 50px;
+            border-radius: 20px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            font-family: 'Courier New', Courier, monospace; font-size: 1.6rem;
+            position: relative; margin-bottom: 30px;
+            max-width: 100%; overflow-x: auto;
+        }
+
+        .svg-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 20; 
+            overflow: visible;
+        }
+        
+        .arrow-path {
+            fill: none; stroke-width: 2.5; opacity: 0.65;
+            stroke-dasharray: 1000; stroke-dashoffset: 1000;
+            animation: dash 0.6s ease-out forwards;
+        }
+        @keyframes dash { to { stroke-dashoffset: 0; } }
+
+        .cell {
+            display: flex; justify-content: flex-end; align-items: center;
+            height: 60px; padding-right: 5px; position: relative; 
+            z-index: 10; transition: background-color 0.3s;
+            border-radius: 8px;
+        }
+
+        .hl-divide { background-color: var(--highlight-col); box-shadow: 0 0 0 3px #fde047; z-index: 15; }
+        /* 修改：讓 hl-multiply 也能作用於除式所有部分 */
+        .hl-multiply { background-color: var(--product-bg); color: #0369a1; font-weight: bold; }
+        .hl-subtract { background-color: var(--remainder-bg); border-top: 2px solid #334155; }
+        /* 移項特效 */
+        .hl-bringdown { background-color: #fdf2f8; color: #db2777; font-weight: bold; animation: dropDown 0.5s ease-out; }
+        
+        @keyframes dropDown {
+            0% { transform: translateY(-20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .border-line-v {
+            grid-column: 4; 
+            grid-row: 2 / 3; 
+            border-right: 3px solid #334155;
+            margin-right: 8px;
+            border-radius: 20px 0 0 0; 
+        }
+        
+        .border-line-h {
+            grid-column: 5 / span 4; grid-row: 1;
+            border-bottom: 3px solid #334155;
+            align-self: end; margin-bottom: 0px;
+        }
+
+        .op-line {
+            height: 2px; background-color: #334155; width: 100%; align-self: end;
+            margin-bottom: -2px; z-index: 5;
+        }
+
+        .status-box {
+            padding: 1.5rem 2rem; background: white; border-left: 8px solid var(--primary);
+            border-radius: 12px; width: 100%; max-width: 900px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08); 
+            min-height: 100px; display: flex; align-items: center; z-index: 50;
+            margin-bottom: 2rem;
+        }
+        
+        .status-text { 
+            font-size: 1.5rem; color: #1e293b; line-height: 1.6; font-weight: 500;
+        }
+        
+        .highlight-txt { 
+            font-weight: bold; color: #ef4444; background: #fee2e2; 
+            padding: 2px 8px; border-radius: 6px; 
+        }
+        
+        .pill { 
+            font-size: 1.3rem; background: #e0f2fe; color: #0369a1; 
+            padding: 6px 16px; border-radius: 20px; 
+            margin-right: 15px; font-weight: 800; 
+            vertical-align: baseline; display: inline-block;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .deg-3 { color: #7c3aed; } 
+        .deg-2 { color: #2563eb; } 
+        .deg-1 { color: #059669; } 
+        .deg-0 { color: #d97706; } 
+
+        .fade-in { animation: fadeIn 0.5s forwards; opacity: 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .sign-change {
+            position: absolute; left: -20px; font-size: 1.2rem; color: #ef4444; 
+            background: white; border: 2px solid #fca5a5; border-radius: 50%; 
+            width: 24px; height: 24px; display: flex; justify-content: center; align-items: center;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1 style="font-size: 2rem; margin-bottom: 1rem;">多項式除法 (直式)</h1>
+
+    <div class="control-panel">
+        <div class="input-group">
+            <span class="poly-label">被除式 A(x):</span>
+            <input type="number" id="a3" value="2" onchange="softReset()"><span class="unit">x³</span>
+            <span class="poly-plus">+</span>
+            <input type="number" id="a2" value="5" onchange="softReset()"><span class="unit">x²</span>
+            <span class="poly-plus">+</span>
+            <input type="number" id="a1" value="-16" onchange="softReset()"><span class="unit">x</span>
+            <span class="poly-plus">+</span>
+            <input type="number" id="a0" value="-11" onchange="softReset()">
+        </div>
+        
+        <span style="font-size: 2rem; color:#94a3b8; margin: 0 10px">÷</span>
+
+        <div class="input-group">
+            <span class="poly-label">除式 B(x):</span>
+            <input type="number" id="b2" value="0" onchange="softReset()" placeholder="0"><span class="unit">x²</span>
+            <span class="poly-plus">+</span>
+            <input type="number" id="b1" value="1" onchange="softReset()"><span class="unit">x</span>
+            <span class="poly-plus">+</span>
+            <input type="number" id="b0" value="4" onchange="softReset()">
+        </div>
+
+        <button id="btn-random" onclick="randomQuestion()">🎲 隨機出題 (整數)</button>
+        <button id="btn-action" onclick="nextStep()">➡ 開始佈題</button>
+    </div>
+
+    <div class="status-box">
+        <span class="status-text" id="status">準備就緒。</span>
+    </div>
+
+    <div class="calc-container" id="grid">
+        <svg class="svg-overlay" id="arrow-layer">
+            <defs>
+                <marker id="arrowhead-r" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                    <polygon points="0 0, 8 3, 0 6" fill="#ef4444" />
+                </marker>
+                <marker id="arrowhead-b" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                    <polygon points="0 0, 8 3, 0 6" fill="#2563eb" />
+                </marker>
+                <marker id="arrowhead-g" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                    <polygon points="0 0, 8 3, 0 6" fill="#db2777" />
+                </marker>
+            </defs>
+        </svg>
+        
+        <div class="border-line-v" id="border-v"></div>
+        <div class="border-line-h"></div>
+
+        <div class="cell" id="div-2" style="grid-row:2; grid-column:1"></div>
+        <div class="cell" id="div-1" style="grid-row:2; grid-column:2"></div>
+        <div class="cell" id="div-0" style="grid-row:2; grid-column:3"></div>
+
+        <div class="cell" id="dvd-3" style="grid-row:2; grid-column:5"></div>
+        <div class="cell" id="dvd-2" style="grid-row:2; grid-column:6"></div>
+        <div class="cell" id="dvd-1" style="grid-row:2; grid-column:7"></div>
+        <div class="cell" id="dvd-0" style="grid-row:2; grid-column:8"></div>
+    </div>
+
+    <script>
+        let A = [], B = [];
+        let Quotient = [null, null, null, null];
+        let Remainder = [];
+        let state = 'init';
+        let rowIdx = 2;
+        let bDeg = 0;
+        let rDeg = 3;
+        let qDeg = 0;
+        let nextBringDownDeg = -1; 
+        
+        const btnAction = document.getElementById('btn-action');
+        const statusEl = document.getElementById('status');
+        const arrowLayer = document.getElementById('arrow-layer');
+        const grid = document.getElementById('grid');
+
+        function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+        function softReset() {
+            if(state !== 'init') {
+                btnAction.innerText = "➡ 重新開始 (Reset)";
+                btnAction.classList.add('btn-reset');
+                state = 'finished';
+            }
+        }
+
+        function randomQuestion() {
+            let realBDeg = Math.random() > 0.6 ? 2 : 1;
+            let b = [getRandomInt(-5, 5), getRandomInt(-3, 3), (realBDeg===2?getRandomInt(1,2):0), 0];
+            if(b[realBDeg] === 0) b[realBDeg] = 1;
+
+            let qDegMax = 3 - realBDeg;
+            let q = [getRandomInt(-5, 5), getRandomInt(-3, 3), getRandomInt(1, 3), 0].slice(0, qDegMax+1);
+            if(q[qDegMax] === 0) q[qDegMax] = 1;
+
+            let r = [getRandomInt(-8, 8), (realBDeg>1?getRandomInt(-8,8):0), 0, 0];
+
+            let a = [0, 0, 0, 0];
+            for(let i=0; i<=qDegMax; i++) {
+                for(let j=0; j<=realBDeg; j++) {
+                    if(i+j <= 3) a[i+j] += (q[i]||0) * (b[j]||0);
+                }
+            }
+            for(let i=0; i<realBDeg; i++) a[i] += r[i];
+
+            for(let i=0; i<=3; i++) document.getElementById(`a${i}`).value = a[i];
+            for(let i=0; i<=2; i++) document.getElementById(`b${i}`).value = b[i];
+
+            init();
+            statusEl.innerHTML = "已隨機產生題目（整數解）。";
+        }
+
+        function readInputs() {
+            A = []; B = [];
+            for(let i=0; i<=3; i++) A[i] = parseInt(document.getElementById(`a${i}`).value)||0;
+            for(let i=0; i<=2; i++) B[i] = parseInt(document.getElementById(`b${i}`).value)||0;
+            
+            bDeg = 2;
+            while(bDeg > 0 && B[bDeg] === 0) bDeg--;
+            
+            if (B[bDeg] === 0) {
+                alert("除式不能為 0");
+                return false;
+            }
+            return true;
+        }
+
+        function init() {
+            if(!readInputs()) return;
+            
+            document.querySelectorAll('.dynamic-cell, .op-line, .sign-change').forEach(el => el.remove());
+            clearArrows();
+            
+            for(let i=2; i>=0; i--) {
+                const el = document.getElementById(`div-${i}`);
+                if (i > bDeg && B[i] === 0) el.innerHTML = '';
+                else el.innerHTML = getTermHtml(B[i], i, i===bDeg);
+                el.className = 'cell';
+            }
+
+            for(let i=3; i>=0; i--) {
+                const el = document.getElementById(`dvd-${i}`);
+                let aDeg = 3; while(aDeg > 0 && A[aDeg] === 0) aDeg--;
+                el.innerHTML = getTermHtml(A[i], i, i===aDeg);
+                el.className = 'cell';
+            }
+            
+            document.querySelectorAll('[id^=quot-]').forEach(e => e.remove());
+
+            Quotient = [null, null, null, null];
+            Remainder = [...A];
+            state = 'divide';
+            rowIdx = 2; 
+            
+            rDeg = 3; while(rDeg >= 0 && Remainder[rDeg]===0) rDeg--;
+            
+            btnAction.innerText = "➡ 開始運算 (Start)";
+            btnAction.classList.remove('btn-reset');
+            statusEl.innerText = "準備就緒。請點擊按鈕開始。";
+        }
+
+        function nextStep() {
+            clearArrows();
+            document.querySelectorAll('.hl-divide, .hl-multiply').forEach(el => {
+                el.classList.remove('hl-divide', 'hl-multiply');
+            });
+
+            if (state === 'finished' || state === 'init') {
+                init();
+                return;
+            }
+
+            // Check if finished (but allow bringDown to finish its job)
+            if (state !== 'bringDown') {
+                let currentRDeg = 3;
+                while(currentRDeg >= 0 && Remainder[currentRDeg] === 0) currentRDeg--;
+                rDeg = currentRDeg;
+
+                if (rDeg < bDeg && !(rDeg === 0 && bDeg === 0 && Remainder[0] >= B[0])) {
+                    statusEl.innerHTML = `運算結束！<br>商式：<span class="highlight-txt">${polyToString(Quotient)}</span> <br>餘式：<span class="highlight-txt">${polyToString(Remainder)}</span>`;
+                    btnAction.innerText = "🔄 重來 (Reset)";
+                    btnAction.classList.add('btn-reset');
+                    state = 'finished';
+                    return;
+                }
+            }
+
+            if (state === 'divide') {
+                performDivide();
+            } else if (state === 'multiply') {
+                performMultiply();
+            } else if (state === 'subtract') {
+                performSubtract();
+            } else if (state === 'bringDown') {
+                performBringDown();
+            }
+        }
+
+        // --- CORE LOGIC ---
+
+        function performDivide() {
+            qDeg = rDeg - bDeg;
+            let termA = Remainder[rDeg];
+            let termB = B[bDeg];
+            let qVal = termA / termB;
+            
+            Quotient[qDeg] = qVal;
+
+            let divId = `div-${bDeg}`;
+            let targetId = (rowIdx === 2) ? `dvd-${rDeg}` : `rem-row-${rowIdx}-col-${rDeg}`;
+            
+            let divEl = document.getElementById(divId);
+            let targetEl = document.getElementById(targetId);
+
+            if(divEl) divEl.classList.add('hl-divide');
+            if(targetEl) targetEl.classList.add('hl-divide');
+
+            let qId = `quot-${qDeg}`;
+            let existingQ = document.getElementById(qId);
+            if(!existingQ) {
+                let cell = document.createElement('div');
+                cell.className = 'cell fade-in';
+                cell.id = qId;
+                cell.style.gridRow = 1;
+                cell.style.gridColumn = 5 + (3 - qDeg);
+                let isFirst = true;
+                for(let k=3; k>qDeg; k--) if(Quotient[k] !== null) isFirst = false;
+                cell.innerHTML = getTermHtml(qVal, qDeg, isFirst);
+                grid.appendChild(cell);
+            }
+
+            if (targetEl && divEl) {
+                drawArrow(targetId, divId, 'red');
+                setTimeout(() => { if(divEl && document.getElementById(qId)) drawArrow(divId, qId, 'red'); }, 300);
+            }
+
+            statusEl.innerHTML = `<span class="pill">除 Divide</span> ${termA}x<sup>${rDeg}</sup> ÷ ${termB}x<sup>${bDeg}</sup> = <b>${qVal}x<sup>${qDeg}</sup></b>`;
+            state = 'multiply';
+            btnAction.innerText = "➡ 乘 (Multiply)";
+        }
+
+        function performMultiply() {
+            let qVal = Quotient[qDeg];
+            let qId = `quot-${qDeg}`;
+            
+            // 亮起商式項
+            if(document.getElementById(qId)) document.getElementById(qId).classList.add('hl-multiply');
+            
+            // 亮起「整個除式」
+            // 掃描所有可能的除式格子 (div-0, div-1, div-2)，只要有內容就亮起
+            for(let i=0; i<=2; i++) {
+                let dEl = document.getElementById(`div-${i}`);
+                if(dEl && dEl.innerHTML !== '') {
+                    dEl.classList.add('hl-multiply');
+                }
+            }
+
+            // drawArrow 內部會負責計算正確的中心點
+            drawArrow(qId, 'div-center', 'blue');
+
+            rowIdx++;
+
+            let prodStrParts = [];
+            for(let i=bDeg; i>=0; i--) {
+                let pVal = qVal * B[i];
+                let termDeg = qDeg + i;
+                
+                let cell = document.createElement('div');
+                cell.className = 'cell dynamic-cell fade-in hl-multiply';
+                cell.id = `prod-row-${rowIdx}-col-${termDeg}`;
+                cell.style.gridRow = rowIdx;
+                cell.style.gridColumn = 5 + (3 - termDeg);
+                cell.innerHTML = getTermHtml(pVal, termDeg, i===bDeg);
+                grid.appendChild(cell);
+                prodStrParts.push(`${pVal}x<sup>${termDeg}</sup>`);
+            }
+            grid.scrollTop = grid.scrollHeight;
+            statusEl.innerHTML = `<span class="pill">乘 Multiply</span> 商 (${qVal}x<sup>${qDeg}</sup>) × 除式 = <b>${prodStrParts.join(' + ')}</b>`;
+            state = 'subtract';
+            btnAction.innerText = "➡ 減 (Subtract)";
+        }
+
+        function performSubtract() {
+            let startDeg = qDeg + bDeg; 
+            let endDeg = qDeg;
+            let startCol = 5 + (3 - startDeg);
+            let endCol = 5 + (3 - endDeg);
+            let span = endCol - startCol + 1;
+
+            let line = document.createElement('div');
+            line.className = 'op-line';
+            line.style.gridRow = rowIdx;
+            line.style.gridColumn = `${startCol} / span ${span}`;
+            grid.appendChild(line);
+
+            let signInd = document.createElement('div');
+            signInd.className = 'sign-change fade-in';
+            signInd.innerText = '-';
+            let firstCellDeg = qDeg + bDeg;
+            let firstCell = document.getElementById(`prod-row-${rowIdx}-col-${firstCellDeg}`);
+            if(firstCell) firstCell.appendChild(signInd);
+
+            let qVal = Quotient[qDeg];
+            let newR = [...Remainder];
+            for(let i=0; i<=bDeg; i++) {
+                let termDeg = qDeg + i;
+                newR[termDeg] = Remainder[termDeg] - (qVal * B[i]);
+            }
+            Remainder = newR;
+
+            rowIdx++;
+
+            let hasDisplayed = false;
+            let maxShow = 3; while(maxShow >= 0 && Remainder[maxShow] === 0) maxShow--;
+
+            for(let d=3; d>=0; d--) {
+                if (d >= qDeg) { 
+                    if (Remainder[d] !== 0) {
+                        createCell(d, rowIdx, d === maxShow);
+                        hasDisplayed = true;
+                    } else if (d === 0 && maxShow < 0) {
+                         let cell = document.createElement('div');
+                         cell.className = 'cell dynamic-cell fade-in';
+                         cell.id = `rem-row-${rowIdx}-col-0`;
+                         cell.style.gridRow = rowIdx;
+                         cell.style.gridColumn = 8;
+                         cell.innerHTML = "0";
+                         grid.appendChild(cell);
+                    }
+                }
+            }
+
+            grid.scrollTop = grid.scrollHeight;
+            statusEl.innerHTML = `<span class="pill">減 Subtract</span> 計算相減結果。`;
+            
+            nextBringDownDeg = qDeg - 1;
+            
+            if (nextBringDownDeg < 0) {
+                 state = 'divide';
+                 btnAction.innerText = "➡ 下一步 (Next)";
+            } else {
+                 state = 'bringDown';
+                 btnAction.innerText = "⬇ 移項 (Bring Down)";
+            }
+        }
+
+        function performBringDown() {
+            let targetDeg = nextBringDownDeg;
+            let sourceId = `dvd-${targetDeg}`;
+            
+            let cell = createCell(targetDeg, rowIdx, false); 
+            if(cell) {
+                cell.classList.add('hl-bringdown');
+                cell.classList.remove('hl-subtract');
+            }
+
+            if(document.getElementById(sourceId) && cell) {
+                drawArrow(sourceId, cell.id, 'drop');
+            }
+
+            statusEl.innerHTML = `<span class="pill" style="background:#fce7f3; color:#be185d">移項 Bring Down</span> 將下一位 ${getTermHtml(Remainder[targetDeg], targetDeg, true)} 移下來。`;
+            
+            state = 'divide';
+            btnAction.innerText = "➡ 下一步 (Next)";
+        }
+
+        function createCell(deg, rIdx, isLeading) {
+            let cell = document.createElement('div');
+            cell.className = 'cell dynamic-cell fade-in hl-subtract';
+            cell.id = `rem-row-${rIdx}-col-${deg}`;
+            cell.style.gridRow = rIdx;
+            cell.style.gridColumn = 5 + (3 - deg);
+            cell.innerHTML = getTermHtml(Remainder[deg], deg, isLeading);
+            grid.appendChild(cell);
+            return cell;
+        }
+
+        function getTermHtml(coef, deg, isLeading) {
+            if (coef === 0 && isLeading) return '0';
+            if (coef === 0) return '';
+            let sign = coef >= 0 ? (isLeading ? '' : '+') : '−';
+            let val = Math.abs(coef);
+            if (val === 1 && deg > 0) val = '';
+            let varStr = deg === 0 ? '' : (deg === 1 ? 'x' : `x<sup>${deg}</sup>`);
+            let colClass = `deg-${deg}`;
+            return `<span style="margin-right:2px; font-weight:bold; color:${sign==='−'?'#ef4444':'#94a3b8'}">${sign}</span>` + 
+                   `<span class="${colClass}" style="font-weight:bold">${val}${varStr}</span>`;
+        }
+
+        function polyToString(arr) {
+            let terms = [];
+            for(let i=arr.length-1; i>=0; i--) {
+                if(arr[i] != null && arr[i] !== 0) {
+                    let val = Math.abs(arr[i]);
+                    let sign = arr[i] < 0 ? ' - ' : ' + ';
+                    if (terms.length === 0) sign = arr[i] < 0 ? '-' : '';
+                    if (val === 1 && i > 0) val = '';
+                    let v = i===0 ? '' : (i===1?'x':`x<sup>${i}</sup>`);
+                    terms.push(`${sign}${val}${v}`);
+                }
+            }
+            return terms.length ? terms.join('') : '0';
+        }
+
+        function clearArrows() {
+            while (arrowLayer.lastChild && arrowLayer.lastChild.nodeName !== 'defs') {
+                arrowLayer.removeChild(arrowLayer.lastChild);
+            }
+        }
+
+        function drawArrow(fromId, toId, color='red') {
+            const fromEl = document.getElementById(fromId);
+            // toId 可能是 'div-center'，所以這裡不一定要抓到 element
+            
+            const gridRect = grid.getBoundingClientRect();
+            let x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+            
+            if (fromEl) {
+                const r1 = fromEl.getBoundingClientRect();
+                x1 = r1.left + r1.width/2 - gridRect.left;
+                y1 = r1.top + r1.height/2 - gridRect.top;
+            }
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            let d = "";
+            
+            if (color === 'blue') {
+                // 修正：動態計算除式所有可見項目的中心點
+                let visibleDivs = [];
+                for(let i=2; i>=0; i--) {
+                    let el = document.getElementById(`div-${i}`);
+                    if (el && el.innerText.trim() !== '') visibleDivs.push(el);
+                }
+
+                let endX = 0;
+                let endY = 0;
+
+                if (visibleDivs.length > 0) {
+                    let firstRect = visibleDivs[0].getBoundingClientRect(); // 最左邊 (因為我們是倒序push，或者其實順序無所謂，只要找minLeft maxRight)
+                    let lastRect = visibleDivs[visibleDivs.length - 1].getBoundingClientRect();
+                    
+                    // 找出所有可見元素的邊界
+                    let minLeft = Math.min(firstRect.left, lastRect.left);
+                    let maxRight = Math.max(firstRect.right, lastRect.right);
+                    let avgTop = firstRect.top; // 都在同一行
+
+                    endX = (minLeft + maxRight) / 2 - gridRect.left;
+                    endY = avgTop - gridRect.top - 20; // 稍微拉高落點
+                } else {
+                    // Fallback
+                    endX = x1; endY = y1 + 50;
+                }
+                
+                let startX = x1; 
+                let startY = y1 - 30; // 從格子正上方出發 (避免遮擋)
+                
+                if (fromEl) {
+                    const r1 = fromEl.getBoundingClientRect();
+                    startY = r1.top - gridRect.top; // 從格子頂端邊緣
+                }
+
+                let cx = (startX+endX)/2 - 30; 
+                let cy = Math.min(startY, endY) - 70; // 高拋物線
+                d = `M ${startX} ${startY} Q ${cx} ${cy} ${endX} ${endY}`;
+
+            } else {
+                // 其他箭頭 (紅色、垂直移項)
+                const toEl = document.getElementById(toId);
+                if (!fromEl || !toEl) return;
+                
+                const r2 = toEl.getBoundingClientRect();
+                x2 = r2.left + r2.width/2 - gridRect.left;
+                y2 = r2.top + r2.height/2 - gridRect.top;
+
+                if (color === 'drop') {
+                    // 垂直箭頭優化
+                    let offsetStart = 25; 
+                    let offsetEnd = 25;
+                    d = `M ${x1} ${y1 + offsetStart} L ${x2} ${y2 - offsetEnd}`;
+                } else {
+                    // 紅色除法箭頭
+                    let dx = x2 - x1; let dy = y2 - y1;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    let offsetStart = 25; let offsetEnd = 25;
+                    if(dist < 30) { offsetStart = 5; offsetEnd = 5; }
+                    
+                    let startX = x1 + (dx/dist) * offsetStart;
+                    let startY = y1 + (dy/dist) * offsetStart;
+                    let endX = x2 - (dx/dist) * offsetEnd;
+                    let endY = y2 - (dy/dist) * offsetEnd;
+                    d = `M ${startX} ${startY} L ${endX} ${endY}`;
+                }
+            }
+
+            path.setAttribute("d", d);
+            path.setAttribute("class", "arrow-path");
+            
+            if (color === 'red') path.style.stroke = '#ef4444';
+            else if (color === 'blue') path.style.stroke = '#0ea5e9';
+            else if (color === 'drop') path.style.stroke = '#db2777'; 
+
+            if (color === 'red') path.setAttribute("marker-end", "url(#arrowhead-r)");
+            else if (color === 'blue') path.setAttribute("marker-end", "url(#arrowhead-b)");
+            else if (color === 'drop') path.setAttribute("marker-end", "url(#arrowhead-g)");
+
+            arrowLayer.appendChild(path);
+        }
+
+        init();
+    </script>
+</body>
+</html>
