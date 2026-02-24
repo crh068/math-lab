@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>霓虹角度換算大挑戰</title>
+    <style>
+        /* 深色背景與高對比高光配色 */
+        body {
+            background-color: #0d0d0d;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            user-select: none;
+        }
+
+        h1 {
+            color: #00FFFF;
+            text-shadow: 0 0 15px #00FFFF, 0 0 30px #00FFFF;
+            margin-bottom: 5px;
+            font-size: 2.5rem;
+        }
+
+        p.subtitle {
+            color: #aaaaaa;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .dashboard {
+            display: flex;
+            gap: 50px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background: #1a1a1a;
+            padding: 15px 30px;
+            border-radius: 15px;
+            border: 1px solid #333;
+            box-shadow: 0 0 15px #FF10F0;
+        }
+
+        .score-display {
+            color: #39FF14;
+            text-shadow: 0 0 10px #39FF14;
+        }
+
+        .time-display {
+            color: #FF10F0;
+            text-shadow: 0 0 10px #FF10F0;
+        }
+
+        .game-container {
+            background: #151515;
+            border: 2px solid #FFFF00;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 0 25px #FFFF00;
+            position: relative;
+        }
+
+        .question {
+            font-size: 2.2rem;
+            margin-bottom: 30px;
+            color: #ffffff;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px #ffffff;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            background-color: #222;
+            color: #00FFFF;
+            border: 2px solid #00FFFF;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1.6rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 5px #00FFFF inset;
+        }
+
+        .btn:hover {
+            background-color: #00FFFF;
+            color: #000;
+            box-shadow: 0 0 20px #00FFFF, 0 0 10px #00FFFF inset;
+            transform: scale(1.05);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .feedback {
+            margin-top: 25px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            height: 35px;
+        }
+
+        .correct { color: #39FF14; text-shadow: 0 0 10px #39FF14; }
+        .wrong { color: #FF0040; text-shadow: 0 0 10px #FF0040; }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            z-index: 10;
+        }
+
+        .hidden { display: none !important; }
+
+        .start-btn {
+            background-color: #FF10F0;
+            color: #fff;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px #FF10F0;
+            transition: 0.3s;
+        }
+
+        .start-btn:hover {
+            background-color: #fff;
+            color: #FF10F0;
+            box-shadow: 0 0 30px #ffffff, 0 0 20px #FF10F0;
+        }
+
+        #final-score {
+            font-size: 2.5rem;
+            color: #FFFF00;
+            text-shadow: 0 0 15px #FFFF00;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>霓虹角度換算大挑戰</h1>
+    <p class="subtitle">CH1 三角函數 1-1 角的度量與換算</p>
+
+    <div class="dashboard">
+        <div class="score-display">分數: <span id="score">0</span></div>
+        <div class="time-display">時間: <span id="time">60</span>s</div>
+    </div>
+
+    <div class="game-container">
+        <div id="start-screen" class="overlay">
+            <h2 style="color: #00FFFF; text-shadow: 0 0 10px #00FFFF; margin-bottom: 10px;">準備好了嗎？</h2>
+            <p style="color: #ccc; margin-bottom: 30px; font-size: 1.2rem;">答對 +10 分，答錯 -5 分</p>
+            <button class="start-btn" onclick="startGame()">開始遊戲</button>
+        </div>
+
+        <div id="end-screen" class="overlay hidden">
+            <h2 style="color: #39FF14; font-size: 2rem;">時間到！</h2>
+            <div id="final-score">總分: 0</div>
+            <button class="start-btn" onclick="startGame()">再玩一次</button>
+        </div>
+
+        <div id="question-text" class="question">載入中...</div>
+        <div class="options" id="options-container">
+            </div>
+        <div id="feedback-msg" class="feedback"></div>
+    </div>
+
+    <script>
+        // 題庫：結合教材單元例題與常見特別角
+        const questionBank = [
+            { q: "將 30° 化為弧度", a: "π/6", options: ["π/3", "π/4", "π/2"] },
+            { q: "將 45° 化為弧度", a: "π/4", options: ["π/3", "π/6", "π/2"] },
+            { q: "將 60° 化為弧度", a: "π/3", options: ["π/6", "2π/3", "3π/4"] },
+            { q: "將 90° 化為弧度", a: "π/2", options: ["π", "3π/2", "2π"] },
+            { q: "將 120° 化為弧度", a: "2π/3", options: ["3π/4", "5π/6", "π/3"] },
+            { q: "將 150° 化為弧度", a: "5π/6", options: ["2π/3", "7π/6", "5π/4"] },
+            { q: "將 180° 化為弧度", a: "π", options: ["2π", "π/2", "3π/2"] },
+            { q: "將 270° 化為弧度", a: "3π/2", options: ["2π/3", "π", "5π/2"] },
+            { q: "將 360° 化為弧度", a: "2π", options: ["π", "3π/2", "4π"] },
+            { q: "將 -150° 化為弧度", a: "-5π/6", options: ["-2π/3", "-7π/6", "-5π/4"] }, 
+            { q: "將 π/6 弧度化為角度", a: "30°", options: ["60°", "45°", "15°"] },
+            { q: "將 π/4 弧度化為角度", a: "45°", options: ["30°", "60°", "90°"] },
+            { q: "將 π/3 弧度化為角度", a: "60°", options: ["30°", "120°", "90°"] },
+            { q: "將 π/2 弧度化為角度", a: "90°", options: ["180°", "45°", "270°"] },
+            { q: "將 2π/3 弧度化為角度", a: "120°", options: ["150°", "240°", "135°"] },
+            { q: "將 -7π/4 弧度化為角度", a: "-315°", options: ["-225°", "-135°", "-270°"] }, 
+        ];
+
+        let score = 0;
+        let timeLeft = 60;
+        let timerInterval;
+        let currentQuestion = {};
+
+        const scoreEl = document.getElementById('score');
+        const timeEl = document.getElementById('time');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackMsg = document.getElementById('feedback-msg');
+        const startScreen = document.getElementById('start-screen');
+        const endScreen = document.getElementById('end-screen');
+        const finalScoreEl = document.getElementById('final-score');
+
+        function startGame() {
+            score = 0;
+            timeLeft = 60;
+            scoreEl.textContent = score;
+            timeEl.textContent = timeLeft;
+            feedbackMsg.textContent = "";
+            feedbackMsg.className = "feedback";
+            
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            
+            nextQuestion();
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timeEl.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            finalScoreEl.textContent = `總分: ${score}`;
+            endScreen.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            // 隨機挑選一題
+            const randIndex = Math.floor(Math.random() * questionBank.length);
+            currentQuestion = questionBank[randIndex];
+            
+            questionTextEl.textContent = currentQuestion.q;
+
+            // 準備選項並打亂順序
+            let options = [currentQuestion.a, ...currentQuestion.options];
+            options = options.sort(() => Math.random() - 0.5);
+
+            optionsContainer.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(opt);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedOpt) {
+            if (selectedOpt === currentQuestion.a) {
+                score += 10;
+                feedbackMsg.textContent = "正確！ +10";
+                feedbackMsg.className = "feedback correct";
+            } else {
+                score -= 5;
+                feedbackMsg.textContent = `錯誤！答案是 ${currentQuestion.a} (-5)`;
+                feedbackMsg.className = "feedback wrong";
+            }
+            scoreEl.textContent = score;
+
+            // 禁用按鈕短暫延遲後換題
+            const btns = document.querySelectorAll('.btn');
+            btns.forEach(b => b.disabled = true);
+            
+            setTimeout(() => {
+                feedbackMsg.textContent = "";
+                nextQuestion();
+            }, 800);
+        }
+    </script>
+</body>
+</html>
