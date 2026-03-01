@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動教學演示：什麼是「弧度」？</title>
+    <style>
+        /* 專業、清晰的數位白板教學風格 (最初版本) */
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 2.2rem;
+        }
+
+        p.subtitle {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            max-width: 1000px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* 左側畫布區 */
+        .canvas-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            background-color: #ffffff;
+            border: 2px dashed #bdc3c7;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* 右側控制與資訊區 */
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 300px;
+            flex: 1;
+        }
+
+        .info-card {
+            background: #e8f4f8;
+            border-left: 5px solid #3498db;
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: 1.2rem;
+            line-height: 1.8;
+        }
+
+        .highlight-rad { color: #e74c3c; font-weight: bold; font-size: 1.4rem; }
+        .highlight-deg { color: #2980b9; font-weight: bold; font-size: 1.4rem; }
+
+        .slider-container {
+            background: #fdfbf7;
+            border: 1px solid #e1d8c1;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .slider-container label {
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 15px;
+            color: #d35400;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .btn {
+            background-color: #34495e;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            font-size: 1.1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn:hover { background-color: #2c3e50; transform: translateY(-2px); }
+        .btn.btn-primary { background-color: #e74c3c; }
+        .btn.btn-primary:hover { background-color: #c0392b; }
+        .btn.btn-secondary { background-color: #27ae60; }
+        .btn.btn-secondary:hover { background-color: #2ecc71; }
+
+        .formula {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.3rem;
+            font-style: italic;
+            background: #f1f2f6;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            border: 1px solid #dfe4ea;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>互動教學演示：什麼是「弧度」？</h1>
+    <p class="subtitle">CH1 三角函數 1-1 角的度量與換算 (弧度制定義)</p>
+
+    <div class="container">
+        <div class="canvas-section">
+            <canvas id="radianCanvas" width="400" height="400"></canvas>
+            <p style="color: #7f8c8d; font-size: 0.9rem; margin-top: 10px;">定義：當圓上的弧長等於半徑時，其所對應的圓心角即為 1 弧度。</p>
+        </div>
+
+        <div class="control-section">
+            <div class="info-card">
+                <div>圓半徑 (<span style="font-style:italic">r</span>) = 1 單位</div>
+                <div>目前弧長 (<span style="font-style:italic">S</span>) = <span id="arc-length-display" class="highlight-rad">0.00</span> <span style="font-style:italic">r</span></div>
+                <hr style="border:0; border-top:1px solid #bdc3c7; margin: 10px 0;">
+                <div>圓心角 (<span style="font-style:italic">θ</span>) = <span id="rad-display" class="highlight-rad">0.00</span> 弧度 (rad)</div>
+                <div>角度換算 = <span id="deg-display" class="highlight-deg">0.0</span>°</div>
+            </div>
+
+            <div class="formula">
+                θ (弧度) = 弧長 S / 半徑 r
+            </div>
+
+            <div class="slider-container">
+                <label for="rad-slider">手動展開弧長 (展開圓周)：</label>
+                <input type="range" id="rad-slider" min="0" max="6.28318" step="0.01" value="0">
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="setAngle(1)">演示：1 弧度 (弧長 = 半徑)</button>
+                <button class="btn btn-secondary" onclick="setAngle(Math.PI)">演示：π 弧度 (180° 平角)</button>
+                <button class="btn" onclick="setAngle(Math.PI * 2)">演示：2π 弧度 (360° 一圈)</button>
+                <button class="btn" onclick="setAngle(0)" style="background-color:#95a5a6;">歸零</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('radianCanvas');
+        const ctx = canvas.getContext('2d');
+        const slider = document.getElementById('rad-slider');
+        
+        const radDisplay = document.getElementById('rad-display');
+        const degDisplay = document.getElementById('deg-display');
+        const arcLengthDisplay = document.getElementById('arc-length-display');
+
+        const cx = 200; // 圓心 X
+        const cy = 200; // 圓心 Y
+        const radius = 140; // 半徑長度
+
+        function updateDisplay(radians) {
+            const degrees = radians * (180 / Math.PI);
+            radDisplay.textContent = radians.toFixed(2);
+            arcLengthDisplay.textContent = radians.toFixed(2);
+            degDisplay.textContent = degrees.toFixed(1);
+            slider.value = radians;
+
+            draw(radians);
+        }
+
+        function draw(radians) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. 畫底圓 (虛線)
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#ecf0f1';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 2. 畫始邊
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + radius, cy);
+            ctx.strokeStyle = '#34495e';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.fillStyle = '#34495e';
+            ctx.font = 'italic 18px Times New Roman';
+            ctx.fillText('r', cx + radius/2, cy + 20);
+
+            if (radians > 0) {
+                const endX = cx + radius * Math.cos(-radians);
+                const endY = cy + radius * Math.sin(-radians);
+
+                // 3. 畫終邊
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(endX, endY);
+                ctx.strokeStyle = '#2980b9';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // 4. 畫圓心角標示 (小圓弧)
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, 30, 0, -radians, true);
+                ctx.fillStyle = 'rgba(52, 152, 219, 0.2)';
+                ctx.fill();
+
+                // 修改點：動態文字標籤 θ = X.XX 弧度
+                ctx.fillStyle = '#2980b9';
+                ctx.font = 'bold 16px Arial';
+                const textAngle = -radians / 2;
+                ctx.fillText(`θ = ${radians.toFixed(2)} 弧度`, cx + 50 * Math.cos(textAngle), cy + 50 * Math.sin(textAngle));
+
+                // 5. 畫弧長 S (紅色粗線)
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, 0, -radians, true);
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 6;
+                ctx.stroke();
+
+                // 修改點：動態文字標籤 S = X.XX r
+                const arcMidX = cx + (radius + 25) * Math.cos(-radians / 2);
+                const arcMidY = cy + (radius + 25) * Math.sin(-radians / 2);
+                ctx.fillStyle = '#e74c3c';
+                ctx.font = 'bold 18px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`S = ${radians.toFixed(2)} r`, arcMidX, arcMidY);
+            }
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#2c3e50';
+            ctx.fill();
+        }
+
+        function setAngle(targetRadians) {
+            let current = parseFloat(slider.value);
+            const step = (targetRadians - current) / 20;
+            let count = 0;
+            
+            if(Math.abs(targetRadians - current) > 0.01) {
+                const anim = setInterval(() => {
+                    current += step;
+                    count++;
+                    updateDisplay(current);
+                    if(count >= 20) {
+                        clearInterval(anim);
+                        updateDisplay(targetRadians);
+                    }
+                }, 15);
+            } else {
+                updateDisplay(targetRadians);
+            }
+        }
+
+        slider.addEventListener('input', function() {
+            updateDisplay(parseFloat(this.value));
+        });
+
+        // 初始化
+        updateDisplay(0);
+    </script>
+</body>
+</html>
