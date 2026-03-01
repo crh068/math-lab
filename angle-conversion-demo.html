@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角度換算演示：單位量替換終極版</title>
+    <style>
+        :root {
+            --primary-blue: #2980b9;
+            --accent-green: #27ae60;
+            --bg-color: #f0f2f5;
+            --board-bg: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #333;
+            font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { color: #2c3e50; margin-bottom: 5px; }
+        .subtitle { color: #7f8c8d; margin-bottom: 20px; font-weight: bold; }
+
+        .layout-container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .control-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: fit-content;
+        }
+
+        .mode-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 2px solid var(--primary-blue);
+            background: white;
+            color: var(--primary-blue);
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .mode-btn.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .input-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .display-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel-header {
+            font-weight: bold;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .board {
+            background: var(--board-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 5px solid #2c3e50;
+            min-height: 480px;
+        }
+
+        .math-row {
+            font-size: 1.7rem;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: 0.5s all ease;
+        }
+
+        .math-row.visible { opacity: 1; transform: translateY(0); }
+
+        .explanation-card {
+            background: #fffbe6;
+            border-left: 5px solid #f1c40f;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: 0.5s all ease;
+        }
+
+        .explanation-card.visible { opacity: 1; transform: translateX(0); }
+
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            margin: 0 5px;
+        }
+        .frac .top { border-bottom: 2px solid #333; padding: 0 5px; }
+        .frac .bottom { padding: 0 5px; }
+
+        .btn-next {
+            background: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-next:disabled { background: #ccc; }
+
+        .highlight { color: #e74c3c; font-weight: bold; }
+        .unit-label { color: #2980b9; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>角度換算：單位量替換演示</h1>
+    <p class="subtitle">1-1 角的度量與換算（嚴謹單位推導版）</p>
+
+    <div class="layout-container">
+        <div class="control-panel">
+            <button id="btn-deg2rad" class="mode-btn active" onclick="setMode('deg2rad')">度數 ➔ 弧度</button>
+            <button id="btn-rad2deg" class="mode-btn" onclick="setMode('rad2deg')">弧度 ➔ 度數</button>
+
+            <div id="input-area" class="input-box"></div>
+
+            <button class="btn-next" id="next-btn" onclick="runNextStep()">下一步：展開推導</button>
+            <button style="margin-top:10px; border:none; background:none; cursor:pointer; color:#7f8c8d; text-decoration:underline;" onclick="reset()">重新開始</button>
+        </div>
+
+        <div class="display-area">
+            <div>
+                <div class="panel-header">📝 計算流程</div>
+                <div class="board" id="math-board"></div>
+            </div>
+            <div>
+                <div class="panel-header">💡 教學解說</div>
+                <div class="board" id="explanation-board" style="background: #fcfcfc; border-top: 5px solid #f1c40f;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mode = 'deg2rad';
+        let stepIndex = 0;
+        let steps = [];
+
+        function gcd(a, b) { return b === 0 ? Math.abs(a) : gcd(b, a % b); }
+
+        function setMode(m) {
+            mode = m;
+            document.getElementById('btn-deg2rad').className = mode === 'deg2rad' ? 'mode-btn active' : 'mode-btn';
+            document.getElementById('btn-rad2deg').className = mode === 'rad2deg' ? 'mode-btn active' : 'mode-btn';
+            reset();
+            renderInput();
+        }
+
+        function renderInput() {
+            const container = document.getElementById('input-area');
+            if (mode === 'deg2rad') {
+                container.innerHTML = `<label>輸入度數：</label><input type="number" id="input-val" value="135" style="width:70px;"> °`;
+            } else {
+                container.innerHTML = `<label>輸入弧度：</label><br>
+                    <input type="number" id="input-num" value="3" style="width:40px;"> π / 
+                    <input type="number" id="input-den" value="4" style="width:40px;"> 弧度`;
+            }
+        }
+
+        function reset() {
+            stepIndex = 0;
+            steps = [];
+            document.getElementById('math-board').innerHTML = '';
+            document.getElementById('explanation-board').innerHTML = '';
+            document.getElementById('next-btn').disabled = false;
+            document.getElementById('next-btn').innerText = "開始演示 ➔";
+        }
+
+        function buildFrac(top, bottom) {
+            return `<span class="frac"><span class="top">${top}</span><span class="bottom">${bottom}</span></span>`;
+        }
+
+        function prepareSteps() {
+            steps = [];
+            if (mode === 'deg2rad') {
+                const val = parseInt(document.getElementById('input-val').value);
+                const g = gcd(val, 180);
+                const n = val / g;
+                const d = 180 / g;
+
+                steps.push({
+                    math: `${val}°`,
+                    note: `寫下題目要求的度數：<span class="highlight">${val}°</span>。`
+                });
+                steps.push({
+                    math: `= ${val} &times; <span class="unit-label">1°</span>`,
+                    note: `將角度看成 <span class="highlight">${val} 個單位度 (1°)</span> 的累積。`
+                });
+                steps.push({
+                    math: `= ${val} &times; ${buildFrac('π', '180')}`,
+                    note: `單位量替換：已知 <span class="unit-label">1° = ${buildFrac('π', '180')} 弧度</span>，將其代入算式。`
+                });
+                steps.push({
+                    math: `= ${buildFrac(val + 'π', '180')}`,
+                    note: `將數值合併至分子，準備進行約分。`
+                });
+                steps.push({
+                    math: `= ${d === 1 ? (n === 1 ? 'π' : n + 'π') : buildFrac((n === 1 ? '' : n) + 'π', d)}`,
+                    note: `同除以最大公因數 <span class="highlight">${g}</span>，得到最終弧度值。`
+                });
+            } else {
+                const num = parseInt(document.getElementById('input-num').value);
+                const den = parseInt(document.getElementById('input-den').value);
+                const targetDeg = (num * 180 / den).toFixed(1);
+
+                steps.push({
+                    math: `${buildFrac(num + 'π', den)} 弧度`,
+                    note: `寫下題目要求的弧度值：<span class="highlight">${num}π / ${den} 弧度</span>。`
+                });
+                steps.push({
+                    math: `= ${buildFrac(num + 'π', den)} &times; <span class="unit-label">1 弧度</span>`,
+                    note: `將角度看成該數值與 <span class="highlight">單位弧度 (1 弧度)</span> 的乘積。`
+                });
+                steps.push({
+                    math: `= ${buildFrac(num + 'π', den)} &times; ${buildFrac('180°', 'π')}`,
+                    note: `單位量替換：已知 <span class="unit-label">1 弧度 = ${buildFrac('180°', 'π')}</span>，代入以換回度數制。`
+                });
+                steps.push({
+                    math: `= ${buildFrac(num, den)} &times; 180°`,
+                    note: `觀察算式：分子與分母的 <span class="highlight">π</span> 剛好可以互相約掉。`
+                });
+                steps.push({
+                    math: `= ${num} &times; ${180/den}°`,
+                    note: `計算約分：180° 與分母 ${den} 先進行化簡。`
+                });
+                steps.push({
+                    math: `= ${targetDeg}°`,
+                    note: `最後計算乘積，得到結果為 <span class="highlight">${targetDeg}°</span>。`
+                });
+            }
+        }
+
+        function runNextStep() {
+            if (stepIndex === 0) prepareSteps();
+
+            if (stepIndex < steps.length) {
+                const mBoard = document.getElementById('math-board');
+                const mRow = document.createElement('div');
+                mRow.className = 'math-row';
+                mRow.innerHTML = steps[stepIndex].math;
+                mBoard.appendChild(mRow);
+                setTimeout(() => mRow.classList.add('visible'), 50);
+
+                const eBoard = document.getElementById('explanation-board');
+                const eCard = document.createElement('div');
+                eCard.className = 'explanation-card';
+                eCard.innerHTML = `<strong>步驟 ${stepIndex + 1}:</strong><br>${steps[stepIndex].note}`;
+                eBoard.appendChild(eCard);
+                setTimeout(() => eCard.classList.add('visible'), 50);
+
+                mBoard.scrollTop = mBoard.scrollHeight;
+                eBoard.scrollTop = eBoard.scrollHeight;
+
+                stepIndex++;
+                if (stepIndex === steps.length) {
+                    document.getElementById('next-btn').disabled = true;
+                    document.getElementById('next-btn').innerText = "演示完成";
+                }
+            }
+        }
+
+        renderInput();
+    </script>
+</body>
+</html>

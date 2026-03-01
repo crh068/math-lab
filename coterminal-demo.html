@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動教學演示：探索「同界角」</title>
+    <style>
+        /* 數位白板教學風格 */
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 2.2rem;
+            text-align: center;
+        }
+
+        p.subtitle {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+            max-width: 1000px;
+            width: 100%;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* 左側畫布區 */
+        .canvas-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            background-color: #ffffff;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+        }
+
+        /* 右側控制區 */
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 320px;
+            flex: 1;
+        }
+
+        .info-card {
+            background: #fdfbf7;
+            border-left: 6px solid #e67e22;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: 1.3rem;
+            line-height: 1.6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .highlight-angle { color: #e74c3c; font-weight: bold; font-size: 1.6rem; }
+        .highlight-base { color: #2980b9; font-weight: bold; }
+        
+        .formula-box {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.4rem;
+            background: #eef2f5;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+            color: #2c3e50;
+            border: 1px dashed #bdc3c7;
+        }
+
+        .control-group {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 10px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .k-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            font-size: 1.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .k-btn:hover { background-color: #2980b9; transform: scale(1.1); }
+        .k-btn:active { transform: scale(0.95); }
+
+        .k-display {
+            font-size: 1.4rem;
+            font-weight: bold;
+            width: 60px;
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .reset-btn {
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            transition: 0.2s;
+        }
+        .reset-btn:hover { background-color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+    <h1>互動教學演示：探索「同界角」</h1>
+    <p class="subtitle">CH1 三角函數 1-1 同界角的定義與幾何意義</p>
+
+    <div class="container">
+        <div class="canvas-section">
+            <canvas id="angleCanvas" width="450" height="450"></canvas>
+            <p style="color: #7f8c8d; font-size: 0.95rem; margin-top: 15px; text-align: center;">
+                不管紅色軌跡繞了幾圈 (正向或逆向)，<br>只要落在相同的<span style="color:#2980b9; font-weight:bold;">藍色終邊</span>上，它們互為同界角。
+            </p>
+        </div>
+
+        <div class="control-section">
+            <div class="info-card">
+                <div>目前角度 = <span id="total-angle" class="highlight-angle">30°</span></div>
+                <hr style="border:0; border-top:1px solid #ddd; margin: 15px 0;">
+                <div style="font-size: 1.1rem; color: #555;">
+                    主角度 (α) = <span id="base-angle-display" class="highlight-base">30°</span><br>
+                    旋轉圈數 (k) = <span id="k-value-display" style="font-weight:bold; color:#e67e22;">0</span> 圈
+                </div>
+            </div>
+
+            <div class="formula-box">
+                θ = α + 360° × k<br>
+                <span id="formula-dynamic" style="font-size:1.2rem; color:#c0392b; font-weight:bold;">30° = 30° + 360° × 0</span>
+            </div>
+
+            <div class="control-group">
+                <label for="base-slider">1. 設定主角度 α (0° ~ 359°)</label>
+                <input type="range" id="base-slider" min="0" max="359" value="30" step="1">
+                <div style="text-align: right; color:#2980b9; font-weight:bold;" id="slider-val-display">30°</div>
+
+                <hr style="border:0; border-top:1px dashed #ccc; margin: 20px 0;">
+
+                <label style="text-align:center;">2. 改變旋轉圈數 (找同界角)</label>
+                <div style="text-align:center; font-size:0.9rem; color:#777; margin-bottom:10px;">( + 為逆時針多繞一圈， - 為順時針多繞一圈 )</div>
+                <div class="btn-group">
+                    <button class="k-btn" onclick="changeK(-1)">-</button>
+                    <div class="k-display">k=<span id="k-input">0</span></div>
+                    <button class="k-btn" onclick="changeK(1)">+</button>
+                </div>
+                
+                <button class="reset-btn" onclick="resetAll()">恢復預設 (找最小正同界角)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('angleCanvas');
+        const ctx = canvas.getContext('2d');
+        const baseSlider = document.getElementById('base-slider');
+        
+        let baseAngle = 30; // 主角度 (0~359)
+        let k = 0;          // 圈數乘數
+
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const radius = 150; // 基礎圓半徑
+
+        function updateMath() {
+            baseAngle = parseInt(baseSlider.value);
+            let totalAngle = baseAngle + k * 360;
+
+            // 更新文字顯示
+            document.getElementById('total-angle').textContent = totalAngle + "°";
+            document.getElementById('base-angle-display').textContent = baseAngle + "°";
+            document.getElementById('k-value-display').textContent = k;
+            document.getElementById('slider-val-display').textContent = baseAngle + "°";
+            document.getElementById('k-input').textContent = k;
+
+            // 動態公式
+            let kStr = k < 0 ? `(${k})` : k;
+            document.getElementById('formula-dynamic').textContent = `${totalAngle}° = ${baseAngle}° + 360° × ${kStr}`;
+
+            drawCanvas(baseAngle, totalAngle);
+        }
+
+        function changeK(delta) {
+            // 限制 k 的範圍，避免螺旋線畫太多圈超出畫布
+            if (k + delta >= -4 && k + delta <= 4) {
+                k += delta;
+                updateMath();
+            }
+        }
+
+        function resetAll() {
+            k = 0;
+            updateMath();
+        }
+
+        function drawCanvas(baseDeg, totalDeg) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. 畫座標軸
+            ctx.beginPath();
+            ctx.moveTo(10, cy); ctx.lineTo(canvas.width - 10, cy); // X軸
+            ctx.moveTo(cx, 10); ctx.lineTo(cx, canvas.height - 10); // Y軸
+            ctx.strokeStyle = '#bdc3c7';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            ctx.fillStyle = '#7f8c8d';
+            ctx.font = '14px Arial';
+            ctx.fillText('x', canvas.width - 20, cy - 10);
+            ctx.fillText('y', cx + 10, 20);
+
+            // 2. 畫基礎圓 (虛線)
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#ecf0f1';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]); // 恢復實線
+
+            // 3. 畫始邊 (X正向，黑色粗線)
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + radius + 20, cy);
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // 4. 畫終邊 (藍色粗線)
+            // 數學角度與Canvas座標轉換：Canvas Y向下，因此角度取負值
+            let endRad = -baseDeg * Math.PI / 180; 
+            let endX = cx + (radius + 20) * Math.cos(endRad);
+            let endY = cy + (radius + 20) * Math.sin(endRad);
+            
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(endX, endY);
+            ctx.strokeStyle = '#2980b9';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // 畫原點
+            ctx.beginPath();
+            ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#2c3e50';
+            ctx.fill();
+
+            // 5. 畫動態螺旋線軌跡 (表現出轉了幾圈)
+            drawSpiral(totalDeg);
+        }
+
+        function drawSpiral(totalDeg) {
+            if (totalDeg === 0) return;
+
+            let steps = Math.abs(totalDeg); 
+            ctx.beginPath();
+            
+            // 螺旋起點：半徑從 20 開始
+            let startR = 25;
+            ctx.moveTo(cx + startR, cy);
+
+            let sign = totalDeg >= 0 ? 1 : -1;
+            let currentX, currentY, currentR;
+            let lastRad = 0;
+
+            for (let i = 1; i <= steps; i++) {
+                let currentDeg = i * sign;
+                let currentRad = -currentDeg * Math.PI / 180; // Canvas Y反向
+                // 半徑隨著旋轉度數增加，每 360 度增加 12px 避免線條重疊
+                currentR = startR + 12 * (Math.abs(currentDeg) / 360); 
+                
+                currentX = cx + currentR * Math.cos(currentRad);
+                currentY = cy + currentR * Math.sin(currentRad);
+                ctx.lineTo(currentX, currentY);
+                lastRad = currentRad;
+            }
+
+            ctx.strokeStyle = '#e74c3c'; // 紅色軌跡
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            // 畫箭頭
+            drawArrowHead(currentX, currentY, lastRad, sign);
+        }
+
+        function drawArrowHead(x, y, rad, sign) {
+            // 計算箭頭方向，切線方向為 rad 加上正向或逆向的 90 度
+            let arrowAngle = rad + (sign > 0 ? -Math.PI/2 : Math.PI/2);
+            
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            // 箭頭兩側
+            ctx.lineTo(x - 8 * Math.cos(arrowAngle - Math.PI/6), y - 8 * Math.sin(arrowAngle - Math.PI/6));
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - 8 * Math.cos(arrowAngle + Math.PI/6), y - 8 * Math.sin(arrowAngle + Math.PI/6));
+            
+            ctx.strokeStyle = '#c0392b';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        // 綁定事件
+        baseSlider.addEventListener('input', updateMath);
+
+        // 初始化
+        updateMath();
+    </script>
+</body>
+</html>
