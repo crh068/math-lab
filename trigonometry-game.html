@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三角大師挑戰賽：銳角三角函數</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --success: #2ecc71;
+            --bg: #ecf0f1;
+            --text: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* 遊戲容器 */
+        .game-container {
+            background: white;
+            width: 100%;
+            max-width: 800px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 頂部資訊列 */
+        .header-bar {
+            background: var(--primary);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .time-warning { color: #f1c40f; animation: pulse 1s infinite; }
+
+        /* 視圖切換 */
+        .view { display: none; padding: 30px; text-align: center; }
+        .view.active { display: block; animation: fadeIn 0.5s ease; }
+
+        /* 主遊戲區佈局 */
+        .play-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: center;
+            text-align: left;
+        }
+
+        /* 畫布區 */
+        .canvas-container {
+            background: #f8f9fa;
+            border: 2px dashed #bdc3c7;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+        canvas { max-width: 100%; }
+
+        /* 題目區 */
+        .question-box {
+            font-size: 1.3rem;
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: #fff;
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+            padding: 12px 20px;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Times New Roman', "Microsoft JhengHei", serif;
+            font-weight: bold;
+        }
+
+        .option-btn:hover {
+            background: var(--secondary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        }
+
+        /* 按鈕樣式 */
+        .btn-main {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+        .btn-main:hover { transform: scale(1.05); background: #27ae60; }
+
+        /* 動畫與特效 */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        
+        .correct-flash { animation: flashGreen 0.4s; }
+        .wrong-flash { animation: flashRed 0.4s; }
+        @keyframes flashGreen { 0% { background-color: white; } 50% { background-color: #d5f5e3; } 100% { background-color: white; } }
+        @keyframes flashRed { 0% { background-color: white; } 50% { background-color: #fadbd8; } 100% { background-color: white; } }
+
+        .feedback-text {
+            position: absolute;
+            top: 50%;
+            left: 75%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: bold;
+            opacity: 0;
+            pointer-events: none;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -100px) scale(1.2); }
+        }
+
+        /* 數學分數排版 */
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            margin: 0 4px;
+            font-style: italic;
+        }
+        .frac .top { border-bottom: 2px solid currentColor; padding: 0 2px; }
+        .frac .bottom { padding: 0 2px; }
+
+    </style>
+</head>
+<body>
+
+    <h1>🏆 三角大師挑戰賽</h1>
+    <p class="subtitle">CH1-2 銳角三角函數：定義與比例辨識</p>
+
+    <div class="game-container" id="game-container">
+        <div class="header-bar" id="header-bar" style="display: none;">
+            <div>🕒 剩餘時間：<span id="time-display">60</span> 秒</div>
+            <div>⭐ 分數：<span id="score-display">0</span></div>
+        </div>
+
+        <div id="start-view" class="view active">
+            <h2 style="color: var(--primary); font-size: 1.8rem;">準備好挑戰三角函數了嗎？</h2>
+            <div style="text-align: left; background: #fdfbf7; padding: 20px; border-radius: 10px; border: 1px dashed #e67e22; margin-bottom: 25px; display: inline-block;">
+                <strong>🎮 遊戲規則：</strong>
+                <ul style="line-height: 1.8; font-size: 1.1rem; color: #444;">
+                    <li>限時 <strong>60 秒</strong>，盡可能答對最多題目！</li>
+                    <li>三角形的直角會固定在<strong>右下角</strong>，請以左下角的 <strong>∠A</strong> 為基準。</li>
+                    <li>答對一題 <span style="color:var(--success); font-weight:bold;">+10 分</span>，答錯一題 <span style="color:var(--accent); font-weight:bold;">-5 分</span>。</li>
+                    <li>題型包含：辨識對邊/鄰邊/斜邊、三角函數定義、比值計算。</li>
+                </ul>
+            </div>
+            <br>
+            <button class="btn-main" onclick="startGame()">▶ 開始挑戰</button>
+        </div>
+
+        <div id="game-view" class="view">
+            <div class="play-area">
+                <div class="canvas-container">
+                    <canvas id="triCanvas" width="300" height="250"></canvas>
+                </div>
+                <div>
+                    <div id="question-text" class="question-box">載入題目中...</div>
+                    <div id="options-container" class="options-grid">
+                        </div>
+                </div>
+            </div>
+            <div id="feedback-anim" class="feedback-text"></div>
+        </div>
+
+        <div id="end-view" class="view">
+            <h2 style="font-size: 2.5rem; color: var(--primary);">⏱ 時間到！</h2>
+            <p style="font-size: 1.5rem; margin-bottom: 10px;">你的最終得分是：</p>
+            <div style="font-size: 4rem; color: var(--accent); font-weight: bold; margin-bottom: 20px;" id="final-score">0</div>
+            
+            <div style="background: #eef2f7; padding: 20px; border-radius: 10px; text-align: left; margin-bottom: 30px; font-size: 1.1rem; border-left: 5px solid var(--secondary);">
+                <strong>💡 記憶小訣竅 (口訣)：</strong><br><br>
+                1. <strong>sin A (正弦)</strong> = <span class="frac"><span class="top">對邊</span><span class="bottom">斜邊</span></span> (書寫草寫 S 的筆畫方向)<br>
+                2. <strong>cos A (餘弦)</strong> = <span class="frac"><span class="top">鄰邊</span><span class="bottom">斜邊</span></span> (書寫 C 的筆畫方向)<br>
+                3. <strong>tan A (正切)</strong> = <span class="frac"><span class="top">對邊</span><span class="bottom">鄰邊</span></span> (書寫草寫 T 的筆畫方向)
+            </div>
+
+            <button class="btn-main" onclick="resetGame()">↻ 再玩一次</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM 元素
+        const views = {
+            start: document.getElementById('start-view'),
+            game: document.getElementById('game-view'),
+            end: document.getElementById('end-view')
+        };
+        const headerBar = document.getElementById('header-bar');
+        const timeDisplay = document.getElementById('time-display');
+        const scoreDisplay = document.getElementById('score-display');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const canvas = document.getElementById('triCanvas');
+        const ctx = canvas.getContext('2d');
+        const feedbackAnim = document.getElementById('feedback-anim');
+        const gameContainer = document.getElementById('game-container');
+
+        // 遊戲狀態
+        let score = 0;
+        let timeLeft = 60;
+        let timer = null;
+        let currentQuestion = {};
+
+        // 題庫資料設定 (固定直角在右下 C)
+        const triangleSets = [
+            { a: 'a', b: 'b', c: 'c', type: 'var' },
+            { a: '3', b: '4', c: '5', type: 'num' },
+            { a: '5', b: '12', c: '13', type: 'num' },
+            { a: '8', b: '15', c: '17', type: 'num' }
+        ];
+
+        // 切換畫面
+        function showView(viewName) {
+            Object.values(views).forEach(v => v.classList.remove('active'));
+            views[viewName].classList.add('active');
+            headerBar.style.display = viewName === 'game' ? 'flex' : 'none';
+        }
+
+        // 繪製直角三角形 (直角固定於右下角)
+        function drawTriangle(valA, valB, valC) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 設定頂點座標：A(左下), C(右下), B(右上)
+            const ptA = { x: 40, y: 200 };
+            const ptC = { x: 240, y: 200 };
+            const ptB = { x: 240, y: 50 };
+
+            // 畫三角形線條
+            ctx.beginPath();
+            ctx.moveTo(ptA.x, ptA.y);
+            ctx.lineTo(ptC.x, ptC.y);
+            ctx.lineTo(ptB.x, ptB.y);
+            ctx.closePath();
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.1)';
+            ctx.fill();
+
+            // 畫直角符號 (於 C 點)
+            ctx.strokeRect(ptC.x - 15, ptC.y - 15, 15, 15);
+
+            // 畫 ∠A 標記 (主要參考角)
+            ctx.beginPath();
+            ctx.arc(ptA.x, ptA.y, 30, 0, -Math.atan2(150, 200), true);
+            ctx.strokeStyle = '#e74c3c';
+            ctx.stroke();
+
+            // 頂點標籤
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 18px Arial';
+            ctx.fillText('A', ptA.x - 20, ptA.y + 10);
+            ctx.fillText('C', ptC.x + 10, ptC.y + 15);
+            ctx.fillText('B', ptB.x + 10, ptB.y - 5);
+
+            // 邊長標籤
+            ctx.fillStyle = '#2980b9';
+            ctx.font = 'italic bold 20px "Times New Roman"';
+            ctx.fillText(valB, (ptA.x + ptC.x) / 2 - 10, ptC.y + 25); // b (鄰邊)
+            ctx.fillText(valA, ptC.x + 15, (ptB.y + ptC.y) / 2 + 5); // a (對邊)
+            ctx.fillText(valC, (ptA.x + ptB.x) / 2 - 25, (ptA.y + ptB.y) / 2 - 10); // c (斜邊)
+        }
+
+        // 生成 HTML 分數格式
+        function frac(top, bot) {
+            return `<span class="frac"><span class="top">${top}</span><span class="bottom">${bot}</span></span>`;
+        }
+
+        // 洗牌演算法
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        // 產生題目
+        function generateQuestion() {
+            // 隨機抽取一組三角形數據
+            const tri = triangleSets[Math.floor(Math.random() * triangleSets.length)];
+            drawTriangle(tri.a, tri.b, tri.c);
+
+            const qTypes = [1, 2, 3, 4];
+            // 若為數字型態，多一種數字運算題；若為變數，則只有代數題
+            const selectedType = tri.type === 'var' ? Math.floor(Math.random() * 3) + 1 : Math.floor(Math.random() * 4) + 1;
+
+            let qText = "";
+            let options = [];
+            let answer = "";
+
+            switch(selectedType) {
+                case 1: // 辨識邊的中文名稱
+                    const sides = [
+                        { val: tri.a, name: '對邊' },
+                        { val: tri.b, name: '鄰邊' },
+                        { val: tri.c, name: '斜邊' }
+                    ];
+                    const targetSide = sides[Math.floor(Math.random() * 3)];
+                    qText = `相對於 <b>∠A</b> 而言，邊長 ${targetSide.val} 稱為什麼邊？`;
+                    answer = targetSide.name;
+                    options = shuffle(['對邊', '鄰邊', '斜邊']);
+                    break;
+
+                case 2: // 辨識中文比例定義
+                    const funcsDef = [
+                        { name: 'sin A', def: '對邊 / 斜邊', html: frac('對邊', '斜邊') },
+                        { name: 'cos A', def: '鄰邊 / 斜邊', html: frac('鄰邊', '斜邊') },
+                        { name: 'tan A', def: '對邊 / 鄰邊', html: frac('對邊', '鄰邊') }
+                    ];
+                    const targetFuncDef = funcsDef[Math.floor(Math.random() * 3)];
+                    qText = `請問 <b>${targetFuncDef.name}</b> 的定義為何？`;
+                    answer = targetFuncDef.html;
+                    options = shuffle([funcsDef[0].html, funcsDef[1].html, funcsDef[2].html]);
+                    break;
+
+                case 3: // 辨識代數/數字比例
+                    const funcsVal = [
+                        { name: 'sin A', val: frac(tri.a, tri.c) },
+                        { name: 'cos A', val: frac(tri.b, tri.c) },
+                        { name: 'tan A', val: frac(tri.a, tri.b) }
+                    ];
+                    const targetFuncVal = funcsVal[Math.floor(Math.random() * 3)];
+                    qText = `根據左圖，請問 <b>${targetFuncVal.name}</b> 的比值為何？`;
+                    answer = targetFuncVal.val;
+                    options = shuffle([funcsVal[0].val, funcsVal[1].val, funcsVal[2].val]);
+                    break;
+
+                case 4: // 給定比值，反問三角函數名稱
+                    const funcsRev = [
+                        { name: 'sin A', val: frac(tri.a, tri.c) },
+                        { name: 'cos A', val: frac(tri.b, tri.c) },
+                        { name: 'tan A', val: frac(tri.a, tri.b) }
+                    ];
+                    const targetFuncRev = funcsRev[Math.floor(Math.random() * 3)];
+                    qText = `根據左圖，比值 ${targetFuncRev.val} 代表哪一個三角函數？`;
+                    answer = targetFuncRev.name;
+                    options = shuffle(['sin A', 'cos A', 'tan A']);
+                    break;
+            }
+
+            currentQuestion = { text: qText, answer: answer, options: options };
+            renderQuestion();
+        }
+
+        // 渲染題目到畫面上
+        function renderQuestion() {
+            questionText.innerHTML = currentQuestion.text;
+            optionsContainer.innerHTML = '';
+            
+            currentQuestion.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = opt;
+                btn.onclick = () => checkAnswer(opt);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // 顯示回饋動畫
+        function showFeedback(isCorrect) {
+            gameContainer.classList.remove('correct-flash', 'wrong-flash');
+            void gameContainer.offsetWidth; // 觸發重繪
+            
+            if (isCorrect) {
+                gameContainer.classList.add('correct-flash');
+                feedbackAnim.innerHTML = '✅ +10';
+                feedbackAnim.style.color = '#2ecc71';
+            } else {
+                gameContainer.classList.add('wrong-flash');
+                feedbackAnim.innerHTML = '❌ -5';
+                feedbackAnim.style.color = '#e74c3c';
+            }
+            
+            feedbackAnim.style.animation = 'none';
+            void feedbackAnim.offsetWidth;
+            feedbackAnim.style.animation = 'floatUp 0.8s ease forwards';
+        }
+
+        // 檢查答案
+        function checkAnswer(selectedHtml) {
+            if (selectedHtml === currentQuestion.answer) {
+                score += 10;
+                showFeedback(true);
+            } else {
+                score = Math.max(0, score - 5); // 分數不扣到負數
+                showFeedback(false);
+            }
+            scoreDisplay.textContent = score;
+            generateQuestion();
+        }
+
+        // 更新計時器
+        function updateTimer() {
+            timeLeft--;
+            timeDisplay.textContent = timeLeft;
+            
+            if (timeLeft <= 10) {
+                timeDisplay.classList.add('time-warning');
+            }
+            
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }
+
+        // 遊戲控制
+        function startGame() {
+            score = 0;
+            timeLeft = 60;
+            scoreDisplay.textContent = score;
+            timeDisplay.textContent = timeLeft;
+            timeDisplay.classList.remove('time-warning');
+            
+            showView('game');
+            generateQuestion();
+            
+            timer = setInterval(updateTimer, 1000);
+        }
+
+        function endGame() {
+            clearInterval(timer);
+            document.getElementById('final-score').textContent = score;
+            showView('end');
+        }
+
+        function resetGame() {
+            showView('start');
+        }
+
+        // 初始繪製空圖
+        drawTriangle('a', 'b', 'c');
+    </script>
+</body>
+</html>
