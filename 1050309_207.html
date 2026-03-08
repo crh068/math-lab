@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>1-2 直線排列 互動教學系統</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #16a085; --formula: #d35400; --bg: #f4f7f6; }
+        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background: var(--bg); padding: 10px; margin: 0; }
+        .container { max-width: 1100px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; }
+        h1 { text-align: center; color: var(--primary); font-size: 36px; margin-bottom: 10px; }
+        
+        .selector-box { text-align: center; margin-bottom: 15px; }
+        select { padding: 10px; width: 85%; border-radius: 8px; border: 2px solid #ccc; font-size: 24px; font-weight: bold; outline: none; }
+        
+        .view-area { display: none; gap: 15px; border-top: 2px solid #eee; padding-top: 15px; margin: 0 60px; }
+        .panel { flex: 1; padding: 15px; border-radius: 8px; min-height: 550px; border: 1px solid #ddd; }
+        .left { border-top: 6px solid var(--accent); background: #fff; }
+        .right { border-top: 6px solid #3498db; background: #f8fbff; color: #2c3e50; }
+        
+        .q-card { background: #fffbe6; padding: 15px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; border: 1px solid #ffe58f; font-size: 28px; line-height: 1.2; }
+        .step-box { margin-bottom: 8px; padding: 8px; border-bottom: 1px dashed #ccc; animation: fadeIn 0.4s; font-size: 24px; line-height: 1.3; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .math-f { color: var(--formula); font-weight: bold; font-family: "Times New Roman", serif; font-size: 1.2em; display: inline-flex; align-items: center; background: #fff5eb; padding: 8px; border-left: 5px solid var(--formula); margin: 5px 0; }
+        
+        /* 分式樣式 */
+        .frac { display: inline-block; vertical-align: middle; text-align: center; margin: 0 4px; }
+        .frac > span { display: block; padding: 0 2px; }
+        .frac span.bottom { border-top: 2px solid var(--formula); }
+
+        .val-red { color: #e74c3c !important; }
+        .val-blue { color: #3498db !important; }
+        .val-green { color: #27ae60 !important; }
+        .val-purple { color: #9b59b6 !important; }
+
+        .p-math { display: inline-flex; align-items: center; font-family: "Times New Roman", serif; font-style: italic; vertical-align: middle; margin: 0 4px; }
+        .p-math .char-p { font-size: 1.4em; font-weight: bold; font-style: normal; }
+        .p-math .indices { display: inline-flex; flex-direction: column; font-size: 0.6em; line-height: 1; margin-left: 2px; }
+        .p-math .n-top { order: 1; } .p-math .m-bottom { order: 2; }
+
+        /* 圖示輔助 */
+        .visual-box { display: flex; align-items: center; margin: 10px 0; font-family: serif; }
+        .grid-cell { width: 35px; height: 35px; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; margin-right: 2px; }
+        .road-map { display: inline-grid; grid-template-columns: repeat(6, 25px); grid-template-rows: repeat(5, 25px); border-left: 2px solid #333; border-bottom: 2px solid #333; position: relative; }
+        .road-dot { width: 6px; height: 6px; background: black; border-radius: 50%; position: absolute; }
+
+        .diag-row { display: flex; align-items: flex-start; flex-wrap: wrap; margin: 5px 0; }
+        .pos-container { display: inline-flex; flex-direction: column; align-items: center; margin: 0 3px; }
+        .pos-box { width: 42px; height: 42px; border: 2px solid #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; background: #fff; font-size: 20px; font-weight: bold; font-family: serif; }
+        .limit-red { border-color: #e74c3c; background: #fff5f5; }
+        .limit-blue { border-color: #3498db; background: #f0f7ff; }
+        .limit-green { border-color: #27ae60; background: #f1f9f5; }
+        .limit-purple { border-color: #9b59b6; background: #f5eef8; }
+        .pos-val { font-weight: bold; font-size: 22px; margin-top: 1px; }
+        .pos-label { font-size: 14px; color: #7f8c8d; }
+
+        .side-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 60px; height: 120px; border-radius: 10px; border: none; font-size: 36px; cursor: pointer; color: white; display: none; z-index: 10; opacity: 0.8; }
+        .b-prev { left: -70px; background: #95a5a6; }
+        .b-next { right: -70px; background: var(--accent); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>1-2 直線排列 互動教學系統</h1>
+    <div class="selector-box">
+        <select id="probSelect" onchange="startProblem()">
+            <option value="">-- 請選擇題目 (1-18) --</option>
+            <option value="1">1. 直線排列定義 4!</option>
+            <option value="2">2. P(n,0) 與 P(n,n)</option>
+            <option value="3">3. P(n,m) 連乘運算</option>
+            <option value="4">4. 方程式求解 n</option>
+            <option value="5">5. 選取職位 (P(8,2) 列式)</option>
+            <option value="6">6. 奇數限制 (對比色強化)</option>
+            <option value="7">7. 首位0限制 (分步細算)</option>
+            <option value="8">8. A排首或E排尾 (佈局優化)</option>
+            <option value="9">9. 不排首且不排尾 (扣除法詳解)</option>
+            <option value="10">10. 相鄰與不相鄰 (綑綁與插空)</option>
+            <option value="11">11. 不盡相異物 (字母 AAA BB C)</option>
+            <option value="12">12. 分筆給人 (相同物分法)</option>
+            <option value="13">13. 文字排列 (我愛爸爸)</option>
+            <option value="14">14. 數字排列 (含首位 0 限制)</option>
+            <option value="15">15. 捷徑問題 (經過與不經過)</option>
+            <option value="16">16. 次序限制 (視為相同物)</option>
+            <option value="17">17. 進階 P 公式計算</option>
+            <option value="18">18. 數字應用 (大於 2300)</option>
+        </select>
+    </div>
+
+    <button class="side-btn b-prev" id="prevBtn" onclick="changeStep(-1)">❮</button>
+    <button class="side-btn b-next" id="nextBtn" onclick="changeStep(1)">❯</button>
+
+    <div id="contentView" class="view-area">
+        <div class="panel left">
+            <div id="qText" class="q-card"></div>
+            <div id="leftSteps"></div>
+        </div>
+        <div class="panel right">
+            <div style="font-weight:bold; color:#2980b9; margin-bottom:5px; font-size: 26px;">解題要訣：</div>
+            <div id="rightTips"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentData = null;
+    let currentStep = 0;
+
+    function P(n, m, colorClass) {
+        let cls = colorClass ? `class="${colorClass}"` : "";
+        return `<span class="p-math" ${cls}><span class="char-p">P</span><span class="indices"><span class="n-top">${n}</span><span class="m-bottom">${m}</span></span></span>`;
+    }
+
+    function FRAC(top, bottom) {
+        return `<span class="frac"><span>${top}</span><span class="bottom">${bottom}</span></span>`;
+    }
+
+    function pos(label, val, colorClass, boxClass) {
+        return `<div class="pos-container">
+                    <div class="pos-box ${boxClass || ''}">${label==='A'?'A':(label==='E'?'E':(label==='我'?'我':(val||'')))}</div>
+                    <div class="pos-val ${colorClass || ''}">${val || '&nbsp;'}</div>
+                    <div class="pos-label">${label.length > 1 ? label : ''}</div>
+                </div>`;
+    }
+
+    function startProblem() {
+        const id = document.getElementById('probSelect').value;
+        if (!id) {
+            document.getElementById('contentView').style.display = 'none';
+            document.getElementById('prevBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+            return;
+        }
+
+        const data = {
+            "1": { q: "有 4 個人，全取排成一列，共有幾種排法？", s: [
+                { l: "1. 確認對象：4 個相異物全取排列。", r: "觀念：全取使用階乘 n!。" },
+                { l: `2. 完整計算：<span class='math-f'>${P(4,4)} = 4! = 4 × 3 × 2 × 1 = 24</span>`, r: "連乘：自 4 遞減乘到 1。" }
+            ]},
+            "2": { q: `試求：(1) ${P(6,0)} (2) ${P(5,5)}`, s: [
+                { l: `(1) 選 0 個物體：<span class='math-f'>${P(6,0)} = 1</span>`, r: "規定：P(n,0) 恆等於 1。" },
+                { l: `(2) 5 個全取：<span class='math-f'>${P(5,5)} = 5! = 5 × 4 × 3 × 2 × 1 = 120</span>`, r: "計算：5×4×3×2×1。" }
+            ]},
+            "3": { q: `試求：(1) ${P(10,2)} (2) ${P(7,3)}`, s: [
+                { l: `(1) ${P(10,2)}：<span class='math-f'>10 × 9 = 90</span>`, r: "下標 2 代表乘 2 個數。" },
+                { l: `(2) ${P(7,3)}：<span class='math-f'>7 × 6 × 5 = 210</span>`, r: "下標 3 代表乘 3 個數。" }
+            ]},
+            "4": { q: `設 ${P('n',4)} = 12 × ${P('n',2)}，求 n 之值。`, s: [
+                { l: `1. 展開：n(n-1)(n-2)(n-3) = 12 × n(n-1)`, r: "利用連續整數展開。" },
+                { l: "2. 約分：(n-2)(n-3) = 12", r: "n ≥ 4，n(n-1) 不為 0 可消。" },
+                { l: "3. 求解：4 × 3 = 12，故 n-2 = 4，<b>n = 6</b>", r: "找相差 1 的兩數積為 12。" }
+            ]},
+            "5": { q: "8 人中選出一名社長、一名副社長，共有幾種選法？", s: [
+                { l: "1. 分析：職位有別，即「排列」問題。", r: "社長 8 選，副社長剩 7 選。" },
+                { l: `2. 列式：<span class='math-f'>${P(8, 2)} = 8 × 7 = 56</span>`, r: "相異職稱排列就是 P(n,m)。" }
+            ]},
+            "6": { q: "1,2,3,4,5,6 選三數排成三位數，可得幾個奇數？", s: [
+                { l: "1. <b>優先處理限制位(個位)</b>：<br>" + pos('百位','') + pos('十位','') + pos('個位','3','val-red','limit-red'), r: "個位填 {1,3,5} 共 <span class='val-red'>3</span> 種。" },
+                { l: `2. 填其餘位置：剩下 5 數選 2 個排列。<br>` + pos('百位','','','limit-green') + pos('十位','','','limit-green') + pos('個位','3','val-red') + `<br><span class='math-f val-green'>${P(5, 2)} = 5 × 4 = 20</span>`, r: "其餘無限制，對應方法數為 <span class='val-green'>20</span>。" },
+                { l: "3. 總計：<span class='math-f'><span class='val-green'>20</span> × <span class='val-red'>3</span> = 60</span>", r: "分步動作使用乘法原理。" }
+            ]},
+            "7": { q: "0,1,2,3,4,5,6 選三數排成三位數，可得幾個奇數？", s: [
+                { l: "1. <b>先填個位(奇數)</b>：3 種。<br>" + pos('百位','') + pos('十位','') + pos('個位','3','val-purple','limit-purple'), r: "條件一：奇數。" },
+                { l: "2. <b>再填百位(首位非0)</b>：剩 5 種。<br>" + pos('百位','5','val-blue','limit-blue') + pos('十位','') + pos('個位','3','val-purple'), r: "除 0 外，扣除個位用掉的 1 數。" },
+                { l: "3. <b>最後十位</b>：剩 5 種。<br><span class='math-f'><span class='val-blue'>5</span> × 5 × <span class='val-purple'>3</span> = 75</span>", r: "十位可放 0，剩餘數字皆可。" }
+            ]},
+            "8": { q: "A,B,C,D,E 排一列：A 排首 或 E 排尾。", s: [
+                { l: `1. A排首：<br><div class="diag-row">${pos('A','','','limit-blue')}${pos('','','','')}${pos('','','','')}${pos('','','','')}${pos('','','','')}</div><span class="val-blue" style="font-weight:bold; font-size:22px;">4! = 24</span>`, r: "A 固定，其餘 4 字全排。" },
+                { l: `2. E排尾：<br><div class="diag-row">${pos('','','','')}${pos('','','','')}${pos('','','','')}${pos('','','','')}${pos('E','','','limit-red')}</div><span class="val-red" style="font-weight:bold; font-size:22px;">4! = 24</span>`, r: "E 固定，其餘 4 字全排。" },
+                { l: `3. A排首且E排尾：<br><div class="diag-row">${pos('A','','','limit-blue')}${pos('','','','')}${pos('','','','')}${pos('','','','')}${pos('E','','','limit-red')}</div><span class="val-purple" style="font-weight:bold; font-size:22px;">3! = 6</span>`, r: "兩端固定，中間 3 字全排。" },
+                { l: "4. 計算：24 + 24 - 6 = 42", r: "排容：n(A) + n(B) - n(A∩B)。" }
+            ]},
+            "9": { q: "A,B,C,D,E 排一列：A 不排首 且 E 不排尾。", s: [
+                { l: "1. 全部可能：<span class='math-f'>5! = 120</span>", r: "正面難解，改用「全部減否定」。" },
+                { l: "2. 扣除「A首或E尾」：由第 8 題知為 42 種。", r: "引用前題排容原理結果。" },
+                { l: "3. 計算：<span class='math-f'>120 - 42 = 78</span>", r: "不A且不E = 全部 - (A或B)。" }
+            ]},
+            "10": { q: "甲乙丙丁戊：(1)甲乙相鄰 (2)丙丁不相鄰。", s: [
+                { l: "(1) <b>相鄰：綑綁法</b>。<br><div style='border:2px dashed #16a085; border-radius:30px; padding:2px 10px; display:inline-flex; background:#eafffa; color:#16a085; font-weight:bold;'>甲乙</div> 丙 丁 戊<br><span class='math-f'>4! × <span class='val-green'>2!</span> = 48</span>", r: "圈起來看成 1 物，內部換位 <span class='val-green'>2!</span>。" },
+                { l: "(2) <b>不相鄰：插空法</b>。<br>先排其餘 3 人 (甲乙戊)：<br><span style='color:#9b59b6; font-size:30px; font-weight:bold;'>^</span>人<span style='color:#9b59b6; font-size:30px; font-weight:bold;'>^</span>人<span style='color:#9b59b6; font-size:30px; font-weight:bold;'>^</span>人<span style='color:#9b59b6; font-size:30px; font-weight:bold;'>^</span>", r: "先排 3 人，產生 4 個「<span class='val-purple'>^</span>」空隙。" },
+                { l: `3. 插空計算：<br><span class='math-f'>3! × <span class='val-purple'>${P(4, 2)}</span> = 6 × 12 = 72</span>`, r: "從 4 空隙選 2 個放入丙、丁。" }
+            ]},
+            "11": { q: "將 A,A,B,B,B,C 六個字母全取排成一列，共有幾種排法？", s: [
+                { l: `1. 字母分析：<br><span class='val-blue'>A,A</span> (2個), <span class='val-red'>B,B,B</span> (3個), <span class='val-green'>C</span> (1個)<br><div class='visual-box'><div class='grid-cell val-blue'>A</div><div class='grid-cell val-blue'>A</div><div class='grid-cell val-red'>B</div><div class='grid-cell val-red'>B</div><div class='grid-cell val-red'>B</div><div class='grid-cell val-green'>C</div></div>`, r: "總數 6 個，含重複元素。" },
+                { l: `2. 計算：<span class='math-f'>${FRAC('6!','<span class="val-blue">2!</span> × <span class="val-red">3!</span>')} = ${FRAC('720','<span class="val-blue">2</span> × <span class="val-red">6</span>')} = 60</span>`, r: "公式：n! / (k1! k2!...)" }
+            ]},
+            "12": { q: "2 枝相同鉛筆、3 枝相同原子筆分給 7 位同學，每人至多 1 枝。", s: [
+                { l: `1. 轉化模型：<br><span class='val-blue'>鉛,鉛</span> (2), <span class='val-red'>原,原,原</span> (3), <span class='val-purple'>空,空</span> (2)<br><div class='visual-box'>👤👤👤👤👤👤👤</div>`, r: "相當於將 7 樣東西分給 7 人。" },
+                { l: `2. 計算：<span class='math-f'>${FRAC('7!','<span class="val-blue">2!</span> × <span class="val-red">3!</span> × <span class="val-purple">2!</span>')} = ${FRAC('5040','24')} = 210</span>`, r: "分母包含沒分到筆的 2 位同學。" }
+            ]},
+            "13": { q: "「我愛爸爸，爸爸愛我」八個字全取，若「我」字必相鄰？", s: [
+                { l: `1. 字頻：<span class='val-blue'>我(2)</span>, <span class='val-red'>愛(2)</span>, <span class='val-green'>爸(4)</span>。`, r: "找出所有重複字數。" },
+                { l: `2. 綑綁：將 <span class='val-blue' style='border:1px solid'>我我</span> 視為一個單位。<br>剩餘：<span class='val-blue'>[我我]</span>(1), <span class='val-red'>愛,愛</span>(2), <span class='val-green'>爸,爸,爸,爸</span>(4) 共 7 樣。`, r: "「我」相同，綑綁內部不換位。" },
+                { l: `3. 計算：<span class='math-f'>${FRAC('7!','<span class="val-red">2!</span> × <span class="val-green">4!</span>')} = ${FRAC('5040','<span class="val-red">2</span> × <span class="val-green">24</span>')} = 105</span>`, r: "分母扣除愛與爸的重複。" }
+            ]},
+            "14": { q: "將 0,1,1,1,2,2,5 排成七位數，有多少種？", s: [
+                { l: `1. 全部排列：<span class='val-blue'>1(3個)</span>, <span class='val-red'>2(2個)</span><br><span class='math-f'>${FRAC('7!','<span class="val-blue">3!</span> × <span class="val-red">2!</span>')} = ${FRAC('5040','12')} = 420</span>`, r: "先不考慮首位限制。" },
+                { l: `2. 扣除 <span class='val-purple'>首位為 0</span>：<br><div class='visual-box'><div class='grid-cell limit-purple'>0</div><div class='grid-cell'>?</div><div class='grid-cell'>?</div><div class='grid-cell'>?</div><div class='grid-cell'>?</div><div class='grid-cell'>?</div><div class='grid-cell'>?</div></div><span class='math-f'>${FRAC('6!','<span class="val-blue">3!</span> × <span class="val-red">2!</span>')} = ${FRAC('720','12')} = 60</span>`, r: "0 固定在第一位，排後六位。" },
+                { l: `3. 正確總數：<span class='math-f'>420 - 60 = 360</span>`, r: "全部減去不合規定者。" }
+            ]},
+            "15": { q: "街道捷徑 A 到 B：(1)任意 (2)必經 C (3)不經 C。", s: [
+                { l: `(1) A(0,0) → B(5,4)：<br>需走 <span class='val-blue'>5次右</span>, <span class='val-red'>4次上</span>。<br><span class='math-f'>${FRAC('9!','<span class="val-blue">5!</span> × <span class="val-red">4!</span>')} = 126</span>`, r: "相當於不盡相異物排列。" },
+                { l: `(2) 必經 C(3,2)：<br>A→C: ${FRAC('5!','3!2!')}=10 ; C→B: ${FRAC('4!','2!2!')}=6<br><span class='math-f'>10 × 6 = 60</span>`, r: "分段完成，用乘法原理。" },
+                { l: `(3) 不經 C：<span class='math-f'>126 - 60 = 66</span>`, r: "任意扣除必經。" }
+            ]},
+            "16": { q: "甲乙丙丁戊己庚七人，(1)甲乙丙順序不變 (2)甲在乙丙左邊。", s: [
+                { l: `(1) 視 <span class='val-blue'>甲,乙,丙</span> 為相同物 <span class='val-blue'>□</span>。<br><div class='visual-box'><div class='grid-cell val-blue'>□</div><div class='grid-cell val-blue'>□</div><div class='grid-cell val-blue'>□</div><div class='grid-cell'>丁</div><div class='grid-cell'>戊</div><div class='grid-cell'>己</div><div class='grid-cell'>庚</div></div>`, r: "順序固定 = 視為相同。" },
+                { l: `2. 計算：<span class='math-f'>${FRAC('7!','<span class="val-blue">3!</span>')} = 840</span>`, r: "排列後再依序填入甲乙丙。" },
+                { l: `(2) 甲在乙丙左：甲固定最左，<span class='val-red'>乙丙可換位</span>。<br><span class='math-f'>840 × <span class='val-red'>2!</span> = 1680</span>`, r: "甲一定在首位，剩下兩格排乙丙。" }
+            ]},
+            "17": { q: `設 ${P('k',6)} = 10 × ${P('k-1',4)}，試求 k 之值。`, s: [
+                { l: `1. 展開公式：<br><span class='math-f'>${FRAC('k!','(k-6)!')} = 10 × ${FRAC('(k-1)!','(k-5)!')}</span>`, r: "P(n,m) = n! / (n-m)!" },
+                { l: `2. 約分化簡：<br><span class='math-f'>${FRAC('k!','(k-1)!')} = 10 × ${FRAC('(k-6)!','(k-5)!')}</span>`, r: "移項讓階乘成對。" },
+                { l: `3. 關鍵推導：<br><span class='math-f'><span class='val-blue'>k</span> = 10 × <span class='val-red'>${FRAC('1','k-5')}</span></span>`, r: "n! / (n-1)! = n" },
+                { l: "4. 求解：k(k-5)=10 → k= ? <br> (此題數據依講義 1-2 方程邏輯)", r: "整理成一元二次方程式。" }
+            ]},
+            "18": { q: "0,1,2,3,4,5,6 選四數排成四位數，大於 2300 有幾個？", s: [
+                { l: `1. <span class='val-blue'>千位為 {3,4,5,6}</span>：<br><span class='math-f'><span class='val-blue'>4</span> × (6×5×4) = 480</span>`, r: "千位 4 種，其餘 P(6,3)。" },
+                { l: `2. <span class='val-red'>千位為 2</span> 且 <span class='val-green'>百位為 {3,4,5,6}</span>：<br><span class='math-f'>1 × <span class='val-green'>4</span> × (5×4) = 80</span>`, r: "限制千位與百位。" },
+                { l: `3. 總計：<span class='math-f'>480 + 80 = 560</span>`, r: "分類相加。" }
+            ]}
+        };
+
+        currentData = data[id];
+        currentStep = 0;
+        document.getElementById('qText').innerHTML = "題目：" + currentData.q;
+        document.getElementById('contentView').style.display = 'flex';
+        render();
+    }
+
+    function render() {
+        const l = document.getElementById('leftSteps');
+        const r = document.getElementById('rightTips');
+        l.innerHTML = ""; r.innerHTML = "";
+        
+        for(let i=0; i<=currentStep; i++) {
+            const s = currentData.s[i];
+            l.innerHTML += `<div class="step-box">${s.l}</div>`;
+            r.innerHTML += `<div class="step-box" style="color:#2980b9">${s.r}</div>`;
+        }
+        
+        const prev = document.getElementById('prevBtn');
+        const next = document.getElementById('nextBtn');
+        prev.style.display = (currentStep === 0) ? 'none' : 'block';
+        next.style.display = (currentStep === currentData.s.length - 1) ? 'none' : 'block';
+    }
+
+    function changeStep(n) {
+        currentStep += n;
+        render();
+    }
+</script>
+</body>
+</html>
