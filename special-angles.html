@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>特別角三角函數挑戰</title>
+    <style>
+        :root {
+            --primary: #2c3e50; --secondary: #8e44ad; --accent: #e67e22; --success: #27ae60; --bg: #f5f6fa;
+        }
+        body { font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif; background-color: var(--bg); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .game-card { background: white; width: 100%; max-width: 850px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
+        .status-bar { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; }
+        .view { display: none; padding: 40px; text-align: center; }
+        .view.active { display: block; }
+        .game-layout { display: grid; grid-template-columns: 1.1fr 1fr; gap: 30px; align-items: center; }
+        canvas { background: #fff; border-radius: 10px; border: 1px solid #eee; }
+        .question-text { font-size: 1.5rem; color: var(--primary); font-weight: bold; margin-bottom: 25px; min-height: 80px; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .opt-btn {
+            padding: 10px; font-size: 1.7rem; border: 2px solid var(--secondary); background: white; color: var(--secondary);
+            border-radius: 12px; cursor: pointer; transition: 0.2s; font-weight: bold;
+            display: flex; justify-content: center; align-items: center; min-height: 100px;
+        }
+        .opt-btn:hover { background: var(--secondary); color: white; transform: scale(1.02); }
+
+        /* --- 完美根號結構 --- */
+        .math-sqrt { display: inline-flex; align-items: flex-start; vertical-align: middle; }
+        .math-sqrt-tick { font-size: 1.1em; line-height: 0.9; margin-right: -1px; margin-top: 3px; }
+        .math-sqrt-bar { border-top: 2.5px solid currentColor; padding: 0 3px; line-height: 1.1; display: inline-block; }
+        
+        /* --- 分數結構 --- */
+        .math-frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: 0.9em; line-height: 1; margin: 0 5px; }
+        .math-frac-line { border-bottom: 2.5px solid currentColor; padding: 0 4px; margin-bottom: 3px; }
+
+        .feedback { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; font-weight: bold; pointer-events: none; opacity: 0; z-index: 10; }
+        @keyframes popOut { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); } 100% { opacity: 0; transform: translate(-50%, -150%) scale(1.5); } }
+    </style>
+</head>
+<body>
+
+    <h1 style="color: var(--primary);">📐 特別角三角函數挑戰</h1>
+    
+    <div class="game-card">
+        <div class="status-bar" id="status-bar" style="display: none;">
+            <div>🕒 <span id="timer">60</span>s</div>
+            <div>🔥 Combo: <span id="combo">0</span></div>
+            <div>⭐ 得分: <span id="score">0</span></div>
+        </div>
+
+        <div id="start-view" class="view active">
+            <h2 style="color: var(--secondary);">挑戰目標</h2>
+            <p style="font-size: 1.2rem; color: #444; line-height: 2;">
+                熟悉特別角的邊長比：<br>
+                <b>30°-60°-90° → <span style="color:var(--accent);">1 : <span class="math-sqrt"><span class="math-sqrt-tick">√</span><span class="math-sqrt-bar">3</span></span> : 2</span></b><br>
+                <b>45°-45°-90° → <span style="color:var(--accent);">1 : 1 : <span class="math-sqrt"><span class="math-sqrt-tick">√</span><span class="math-sqrt-bar">2</span></span></span></b><br>
+                愈快答對得分愈高！
+            </p>
+            <button style="background:var(--success); color:white; padding:15px 50px; border-radius:30px; border:none; cursor:pointer; font-size:1.4rem; font-weight:bold; margin-top:20px;" onclick="startGame()">▶ 開始挑戰</button>
+        </div>
+
+        <div id="game-view" class="view">
+            <div class="game-layout">
+                <canvas id="triCanvas" width="350" height="300"></canvas>
+                <div>
+                    <div id="q-text" class="question-text"></div>
+                    <div id="options" class="options-grid"></div>
+                </div>
+            </div>
+            <div id="feedback" class="feedback"></div>
+        </div>
+
+        <div id="end-view" class="view">
+            <h2 style="font-size: 2.5rem;">挑戰結束</h2>
+            <p style="font-size: 1.5rem;">您的得分：<span id="final-score" style="color: var(--success); font-weight: bold;">0</span></p>
+            <button style="background:var(--success); color:white; padding:15px 40px; border-radius:30px; border:none; cursor:pointer; font-size:1.3rem;" onclick="location.reload()">再試一次</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0, timeLeft = 60, combo = 0, timerId = null, currentAns = "";
+        const canvas = document.getElementById('triCanvas'), ctx = canvas.getContext('2d');
+
+        const dataSet = {
+            30: { ratio: "1 : √3 : 2", sin: "1/2", cos: "√3/2", tan: "1/√3" },
+            45: { ratio: "1 : 1 : √2", sin: "1/√2", cos: "1/√2", tan: "1" },
+            60: { ratio: "√3 : 1 : 2", sin: "√3/2", cos: "1/2", tan: "√3" }
+        };
+
+        function startGame() {
+            document.getElementById('start-view').classList.remove('active');
+            document.getElementById('game-view').classList.add('active');
+            document.getElementById('status-bar').style.display = 'flex';
+            nextQuestion();
+            timerId = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                if (timeLeft <= 0) endGame();
+            }, 1000);
+        }
+
+        function drawTriangle(deg) {
+            ctx.clearRect(0, 0, 350, 300);
+            const x = 50, y = 230, w = 220, h = w * Math.tan(deg * Math.PI / 180);
+            ctx.beginPath(); ctx.lineWidth = 5; ctx.strokeStyle = '#2c3e50';
+            ctx.moveTo(x, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y - (h > 180 ? 180 : h)); ctx.closePath(); ctx.stroke();
+            ctx.strokeRect(x + w - 20, y - 20, 20, 20); 
+            ctx.fillStyle = '#e74c3c'; ctx.font = 'bold 24px Arial';
+            ctx.fillText(`∠A = ${deg}°`, x - 15, y + 40);
+        }
+
+        function parseMath(text) {
+            const handleSqrt = (s) => s.replace(/√(\d+)/g, '<span class="math-sqrt"><span class="math-sqrt-tick">√</span><span class="math-sqrt-bar">$1</span></span>');
+            if (text.includes('/')) {
+                const parts = text.split('/');
+                return `<span class="math-frac"><span class="math-frac-line">${handleSqrt(parts[0])}</span><span>${handleSqrt(parts[1])}</span></span>`;
+            }
+            return handleSqrt(text);
+        }
+
+        function nextQuestion() {
+            const degs = [30, 45, 60];
+            const activeDeg = degs[Math.floor(Math.random() * 3)];
+            const type = Math.random() < 0.66 ? 'func' : 'ratio';
+            
+            drawTriangle(activeDeg);
+            const optDiv = document.getElementById('options');
+            optDiv.innerHTML = '';
+            
+            let pool = [];
+            if (type === 'ratio') {
+                document.getElementById('q-text').innerHTML = `針對 <b>${activeDeg}°</b>，其邊長比<br><small>(對邊 : 鄰邊 : 斜邊)</small> 為何？`;
+                currentAns = dataSet[activeDeg].ratio;
+                pool = ["1 : √3 : 2", "1 : 1 : √2", "√3 : 1 : 2", "2 : 1 : √3"];
+            } else {
+                const f = ['sin', 'cos', 'tan'][Math.floor(Math.random()*3)];
+                document.getElementById('q-text').innerHTML = `請問 <b>${f} ${activeDeg}°</b> 的值為何？`;
+                currentAns = dataSet[activeDeg][f];
+                pool = ["1/2", "√3/2", "1/√2", "1", "√3", "1/√3", "2/√3"];
+            }
+
+            let finalOptions = [...new Set([currentAns, ...pool.sort(() => Math.random() - 0.5)])].slice(0, 4);
+            finalOptions.sort(() => Math.random() - 0.5).forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerHTML = parseMath(opt);
+                btn.onclick = () => {
+                    if (opt === currentAns) {
+                        combo++; score += (10 + combo);
+                        showFeedback("✅", "#27ae60");
+                    } else {
+                        combo = 0; score = Math.max(0, score - 5);
+                        showFeedback("❌", "#c0392b");
+                    }
+                    nextQuestion();
+                };
+                optDiv.appendChild(btn);
+            });
+        }
+
+        function showFeedback(txt, col) {
+            const fb = document.getElementById('feedback');
+            fb.innerHTML = txt; fb.style.color = col;
+            document.getElementById('score').textContent = score;
+            document.getElementById('combo').textContent = combo;
+            fb.style.animation = 'none'; void fb.offsetWidth;
+            fb.style.animation = 'popOut 0.6s ease-out forwards';
+        }
+
+        function endGame() {
+            clearInterval(timerId);
+            document.getElementById('game-view').classList.remove('active');
+            document.getElementById('end-view').classList.add('active');
+            document.getElementById('final-score').textContent = score;
+        }
+    </script>
+</body>
+</html>
