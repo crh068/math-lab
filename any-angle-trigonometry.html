@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任意角三角函數定義演示</title>
+    <style>
+        :root {
+            --primary: #2c3e50; --secondary: #34495e; --accent: #3498db; 
+            --x-color: #e74c3c; --y-color: #27ae60; --r-color: #8e44ad; --bg: #f5f6fa;
+        }
+        body { font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: var(--primary); }
+        h1 { text-align: center; color: var(--primary); margin-bottom: 20px; }
+        
+        .container { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; max-width: 1100px; margin: 0 auto; }
+        @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+        
+        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .canvas-wrapper { display: flex; justify-content: center; align-items: center; flex-direction: column; position: relative; }
+        canvas { background: #fff; border: 2px solid #ecf0f1; border-radius: 10px; }
+        
+        .math-sqrt-svg { display: inline-flex; align-items: center; vertical-align: middle; }
+        .sqrt-symbol { height: 1.2em; margin-right: -2px; }
+        .sqrt-content { border-top: 2px solid currentColor; padding-top: 1px; padding-left: 2px; margin-left: -1px; line-height: 1.1; }
+
+        .angle-badge { margin-top: 15px; font-size: 1.2rem; font-weight: bold; background: var(--accent); color: white; padding: 5px 15px; border-radius: 20px; }
+        .control-group { margin-bottom: 20px; }
+        .control-group label { display: block; font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; }
+        .input-row { display: flex; gap: 15px; align-items: center; margin-bottom: 15px; }
+        .coord-input { width: 90px; padding: 8px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 5px; text-align: center; font-weight: bold; }
+        
+        .slider-wrapper { display: flex; align-items: center; gap: 15px; }
+        input[type=range] { flex-grow: 1; height: 6px; border-radius: 5px; appearance: none; background: #ddd; outline: none; }
+        input[type=range]::-webkit-slider-thumb { appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid white; }
+        .angle-input { width: 75px; padding: 5px; font-size: 1.1rem; border: 2px solid var(--accent); border-radius: 5px; text-align: center; font-weight: bold; color: var(--accent); }
+
+        .math-panel { background: #f8f9fa; border-left: 5px solid var(--accent); padding: 20px; border-radius: 8px; margin-top: 20px; }
+        .formula-row { font-size: 1.25rem; margin: 12px 0; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+        
+        .presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+        .preset-btn { background: #ecf0f1; border: none; padding: 8px 5px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
+        .preset-btn:hover { background: var(--accent); color: white; }
+
+        .math-frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: 0.85em; line-height: 1; margin: 0 5px; }
+        .math-frac-line { border-bottom: 2px solid currentColor; padding: 0 4px; margin-bottom: 2px; }
+        .color-x { color: var(--x-color); font-weight: bold; }
+        .color-y { color: var(--y-color); font-weight: bold; }
+        .color-r { color: var(--r-color); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>📐 任意角三角函數定義演示</h1>
+
+    <div class="container">
+        <div class="card canvas-wrapper">
+            <canvas id="coordCanvas" width="500" height="500"></canvas>
+            <div class="angle-badge">θ = <span id="angle-deg">53</span>°</div>
+        </div>
+
+        <div class="card">
+            <div class="presets">
+                <button class="preset-btn" onclick="setInputAngle(30)">30° (√3, 1)</button>
+                <button class="preset-btn" onclick="setInputAngle(45)">45° (1, 1)</button>
+                <button class="preset-btn" onclick="setInputAngle(60)">60° (1, √3)</button>
+                <button class="preset-btn" onclick="setInputAngle(135)">135° (-1, 1)</button>
+                <button class="preset-btn" onclick="setInputAngle(150)">150° (-√3, 1)</button>
+                <button class="preset-btn" onclick="setInputAngle(210)">210° (-√3,-1)</button>
+                <button class="preset-btn" onclick="setInputAngle(225)">225° (-1, -1)</button>
+                <button class="preset-btn" onclick="setInputAngle(315)">315° (1,-1)</button>
+                <button class="preset-btn" onclick="setInputAngle(-30)">-30° (√3,-1)</button>
+            </div>
+
+            <div class="control-group">
+                <label>1️⃣ P 點座標 (<span class="color-x">x</span>, <span class="color-y">y</span>)</label>
+                <div class="input-row">
+                    <span class="color-x">x:</span> <input type="text" id="inp-x" class="coord-input" value="3" oninput="onManualCoordInput()">
+                    <span class="color-y">y:</span> <input type="text" id="inp-y" class="coord-input" value="4" oninput="onManualCoordInput()">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>2️⃣ 調整角度 <span class="color-r">θ</span></label>
+                <div class="slider-wrapper">
+                    <input type="range" id="slider-angle" min="-720" max="720" value="53" oninput="onAngleSlider()">
+                    <input type="number" id="inp-angle" class="angle-input" value="53" oninput="onAngleInput()"> <span>°</span>
+                </div>
+            </div>
+
+            <div class="math-panel">
+                <div class="formula-row">P = (<span id="f-x"></span>, <span id="f-y"></span>)</div>
+                <div id="r-formula"></div>
+                <hr style="border:0; border-top:1px dashed #ccc;">
+                <div class="formula-row">sin θ = <span id="f-sin"></span></div>
+                <div class="formula-row">cos θ = <span id="f-cos"></span></div>
+                <div class="formula-row">tan θ = <span id="f-tan"></span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('coordCanvas');
+        const ctx = canvas.getContext('2d');
+        const sliderA = document.getElementById('slider-angle'), inpA = document.getElementById('inp-angle');
+        const inpX = document.getElementById('inp-x'), inpY = document.getElementById('inp-y');
+        const cx = 250, cy = 250, scale = 120; // 單位長 120
+
+        function getSqrtHTML(num) {
+            return `<span class="math-sqrt-svg"><svg class="sqrt-symbol" viewBox="0 0 12 15"><path d="M1 8 L3 8 L6 15 L11 0" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span class="sqrt-content">${num}</span></span>`;
+        }
+
+        // 修正：手動輸入時強制重繪紅點
+        function onManualCoordInput() {
+            let x = parseFloat(inpX.value) || 0, y = parseFloat(inpY.value) || 0;
+            let deg = Math.round(Math.atan2(y, x) * 180 / Math.PI);
+            let current = parseInt(sliderA.value);
+            let target = deg + Math.round((current - deg)/360)*360;
+            sliderA.value = target; inpA.value = target;
+            update();
+        }
+
+        function onAngleSlider() { inpA.value = sliderA.value; syncFromAngle(); }
+        function onAngleInput() { sliderA.value = inpA.value; syncFromAngle(); }
+        function setInputAngle(a) { inpA.value = a; sliderA.value = a; syncFromAngle(); }
+
+        function syncFromAngle() {
+            let deg = parseInt(inpA.value) || 0;
+            let n = ((deg % 360) + 360) % 360;
+            // 嚴格座標鎖定
+            if ([45, 135, 225, 315].includes(n)) {
+                inpX.value = (n===45 || n===315) ? "1" : "-1";
+                inpY.value = (n===45 || n===135) ? "1" : "-1";
+            } else if ([30, 150, 210, 330].includes(n)) {
+                inpX.value = (n===30 || n===330) ? "1.73" : "-1.73";
+                inpY.value = (n===30 || n===150) ? "1" : "-1";
+            } else if ([60, 120, 240, 300].includes(n)) {
+                inpX.value = (n===60 || n===300) ? "1" : "-1";
+                inpY.value = (n===60 || n===120) ? "1.73" : "-1.73";
+            } else {
+                let r = deg * Math.PI / 180;
+                inpX.value = (1.5 * Math.cos(r)).toFixed(2);
+                inpY.value = (1.5 * Math.sin(r)).toFixed(2);
+            }
+            update();
+        }
+
+        function fmtH(v) {
+            let f = parseFloat(v);
+            if (Math.abs(Math.abs(f) - 1.73) < 0.05) return (f < 0 ? "-" : "") + getSqrtHTML("3");
+            return f.toString().replace(/\.0$/, '');
+        }
+
+        function fmtN(v) {
+            let f = parseFloat(v);
+            if (Math.abs(Math.abs(f) - 1.73) < 0.05) return (f < 0 ? "-" : "") + "√3";
+            return f.toString().replace(/\.0$/, '');
+        }
+
+        function update() {
+            let deg = parseInt(inpA.value) || 0;
+            let fx = parseFloat(inpX.value) || 0, fy = parseFloat(inpY.value) || 0;
+            document.getElementById('angle-deg').innerText = deg;
+            let hX = fmtH(fx), hY = fmtH(fy);
+            document.getElementById('f-x').innerHTML = `<span class="color-x">${hX}</span>`;
+            document.getElementById('f-y').innerHTML = `<span class="color-y">${hY}</span>`;
+
+            let r2 = fx*fx + fy*fy; 
+            if(Math.abs(r2-4) < 0.1) r2 = 4;
+            if(Math.abs(r2-2) < 0.1) r2 = 2;
+            let r = Math.sqrt(r2);
+            let rH = Math.abs(r - Math.round(r)) < 0.01 ? Math.round(r) : getSqrtHTML(r2.toFixed(1).replace(".0",""));
+            
+            document.getElementById('r-formula').innerHTML = `<div class="formula-row"><span class="color-r">r</span> = ${getSqrtHTML(`(${hX})² + (${hY})²`)} = <span class="color-r">${rH}</span></div>`;
+            
+            const frac = (n, d) => `<span class="math-frac"><span class="math-frac-line">${n}</span><span>${d}</span></span>`;
+            document.getElementById('f-sin').innerHTML = `${frac(`<span class="color-y">${hY}</span>`, `<span class="color-r">${rH}</span>`)} ≈ ${(fy/r).toFixed(3)}`;
+            document.getElementById('f-cos').innerHTML = `${frac(`<span class="color-x">${hX}</span>`, `<span class="color-r">${rH}</span>`)} ≈ ${(fx/r).toFixed(3)}`;
+            document.getElementById('f-tan').innerHTML = Math.abs(fx) < 0.001 ? "無意義" : `${frac(`<span class="color-y">${hY}</span>`, `<span class="color-x">${hX}</span>`)} ≈ ${(fy/fx).toFixed(3)}`;
+
+            draw(fx, fy, deg);
+        }
+
+        function draw(fx, fy, deg) {
+            ctx.clearRect(0, 0, 500, 500);
+            
+            // 修正：格線對齊座標軸 (從中心向外畫)
+            ctx.strokeStyle = '#f0f0f0'; ctx.lineWidth = 1;
+            const gridStep = scale / 2;
+            for(let x = cx % gridStep; x <= 500; x += gridStep) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 500); ctx.stroke();
+            }
+            for(let y = cy % gridStep; y <= 500; y += gridStep) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(500, y); ctx.stroke();
+            }
+            
+            // 軸與箭頭
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.fillStyle = '#333';
+            const arrow = 10;
+            ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(500, cy); ctx.stroke(); 
+            ctx.beginPath(); ctx.moveTo(500, cy); ctx.lineTo(500-arrow, cy-arrow/2); ctx.lineTo(500-arrow, cy+arrow/2); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(cx, 500); ctx.lineTo(cx, 0); ctx.stroke(); 
+            ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx-arrow/2, arrow); ctx.lineTo(cx+arrow/2, arrow); ctx.fill();
+            ctx.font = 'bold 18px Arial'; ctx.fillText('x', 480, cy+25); ctx.fillText('y', cx-25, 25);
+
+            // 垂直虛線
+            ctx.save(); ctx.setLineDash([5, 5]); ctx.strokeStyle = '#aaa';
+            ctx.beginPath(); ctx.moveTo(cx+fx*scale, cy-fy*scale); ctx.lineTo(cx+fx*scale, cy); ctx.stroke();
+            ctx.restore();
+            
+            // 終邊
+            let m = Math.sqrt(fx*fx + fy*fy);
+            if(m > 0) {
+                ctx.strokeStyle = '#8e44ad'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx+(fx/m)*1000, cy-(fy/m)*1000); ctx.stroke();
+            }
+
+            // 角度弧線
+            if(deg !== 0){
+                ctx.strokeStyle = '#3498db'; ctx.lineWidth = 2; ctx.beginPath();
+                let ad = Math.abs(deg);
+                for(let i=0; i<=ad; i++){
+                    let rad = (deg > 0 ? -i : i) * Math.PI/180;
+                    let rr = 35 + (i/360)*10;
+                    let px = cx + rr*Math.cos(rad), py = cy + rr*Math.sin(rad);
+                    if(i===0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                }
+                ctx.stroke();
+                let fr = (deg > 0 ? -ad : ad) * Math.PI/180;
+                let frr = 35 + (ad/360)*10;
+                let tx = cx+frr*Math.cos(fr), ty = cy+frr*Math.sin(fr);
+                let tang = fr + (deg > 0 ? -Math.PI/2 : Math.PI/2);
+                ctx.beginPath(); ctx.moveTo(tx, ty);
+                ctx.lineTo(tx-10*Math.cos(tang-0.4), ty-10*Math.sin(tang-0.4));
+                ctx.moveTo(tx, ty);
+                ctx.lineTo(tx-10*Math.cos(tang+0.4), ty-10*Math.sin(tang+0.4));
+                ctx.stroke();
+            }
+
+            // 修正：P 點繪製邏輯
+            let px = cx+fx*scale, py = cy-fy*scale;
+            ctx.fillStyle = '#e74c3c'; ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#2c3e50'; ctx.font = 'bold 16px Microsoft JhengHei';
+            ctx.fillText(`P(${fmtN(fx)}, ${fmtN(fy)})`, px+10, py-10);
+        }
+
+        update();
+    </script>
+</body>
+</html>
