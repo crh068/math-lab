@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>象限角數值與函數正負判斷挑戰賽</title>
+    <style>
+        :root {
+            --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --error: #e74c3c; --bg: #f0f3f6;
+        }
+        body { font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .game-container { background: white; width: 98%; max-width: 1000px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); padding: 30px; position: relative; overflow: hidden; }
+        .stats-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: bold; font-size: 1.2rem; }
+        .timer { color: var(--error); }
+        .score { color: var(--accent); }
+        .stage { display: grid; grid-template-columns: 1.3fr 1fr; gap: 30px; align-items: center; }
+        @media (max-width: 800px) { .stage { grid-template-columns: 1fr; } }
+        canvas { background: #fff; border: 1px solid #ddd; border-radius: 10px; width: 100%; max-width: 500px; height: auto; margin: 0 auto; display: block; }
+        .question-box { padding: 15px; }
+        .q-text { font-size: 1.6rem; font-weight: bold; margin-bottom: 25px; line-height: 1.6; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .opt-btn { background: white; border: 2px solid #ddd; padding: 15px; border-radius: 10px; font-size: 1.2rem; cursor: pointer; transition: 0.2s; font-weight: bold; color: var(--primary); }
+        .opt-btn:hover { border-color: var(--accent); background: #ebf5fb; }
+        .opt-btn.correct { background: var(--success) !important; color: white; border-color: var(--success); }
+        .opt-btn.wrong { background: var(--error) !important; color: white; border-color: var(--error); }
+        
+        .overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; overflow-y: auto; padding: 20px; }
+        .title-wrapper { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .review-box { display: flex; align-items: center; gap: 20px; background: #fff; padding: 15px; border-radius: 15px; border: 2px dashed var(--accent); margin-bottom: 20px; }
+        .review-canvas { background: #fff; border: none; width: 180px; height: 180px; }
+        .review-info { text-align: left; font-size: 1.1rem; color: var(--primary); }
+        .start-btn { padding: 15px 45px; font-size: 1.6rem; background: var(--accent); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-top: 10px; }
+        
+        .math-frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: 0.9em; line-height: 1.1; margin: 0 2px; }
+        .math-line { border-top: 2px solid currentColor; padding-top: 2px; }
+        .sqrt { border-top: 1.5px solid currentColor; padding-top: 1px; margin-left: -1px; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div id="start-screen" class="overlay">
+        <div class="title-wrapper"><h1 style="margin: 0;">📐 象限角數值與函數正負判斷挑戰</h1></div>
+        <div class="review-box">
+            <canvas id="reviewCanvas" width="200" height="200" class="review-canvas"></canvas>
+            <div class="review-info">
+                <strong>💡 快速複習：</strong><br>
+                • sin θ = <span class="math-frac"><span>y</span><span class="math-line">r</span></span><br>
+                • cos θ = <span class="math-frac"><span>x</span><span class="math-line">r</span></span><br>
+                • tan θ = <span class="math-frac"><span>y</span><span class="math-line">x</span></span>
+            </div>
+        </div>
+        <button class="start-btn" onclick="startGame()">開始挑戰</button>
+    </div>
+
+    <div id="end-screen" class="overlay" style="display: none;">
+        <h2 style="font-size: 2.5rem;">挑戰結束！</h2>
+        <div style="font-size: 1.5rem; margin: 20px 0;">最終得分：<span id="final-score" style="color:var(--accent); font-weight:900;">0</span></div>
+        <button class="start-btn" onclick="startGame()">再試一次</button>
+    </div>
+
+    <div class="stats-bar">
+        <div class="timer">⏳ 時間：<span id="time-left">60</span>s</div>
+        <div class="score">⭐ 分數：<span id="score">0</span></div>
+    </div>
+
+    <div class="stage">
+        <canvas id="quizCanvas" width="500" height="500"></canvas>
+        <div class="question-box">
+            <div id="question-text" class="q-text">準備好了嗎？</div>
+            <div id="options-grid" class="options"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let score = 0, timeLeft = 60, timerInterval, currentAnswer = "";
+    let usedDefinitions = [];
+    let questionQueue = []; // 用於題型輪流出現的隊列
+
+    const canvas = document.getElementById('quizCanvas'), ctx = canvas.getContext('2d');
+    const rCanvas = document.getElementById('reviewCanvas'), rCtx = rCanvas.getContext('2d');
+
+    function drawReviewDiagram() {
+        const cx = 100, cy = 110, scale = 70;
+        rCtx.clearRect(0,0,200,200);
+        rCtx.strokeStyle = "#333"; rCtx.lineWidth = 1.5;
+        rCtx.beginPath(); rCtx.moveTo(20, cy); rCtx.lineTo(180, cy); rCtx.stroke();
+        rCtx.beginPath(); rCtx.moveTo(cx, 180); rCtx.lineTo(cx, 20); rCtx.stroke();
+        const rad = -35 * Math.PI / 180;
+        const px = cx + scale * Math.cos(rad), py = cy + scale * Math.sin(rad);
+        rCtx.strokeStyle = "#8e44ad"; rCtx.lineWidth = 3;
+        rCtx.beginPath(); rCtx.moveTo(cx, cy); rCtx.lineTo(px, py); rCtx.stroke();
+        rCtx.setLineDash([3,3]); rCtx.strokeStyle = "#aaa"; rCtx.lineWidth = 1;
+        rCtx.beginPath(); rCtx.moveTo(px, py); rCtx.lineTo(px, cy); rCtx.stroke();
+        rCtx.setLineDash([]);
+        rCtx.fillStyle = "#e74c3c"; rCtx.beginPath(); rCtx.arc(px, py, 4, 0, Math.PI*2); rCtx.fill();
+        rCtx.fillStyle = "#333"; rCtx.font = "12px Arial";
+        rCtx.fillText("P(x,y)", px+5, py-5);
+        rCtx.fillText("r", cx + (px-cx)/2 - 10, cy + (py-cy)/2 - 5);
+        rCtx.fillText("x", cx + (px-cx)/2, cy + 15);
+        rCtx.fillText("y", px + 5, cy + (py-cy)/2);
+    }
+
+    function startGame() {
+        score = 0; timeLeft = 60; usedDefinitions = []; questionQueue = [];
+        document.getElementById('score').innerText = score;
+        document.getElementById('time-left').innerText = timeLeft;
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('end-screen').style.display = 'none';
+        nextQuestion();
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('time-left').innerText = timeLeft;
+            if (timeLeft <= 0) endGame();
+        }, 1000);
+    }
+
+    function nextQuestion() {
+        // 建立輪流機制：定義、數值、正負、象限
+        if (questionQueue.length === 0) {
+            let baseTypes = ['val', 'sign', 'quad'];
+            // 如果定義題還沒出完，加入定義題到循環中
+            if (usedDefinitions.length < 3) {
+                baseTypes.push('definition');
+            }
+            // 隨機打亂這組題型順序，放入隊列
+            questionQueue = baseTypes.sort(() => Math.random() - 0.5);
+        }
+
+        const nextT = questionQueue.shift();
+        generateQuestion(nextT);
+    }
+
+    function generateQuestion(type) {
+        ctx.clearRect(0,0,500,500);
+        const grid = document.getElementById('options-grid');
+        grid.innerHTML = "";
+        let qText = "", opts = [];
+
+        if (type === 'definition') {
+            const defs = [
+                {q: "在任意角定義中，sin θ 等於？", a: "y/r", o: ["x/r", "y/x", "x/y"]},
+                {q: "在任意角定義中，cos θ 等於？", a: "x/r", o: ["y/r", "y/x", "r/x"]},
+                {q: "在任意角定義中，tan θ 等於？", a: "y/x", o: ["y/r", "x/r", "x/y"]}
+            ];
+            let availableIdx = [0, 1, 2].filter(i => !usedDefinitions.includes(i));
+            
+            if(availableIdx.length === 0) { 
+                // 若進到這說明定義出完了，遞迴抽下一個非定義題型
+                nextQuestion();
+                return;
+            }
+
+            const pickIdx = availableIdx[Math.floor(Math.random() * availableIdx.length)];
+            usedDefinitions.push(pickIdx);
+            const pick = defs[pickIdx];
+            qText = pick.q; currentAnswer = pick.a; opts = [pick.a, ...pick.o];
+            drawDefinitionDiagram(); 
+        } else {
+            const pool = {
+                val: [
+                    {deg:0, f:"sin", v:"0"}, {deg:90, f:"cos", v:"0"}, {deg:180, f:"sin", v:"0"}, {deg:270, f:"cos", v:"0"},
+                    {deg:90, f:"sin", v:"1"}, {deg:180, f:"cos", v:"-1"}, {deg:270, f:"sin", v:"-1"}, {deg:0, f:"cos", v:"1"},
+                    {deg:180, f:"tan", v:"0"}, {deg:90, f:"tan", v:"無意義"}
+                ],
+                sign: [
+                    {deg:145, f:"sin", v:"正"}, {deg:160, f:"cos", v:"負"}, {deg:210, f:"cos", v:"負"},
+                    {deg:240, f:"tan", v:"正"}, {deg:315, f:"tan", v:"負"}, {deg:330, f:"sin", v:"負"}
+                ],
+                quad: [
+                    {cond:"sin θ > 0 且 cos θ < 0", v:"第二象限"}, {cond:"cos θ > 0 且 tan θ > 0", v:"第一象限"},
+                    {cond:"sin θ < 0 且 tan θ > 0", v:"第三象限"}, {cond:"cos θ > 0 且 sin θ < 0", v:"第四象限"}
+                ]
+            };
+            
+            const pick = pool[type][Math.floor(Math.random() * pool[type].length)];
+            currentAnswer = pick.v;
+
+            if (type === "val") {
+                qText = `計算象限角函數值：${pick.f} ${pick.deg}° = ?`;
+                opts = [pick.v, "0", "1", "-1", "無意義"].filter((v, i, a) => a.indexOf(v) === i);
+                drawAngle(pick.deg, true, false);
+            } else if (type === "sign") {
+                qText = `判斷函數值的正負：${pick.f} ${pick.deg}° 為？`;
+                opts = ["正", "負", "0", "無意義"];
+                drawAngle(pick.deg, true, false);
+            } else if (type === "quad") {
+                qText = `若 ${pick.cond}，則 θ 為第幾象限角？`;
+                opts = ["第一象限", "第二象限", "第三象限", "第四象限"];
+                drawAxes();
+            }
+        }
+
+        document.getElementById('question-text').innerText = qText;
+        opts.sort(()=>Math.random()-0.5).forEach(o => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn'; 
+            btn.innerHTML = formatMath(o); 
+            btn.onclick = () => checkAnswer(o, btn);
+            grid.appendChild(btn);
+        });
+    }
+
+    function formatMath(t) {
+        const parseSqrt = (str) => str.replace(/√(\d+|[a-z])/g, '√<span class="sqrt">$1</span>');
+        if(typeof t === 'string' && t.includes("/")) { 
+            const parts = t.split("/"); 
+            const top = parseSqrt(parts[0]);
+            const bottom = parseSqrt(parts[1]);
+            return `<span class="math-frac"><span>${top}</span><span class="math-line">${bottom}</span></span>`; 
+        }
+        return parseSqrt(String(t));
+    }
+
+    function checkAnswer(s, b) {
+        if (s === currentAnswer) { score += 10; b.classList.add('correct'); } 
+        else { score = Math.max(0, score - 5); b.classList.add('wrong'); }
+        document.getElementById('score').innerText = score;
+        setTimeout(nextQuestion, 800);
+    }
+
+    function drawAxes() {
+        ctx.strokeStyle = '#333'; ctx.lineWidth = 2.5; ctx.fillStyle = '#333';
+        const cx = 250, cy = 250;
+        ctx.beginPath(); ctx.moveTo(50, cy); ctx.lineTo(450, cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(450, cy); ctx.lineTo(435, cy-10); ctx.lineTo(435, cy+10); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(cx, 450); ctx.lineTo(cx, 50); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, 50); ctx.lineTo(cx-10, 65); ctx.lineTo(cx+10, 65); ctx.fill();
+        ctx.font = "bold 20px Arial"; ctx.fillText("x", 465, cy+25); ctx.fillText("y", cx-30, 45);
+    }
+
+    function drawDefinitionDiagram() {
+        drawAxes();
+        const cx = 250, cy = 250, rVal = 140, deg = 35;
+        const rad = -deg * Math.PI / 180;
+        const px = cx + rVal * Math.cos(rad), py = cy + rVal * Math.sin(rad);
+        ctx.strokeStyle = '#8e44ad'; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + (rVal+40)*Math.cos(rad), cy + (rVal+40)*Math.sin(rad)); ctx.stroke();
+        ctx.setLineDash([5, 5]); ctx.strokeStyle = '#aaa'; ctx.beginPath();
+        ctx.moveTo(px, py); ctx.lineTo(px, cy); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = '#2c3e50'; ctx.font = "bold 20px Times New Roman";
+        ctx.fillText("x", cx + (px-cx)/2, cy + 30); ctx.fillText("y", px + 12, cy + (py-cy)/2); ctx.fillText("r", cx + (px-cx)/2 - 20, cy + (py-cy)/2 - 15);
+        ctx.fillStyle = '#e74c3c'; ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#2c3e50'; ctx.fillText("P(x, y)", px+5, py-15);
+        drawArcWithArrow(cx, cy, 25, 0, deg);
+    }
+
+    function drawAngle(deg, showP, showValue) {
+        drawAxes();
+        const cx = 250, cy = 250, scale = 140; 
+        const rad = -deg * Math.PI / 180;
+        const px = cx + scale * Math.cos(rad), py = cy + scale * Math.sin(rad);
+        ctx.setLineDash([5, 5]); ctx.strokeStyle = '#aaa'; ctx.beginPath();
+        ctx.moveTo(px, py); ctx.lineTo(px, cy); ctx.stroke(); ctx.setLineDash([]);
+        ctx.strokeStyle = '#8e44ad'; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + (scale+50) * Math.cos(rad), cy + (scale+50) * Math.sin(rad)); ctx.stroke();
+        drawArcWithArrow(cx, cy, 25, 0, deg);
+        if(showValue) {
+            let ref = Math.abs(deg % 180); if(ref > 90) ref = 180 - ref;
+            let refRad = -(deg/2) * Math.PI/180;
+            ctx.fillStyle = "#e67e22"; ctx.font = "bold 24px Arial";
+            let tx = cx + 55 * Math.cos(refRad), ty = cy + 55 * Math.sin(refRad);
+            ctx.fillText(ref + "°", tx - 15, ty + 10);
+        }
+        if(showP) {
+            ctx.fillStyle = '#e74c3c'; ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#2c3e50'; ctx.font = "bold 22px Arial"; ctx.fillText("P", px+15, py-15);
+        }
+    }
+
+    function drawArcWithArrow(cx, cy, r, startDeg, endDeg) {
+        ctx.strokeStyle = '#3498db'; ctx.lineWidth = 1.5; ctx.beginPath();
+        const absD = Math.abs(endDeg); const k = 0.04;
+        for(let i=0; i <= absD; i++){
+            let currentR = r + (i * k); let cR = (endDeg > 0 ? -i : i) * Math.PI/180;
+            if(i === 0) ctx.moveTo(cx + currentR*Math.cos(cR), cy + currentR*Math.sin(cR));
+            else ctx.lineTo(cx + currentR*Math.cos(cR), cy + currentR*Math.sin(cR));
+        }
+        ctx.stroke();
+        let endR = -endDeg * Math.PI / 180; let finalR = r + (absD * k);
+        let tangent = endDeg > 0 ? endR - Math.PI/2 : endR + Math.PI/2;
+        ctx.save(); 
+        ctx.translate(cx + finalR*Math.cos(endR), cy + finalR*Math.sin(endR)); 
+        ctx.rotate(tangent);
+        ctx.fillStyle = '#3498db'; ctx.beginPath();
+        ctx.moveTo(0,0); ctx.lineTo(-10, -5); ctx.lineTo(-10, 5); ctx.fill(); 
+        ctx.restore();
+    }
+
+    function endGame() { clearInterval(timerInterval); document.getElementById('end-screen').style.display = 'flex'; document.getElementById('final-score').innerText = score; }
+    drawReviewDiagram(); drawAxes();
+</script>
+</body>
+</html>
