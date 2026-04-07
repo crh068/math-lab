@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>化任意角為銳角的轉換式</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #e67e22; --success: #27ae60; --error: #e74c3c; --bg: #f4f7f6; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 950px; display: grid; grid-template-columns: 400px 1fr; gap: 30px; position: relative; }
+        .stats-bar { width: 950px; display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+        .timer { color: var(--accent); }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 10; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 15px; text-align: center; }
+        .quiz-panel { display: flex; flex-direction: column; gap: 20px; }
+        .question-text { font-size: 1.5rem; background: #fff8f0; padding: 20px; border-radius: 10px; border-left: 5px solid var(--accent); min-height: 60px; display: flex; align-items: center; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button.option { padding: 12px; font-size: 1.1rem; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; background: white; transition: 0.2s; }
+        button.option:hover { background: #f0f0f0; border-color: var(--accent); }
+        button.correct { background: var(--success) !important; color: white; border-color: var(--success); }
+        button.wrong { background: var(--error) !important; color: white; border-color: var(--error); }
+        .display-panel { display: flex; flex-direction: column; align-items: center; background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 10px; }
+        canvas { background: #fff; }
+        .feedback { font-size: 1.1rem; min-height: 1.5rem; text-align: center; font-weight: bold; }
+        .math { font-family: "Times New Roman", serif; font-style: italic; font-weight: bold; }
+        .big-btn { padding: 15px 50px; font-size: 1.5rem; background: var(--primary); color: white; border: none; border-radius: 50px; cursor: pointer; transition: 0.3s; }
+        .big-btn:hover { background: #34495e; transform: scale(1.05); }
+    </style>
+</head>
+<body>
+
+<h2>📐 化任意角為銳角的轉換式</h2>
+
+<div class="stats-bar">
+    <div>得分：<span id="score">0</span></div>
+    <div class="timer">剩餘時間：<span id="timeLeft">90</span>s</div>
+</div>
+
+<div class="container">
+    <div id="startScreen" class="overlay">
+        <h1 style="color: var(--primary);">準備好開始挑戰了嗎？</h1>
+        <p>第一類與第二類題型將交替出現<br>90 秒內挑戰 20 題，答對 +10，答錯 -5</p>
+        <button class="big-btn" onclick="startGame()">開始挑戰</button>
+    </div>
+
+    <div id="endScreen" class="overlay" style="display: none;">
+        <h1 id="endTitle">挑戰結束！</h1>
+        <h2 style="font-size: 3rem; color: var(--accent);">得分：<span id="finalScore">0</span></h2>
+        <button class="big-btn" onclick="location.reload()">重新挑戰</button>
+    </div>
+
+    <div class="quiz-panel">
+        <div class="question-text" id="question"></div>
+        <div class="options-grid" id="options"></div>
+        <div class="feedback" id="feedback"></div>
+        <div style="font-size: 0.9rem; color: #666; margin-top: 10px;">
+            <b>提示：</b>觀察右圖 P₁ 與 P₂ 的座標轉換關係。
+        </div>
+    </div>
+
+    <div class="display-panel">
+        <canvas id="trigCanvas" width="400" height="400"></canvas>
+        <p style="color:#666; font-size: 0.8rem;">紫色：題目角終邊 | 灰色：參考角 θ 終邊</p>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('trigCanvas');
+    const ctx = canvas.getContext('2d');
+    const center = 200;
+    const radius = 140;
+    
+    let score = 0;
+    let timeLeft = 90;
+    let questionCount = 0;
+    let timerInterval;
+    let currentQuestion = {};
+    let isAnswering = false;
+
+    const typeGroup1 = [
+        { id: 1, desc: "-θ", isCo: false },
+        { id: 2, desc: "180° - θ", isCo: false },
+        { id: 3, desc: "180° + θ", isCo: false },
+        { id: 4, desc: "360° - θ", isCo: false }
+    ];
+    const typeGroup2 = [
+        { id: 5, desc: "90° - θ", isCo: true },
+        { id: 6, desc: "90° + θ", isCo: true },
+        { id: 7, desc: "270° - θ", isCo: true },
+        { id: 8, desc: "270° + θ", isCo: true }
+    ];
+
+    function startGame() {
+        document.getElementById('startScreen').style.display = "none";
+        score = 0;
+        questionCount = 0;
+        timeLeft = 90;
+        startTimer();
+        nextQuestion();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timeLeft').innerText = timeLeft;
+            if (timeLeft <= 0) endGame("時間到！");
+        }, 1000);
+    }
+
+    function nextQuestion() {
+        if (questionCount >= 20) {
+            endGame("恭喜完成 20 題挑戰！");
+            return;
+        }
+        isAnswering = false;
+        document.getElementById('feedback').innerText = "";
+        
+        // 輪流選取第一類或第二類
+        const currentGroup = (questionCount % 2 === 0) ? typeGroup1 : typeGroup2;
+        const typeObj = currentGroup[Math.floor(Math.random() * currentGroup.length)];
+        
+        const theta = 37;
+        // 第二類通常不考 tan 的餘角變換(涉及 cot)，故排除
+        const funcs = typeObj.isCo ? ["sin", "cos"] : ["sin", "cos", "tan"];
+        const func = funcs[Math.floor(Math.random() * funcs.length)];
+        
+        currentQuestion = { typeObj, theta, func, correctAnswer: getCorrectAnswer(func, typeObj.id) };
+        questionCount++;
+        
+        document.getElementById('question').innerHTML = `求 <span class="math">${func}(${typeObj.desc}) = ?</span>`;
+        
+        renderOptions(func, typeObj.isCo);
+        draw(theta, getTargetDeg(theta, typeObj.id), typeObj.id, typeObj.isCo);
+    }
+
+    function getTargetDeg(theta, type) {
+        switch(type) {
+            case 1: return -theta; case 2: return 180 - theta;
+            case 3: return 180 + theta; case 4: return 360 - theta;
+            case 5: return 90 - theta; case 6: return 90 + theta;
+            case 7: return 270 - theta; case 8: return 270 + theta;
+        }
+    }
+
+    function getCorrectAnswer(func, type) {
+        const table = {
+            sin: ["-sin θ", "sin θ", "-sin θ", "-sin θ", "cos θ", "cos θ", "-cos θ", "-cos θ"],
+            cos: ["cos θ", "-cos θ", "-cos θ", "cos θ", "sin θ", "-sin θ", "-sin θ", "sin θ"],
+            tan: ["-tan θ", "-tan θ", "tan θ", "-tan θ", "", "", "", ""]
+        };
+        return table[func][type - 1];
+    }
+
+    function renderOptions(func, isCo) {
+        const container = document.getElementById('options');
+        container.innerHTML = "";
+        const targetFunc = isCo ? (func === "sin" ? "cos" : "sin") : func;
+        const pool = [`${targetFunc} θ`, `-${targetFunc} θ`, `sin θ`, `-sin θ`, `cos θ`, `-cos θ`, `tan θ`, `-tan θ`].filter(v => v !== "");
+        
+        let options = [currentQuestion.correctAnswer];
+        while(options.length < 4) {
+            let r = pool[Math.floor(Math.random() * pool.length)];
+            if(!options.includes(r)) options.push(r);
+        }
+        options.sort(() => Math.random() - 0.5);
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option math';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt, btn);
+            container.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(ans, btn) {
+        if(isAnswering) return;
+        isAnswering = true;
+        const feedback = document.getElementById('feedback');
+        if (ans === currentQuestion.correctAnswer) {
+            score += 10;
+            btn.classList.add('correct');
+            feedback.innerHTML = "✅ 正確！ +10";
+            feedback.style.color = "var(--success)";
+        } else {
+            score -= 5;
+            btn.classList.add('wrong');
+            feedback.innerHTML = `❌ 錯誤！ -5<br><small>正確答案：${currentQuestion.correctAnswer}</small>`;
+            feedback.style.color = "var(--error)";
+        }
+        document.getElementById('score').innerText = score;
+        setTimeout(nextQuestion, 1200);
+    }
+
+    function endGame(msg) {
+        clearInterval(timerInterval);
+        document.getElementById('endScreen').style.display = "flex";
+        document.getElementById('endTitle').innerText = msg;
+        document.getElementById('finalScore').innerText = score;
+    }
+
+    function draw(theta, target, type, isCo) {
+        ctx.clearRect(0, 0, 400, 400);
+        ctx.strokeStyle = '#333'; ctx.lineWidth = 1.5; ctx.fillStyle = '#333';
+        ctx.beginPath(); ctx.moveTo(40, center); ctx.lineTo(370, center); ctx.stroke();
+        drawArrowHead(370, center, 0); ctx.font = "bold 16px Arial"; ctx.fillText("x", 375, center + 5);
+        ctx.beginPath(); ctx.moveTo(center, 360); ctx.lineTo(center, 30); ctx.stroke();
+        drawArrowHead(center, 30, -Math.PI/2); ctx.fillText("y", center - 20, 35);
+        
+        ctx.strokeStyle = '#eee'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(center, center, radius, 0, Math.PI*2); ctx.stroke();
+
+        // 基準角 P1 (4,3)
+        drawRayAndPoint(theta, '#aaa', 2, "P₁(4, 3)", false);
+        drawStandardArc(theta, 45, '#aaa', "θ"); 
+
+        // 題目角 P2 座標
+        let p2Label = "";
+        switch(type) {
+            case 1: case 4: p2Label = "P₂(4, -3)"; break;
+            case 2: p2Label = "P₂(-4, 3)"; break;
+            case 3: p2Label = "P₂(-4, -3)"; break;
+            case 5: p2Label = "P₂(3, 4)"; break;
+            case 6: p2Label = "P₂(-3, 4)"; break;
+            case 7: p2Label = "P₂(-3, -4)"; break;
+            case 8: p2Label = "P₂(3, -4)"; break;
+        }
+        drawRayAndPoint(target, '#8e44ad', 3, p2Label, isCo);
+        const arcLabel = (type === 1) ? "-θ" : (type <= 4 ? typeGroup1[type-1].desc : typeGroup2[type-5].desc);
+        drawStandardArc(target, 45, '#8e44ad', arcLabel);
+    }
+
+    function drawRayAndPoint(deg, color, width, pLabel, toYAxis) {
+        const rad = -deg * Math.PI / 180;
+        const x = center + radius * Math.cos(rad);
+        const y = center + radius * Math.sin(rad);
+        ctx.setLineDash([5, 5]); ctx.strokeStyle = color;
+        ctx.beginPath(); ctx.moveTo(x, y);
+        if (toYAxis) ctx.lineTo(center, y); else ctx.lineTo(x, center);
+        ctx.stroke(); ctx.setLineDash([]);
+        ctx.strokeStyle = color; ctx.lineWidth = width;
+        ctx.beginPath(); ctx.moveTo(center, center); ctx.lineTo(x, y); ctx.stroke();
+        ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.font = "bold 13px Arial";
+        ctx.fillText(pLabel, x + (Math.cos(rad)*15) - 20, y + (Math.sin(rad)*15) - 5);
+    }
+
+    function drawStandardArc(deg, r, color, label) {
+        const isNeg = deg < 0;
+        const endRad = -deg * Math.PI / 180;
+        ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(center, center, r, 0, endRad, !isNeg); ctx.stroke();
+        ctx.save();
+        ctx.translate(center + r * Math.cos(endRad), center + r * Math.sin(endRad));
+        ctx.rotate(endRad + (isNeg ? Math.PI/2 : -Math.PI/2));
+        ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-8, -4); ctx.lineTo(-8, 4); ctx.fill();
+        ctx.restore();
+        const midRad = endRad / 2;
+        ctx.font = "italic 14px Times New Roman";
+        ctx.fillText(label, center + (r+30)*Math.cos(midRad) - 10, center + (r+30)*Math.sin(midRad));
+    }
+
+    function drawArrowHead(x, y, angle) {
+        ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-10, -5); ctx.lineTo(-10, 5); ctx.fill();
+        ctx.restore();
+    }
+</script>
+</body>
+</html>
