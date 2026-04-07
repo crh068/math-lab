@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>任意角三角函數轉換演示學具</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 900px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .controls { display: flex; flex-direction: column; gap: 15px; }
+        .display-panel { display: flex; flex-direction: column; justify-content: center; align-items: center; background: #fff; border: 1px solid #ddd; border-radius: 10px; position: relative; }
+        canvas { background: #fff; border-radius: 8px; }
+        select, input { padding: 10px; font-size: 1rem; border-radius: 5px; border: 1px solid #ccc; }
+        .formula-box { background: #fff8f0; border-left: 5px solid var(--accent); padding: 15px; margin-top: 10px; font-size: 1.2rem; line-height: 1.6; }
+        .rule-text { font-size: 0.9rem; color: #666; margin-top: 10px; }
+        h2 { color: var(--primary); margin-top: 0; }
+        .math { font-family: "Times New Roman", serif; font-style: italic; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<h2>📐 1-3.2 化任意角為銳角：轉換式展示學具</h2>
+
+<div class="container">
+    <div class="controls">
+        <label><b>1. 選擇轉換式類型 (1-8)：</b></label>
+        <select id="formulaSelect" onchange="update()">
+            <optgroup label="第一類：180°/360° 型 (函數不變)">
+                <option value="1">轉換式 1：-θ (負角公式)</option>
+                <option value="2" selected>轉換式 2：180° - θ</option>
+                <option value="3">轉換式 3：180° + θ</option>
+                <option value="4">轉換式 4：360° - θ</option>
+            </optgroup>
+            <optgroup label="第二類：90°/270° 型 (正餘互換)">
+                <option value="5">轉換式 5：90° - θ (餘角公式)</option>
+                <option value="6">轉換式 6：90° + θ</option>
+                <option value="7">轉換式 7：270° - θ</option>
+                <option value="8">轉換式 8：270° + θ</option>
+            </optgroup>
+        </select>
+
+        <label><b>2. 調整銳角 <span class="math">θ</span> (0° ~ 90°)：</b></label>
+        <input type="range" id="angleSlider" min="1" max="89" value="37" oninput="update()">
+        <span id="angleValueText">目前 θ = 37°</span>
+
+        <div class="formula-box" id="resultBox"></div>
+
+        <div class="rule-text">
+            <b>💡 教材化簡原則：</b><br>
+            1. <span id="rule1">函數不變 (sin ↔ sin)</span><br>
+            2. 依左式原函數所在象限決定正負。
+        </div>
+    </div>
+
+    <div class="display-panel">
+        <canvas id="trigCanvas" width="400" height="400"></canvas>
+        <p style="color:#666; font-size: 0.8rem;">紫色：轉換後終邊 | 灰色：參考角 θ 終邊</p>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('trigCanvas');
+    const ctx = canvas.getContext('2d');
+    const center = 200;
+    const radius = 140;
+
+    function update() {
+        const type = document.getElementById('formulaSelect').value;
+        const theta = parseInt(document.getElementById('angleSlider').value);
+        document.getElementById('angleValueText').innerText = `目前 θ = ${theta}°`;
+        
+        let targetAngle = 0;
+        let isCoFunction = false;
+
+        switch(type) {
+            case "1": targetAngle = -theta; break;
+            case "2": targetAngle = 180 - theta; break;
+            case "3": targetAngle = 180 + theta; break;
+            case "4": targetAngle = 360 - theta; break;
+            case "5": targetAngle = 90 - theta; isCoFunction = true; break;
+            case "6": targetAngle = 90 + theta; isCoFunction = true; break;
+            case "7": targetAngle = 270 - theta; isCoFunction = true; break;
+            case "8": targetAngle = 270 + theta; isCoFunction = true; break;
+        }
+
+        draw(theta, targetAngle, type, isCoFunction);
+        updateFormula(type, theta, targetAngle, isCoFunction);
+    }
+
+    function draw(theta, target, type, isCoFunction) {
+        ctx.clearRect(0, 0, 400, 400);
+        
+        ctx.strokeStyle = '#333'; ctx.lineWidth = 1.5; ctx.fillStyle = '#333';
+        ctx.beginPath(); ctx.moveTo(40, center); ctx.lineTo(370, center); ctx.stroke();
+        drawArrowHead(370, center, 0); ctx.font = "bold 16px Arial"; ctx.fillText("x", 375, center + 5);
+        ctx.beginPath(); ctx.moveTo(center, 360); ctx.lineTo(center, 30); ctx.stroke();
+        drawArrowHead(center, 30, -Math.PI/2); ctx.fillText("y", center - 20, 35);
+        
+        ctx.strokeStyle = '#eee'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(center, center, radius, 0, Math.PI*2); ctx.stroke();
+
+        let p1Label = getP1Label(theta);
+        drawRayAndPoint(theta, '#aaa', 2, p1Label, false);
+        drawStandardArc(theta, 45, '#aaa', "θ"); 
+
+        let p2Label = getP2Label(theta, type);
+        drawRayAndPoint(target, '#8e44ad', 3, p2Label, isCoFunction);
+        const arcLabel = (type === "1") ? "-θ" : getAngleDesc(type);
+        drawStandardArc(target, 45, '#8e44ad', arcLabel);
+    }
+
+    function getP1Label(theta) {
+        if (theta === 37) return "P₁(4, 3)";
+        let realX = (5 * Math.cos(theta * Math.PI / 180)).toFixed(1);
+        let realY = (5 * Math.sin(theta * Math.PI / 180)).toFixed(1);
+        return `P₁(${realX}, ${realY})`;
+    }
+
+    function getP2Label(theta, type) {
+        let x1, y1;
+        if (theta === 37) { x1 = 4; y1 = 3; } 
+        else {
+            x1 = parseFloat((5 * Math.cos(theta * Math.PI / 180)).toFixed(1));
+            y1 = parseFloat((5 * Math.sin(theta * Math.PI / 180)).toFixed(1));
+        }
+
+        let x2, y2;
+        switch(type) {
+            case "1": x2 = x1; y2 = -y1; break;   
+            case "2": x2 = -x1; y2 = y1; break;   
+            case "3": x2 = -x1; y2 = -y1; break;  
+            case "4": x2 = x1; y2 = -y1; break;   
+            case "5": x2 = y1; y2 = x1; break;    
+            case "6": x2 = -y1; y2 = x1; break;   
+            case "7": x2 = -y1; y2 = -x1; break;  
+            case "8": x2 = y1; y2 = -x1; break;   
+        }
+        const fmt = (val) => Number.isInteger(val) ? val : val.toFixed(1);
+        return `P₂(${fmt(x2)}, ${fmt(y2)})`;
+    }
+
+    function drawRayAndPoint(deg, color, width, pLabel, toYAxis) {
+        const rad = -deg * Math.PI / 180;
+        const x = center + radius * Math.cos(rad);
+        const y = center + radius * Math.sin(rad);
+
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = color; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(x, y);
+        if (toYAxis) ctx.lineTo(center, y); else ctx.lineTo(x, center);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.strokeStyle = color; ctx.lineWidth = width;
+        ctx.beginPath(); ctx.moveTo(center, center); ctx.lineTo(x, y); ctx.stroke();
+
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.font = "bold 13px Arial";
+        const offsetX = Math.cos(rad) * 20;
+        const offsetY = Math.sin(rad) * 20;
+        ctx.fillText(pLabel, x + offsetX - 25, y + offsetY - 5);
+    }
+
+    function drawStandardArc(deg, r, color, label) {
+        ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1.5;
+        const isNegative = deg < 0;
+        const startRad = 0; 
+        const endRad = -deg * Math.PI / 180;
+        ctx.beginPath();
+        ctx.arc(center, center, r, startRad, endRad, !isNegative);
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(center + r * Math.cos(endRad), center + r * Math.sin(endRad));
+        const tangentAngle = endRad + (isNegative ? Math.PI/2 : -Math.PI/2);
+        ctx.rotate(tangentAngle);
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-8, -4); ctx.lineTo(-8, 4); ctx.fill();
+        ctx.restore();
+
+        const midRad = endRad / 2;
+        const offset = isNegative ? 35 : 25; 
+        const lx = center + (r + offset) * Math.cos(midRad);
+        const ly = center + (r + offset) * Math.sin(midRad);
+        ctx.font = "italic 15px Times New Roman";
+        ctx.fillText(label, lx - 8, ly + 5);
+    }
+
+    function drawArrowHead(x, y, angle) {
+        ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-10, -5); ctx.lineTo(-10, 5); ctx.fill();
+        ctx.restore();
+    }
+
+    function updateFormula(type, theta, target, isCo) {
+        const box = document.getElementById('resultBox');
+        const r1 = document.getElementById('rule1');
+        r1.innerText = isCo ? "正弦、餘弦互換 (sin ↔ cos)" : "函數種類不變 (sin ↔ sin)";
+        
+        let sinRes = "", cosRes = "", tanRes = "";
+        if (type == "1") { sinRes = "-sin θ"; cosRes = "cos θ"; tanRes = "-tan θ"; }
+        else if (type == "2") { sinRes = "sin θ"; cosRes = "-cos θ"; tanRes = "-tan θ"; }
+        else if (type == "3") { sinRes = "-sin θ"; cosRes = "-cos θ"; tanRes = "tan θ"; }
+        else if (type == "4") { sinRes = "-sin θ"; cosRes = "cos θ"; tanRes = "-tan θ"; }
+        else if (type == "5") { sinRes = "cos θ"; cosRes = "sin θ"; tanRes = ""; } // 第二類教材通常以 sin/cos 為主
+        else if (type == "6") { sinRes = "cos θ"; cosRes = "-sin θ"; tanRes = ""; }
+        else if (type == "7") { sinRes = "-cos θ"; cosRes = "-sin θ"; tanRes = ""; }
+        else if (type == "8") { sinRes = "-cos θ"; cosRes = "sin θ"; tanRes = ""; }
+
+        let html = `<b>轉換式 ${type} 展示：</b><br>
+                    sin(${getAngleDesc(type)}) = <span class="math">${sinRes}</span><br>
+                    cos(${getAngleDesc(type)}) = <span class="math">${cosRes}</span>`;
+        
+        if (tanRes !== "") {
+            html += `<br>tan(${getAngleDesc(type)}) = <span class="math">${tanRes}</span>`;
+        }
+
+        box.innerHTML = html;
+    }
+
+    function getAngleDesc(type) {
+        const desc = ["", "-θ", "180° - θ", "180° + θ", "360° - θ", "90° - θ", "90° + θ", "270° - θ", "270° + θ"];
+        return desc[type];
+    }
+
+    update();
+</script>
+</body>
+</html>
