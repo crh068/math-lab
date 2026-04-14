@@ -113,7 +113,6 @@
         clearPoints();
     }
 
-    // 【終極修復】自動轉譯數學語法 (解決 3sin(2x) 導致程式報錯並落在 x 軸的問題)
     function evaluateY(deg) {
         const xVal = (deg * Math.PI) / 180;
         let expStr = document.getElementById('customExp').value;
@@ -177,14 +176,21 @@
         }
 
         ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.fillStyle = '#333';
+        
+        // X 軸與正向箭頭
         ctx.beginPath(); ctx.moveTo(10, originY); ctx.lineTo(canvas.width - 20, originY); ctx.stroke();
         drawArrow(canvas.width - 20, originY, 0);
+        
         ctx.font = "bold 14px Times New Roman";
-        ctx.fillText("x", canvas.width - 35, originY + 25);
+        // 標示 x 在箭頭右方 (修改此處)
+        ctx.fillText("x", canvas.width - 12, originY + 4);
 
+        // Y 軸與正向箭頭
         ctx.beginPath(); ctx.moveTo(originX, canvas.height - 10); ctx.lineTo(originX, 20); ctx.stroke();
         drawArrow(originX, 20, -Math.PI/2);
-        ctx.fillText("y", originX - 25, 25);
+        
+        // 標示 y 在箭頭正上方 (修改此處)
+        ctx.fillText("y", originX - 4, 12);
 
         ctx.font = "12px Arial";
         const markers = [{d:-360, t:"-2π"}, {d:-180, t:"-π"}, {d:0, t:"0"}, {d:180, t:"π"}, {d:360, t:"2π"}, {d:540, t:"3π"}];
