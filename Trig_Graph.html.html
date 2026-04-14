@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>化任意角為銳角的轉換式</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 1100px; display: grid; grid-template-columns: 420px 1fr; gap: 20px; }
+        .controls { display: flex; flex-direction: column; gap: 12px; }
+        .display-panel { background: #fff; border: 1px solid #ddd; border-radius: 10px; position: relative; padding: 10px; overflow: hidden; }
+        canvas { background: #fff; cursor: crosshair; }
+        
+        .angle-groups { display: flex; flex-direction: column; gap: 8px; max-height: 420px; overflow-y: auto; padding-right: 10px; }
+        .group-title { font-size: 0.85rem; font-weight: bold; color: var(--primary); border-bottom: 1px solid #eee; margin-top: 5px; }
+        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+        .angle-btn { padding: 4px 2px; font-size: 0.75rem; background: #ebf2f7; border: 1px solid #d1d9e0; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .angle-btn:hover { background: var(--accent); color: white; }
+
+        select, input, button.main-btn { padding: 10px; font-size: 1rem; border-radius: 5px; border: 1px solid #ccc; }
+        button.clear-btn { background: #e74c3c; color: white; padding: 10px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
+        
+        .formula-input { font-family: "Times New Roman", serif; font-weight: bold; font-size: 1.2rem; color: #2980b9; width: 95%; background: #fdfdfd; }
+        .info-box { background: #fff8f0; border-left: 5px solid var(--accent); padding: 12px; font-size: 0.85rem; line-height: 1.5; }
+        h2 { color: var(--primary); margin-top: 0; }
+    </style>
+</head>
+<body>
+
+<h2>📈 化任意角為銳角的轉換式：圖形描點與特徵探討</h2>
+
+<div class="container">
+    <div class="controls">
+        <label><b>1. 選擇基礎函數：</b></label>
+        <select id="baseFunc" onchange="updateFormulaField()">
+            <option value="sin">y = sin(x)</option>
+            <option value="cos">y = cos(x)</option>
+            <option value="tan">y = tan(x)</option>
+        </select>
+
+        <label><b>2. 自定義函數 (支援數學直覺寫法)：</b></label>
+        <input type="text" id="customExp" value="sin(x)" class="formula-input" oninput="clearPoints()">
+        <div style="font-size: 0.8rem; color: #666;">範例：3sin(2x), sin(x/2), cos(x)+1</div>
+
+        <hr>
+
+        <label><b>3. 點擊按鈕描繪特別角 (-360° ~ 540°)：</b></label>
+        <div class="angle-groups" id="angleBtnContainer"></div>
+
+        <label><b>4. 滑桿連續描點 (目前：<span id="sliderVal">0</span>°)：</b></label>
+        <input type="range" id="angleSlider" min="-360" max="540" value="0" step="1" oninput="addPointBySlider()">
+
+        <button class="clear-btn" onclick="clearPoints()">🗑️ 清空所有描點</button>
+
+        <div class="info-box">
+            <b>操作提示：</b><br>
+            • <b>按鈕描點</b>：會顯示對應的輔助虛線。<br>
+            • <b>滑桿描點</b>：不顯示虛線，僅呈現點位軌跡。
+        </div>
+    </div>
+
+    <div class="display-panel">
+        <canvas id="graphCanvas" width="640" height="400"></canvas>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const config = {
+        originX: 250, 
+        originY: 200,
+        scaleX: 0.65, 
+        scaleY: 60    
+    };
+
+    let plottedPoints = []; 
+
+    const angleGroups = [
+        { label: "第一象限 (0° ~ 90°)", values: [0, 30, 45, 60, 90] },
+        { label: "第二象限 (120° ~ 180°)", values: [120, 135, 150, 180] },
+        { label: "第三象限 (210° ~ 270°)", values: [210, 225, 240, 270] },
+        { label: "第四象限 (300° ~ 360°)", values: [300, 315, 330, 360] },
+        { label: "延展區 (390° ~ 540°)", values: [390, 405, 420, 450, 480, 495, 510, 540] },
+        { label: "負角組別 (-30° ~ -360°)", values: [-30, -45, -60, -90, -120, -135, -150, -180, -210, -225, -240, -270, -300, -315, -330, -360] }
+    ];
+
+    function initButtons() {
+        const container = document.getElementById('angleBtnContainer');
+        container.innerHTML = "";
+        angleGroups.forEach(group => {
+            const title = document.createElement('div');
+            title.className = 'group-title';
+            title.innerText = group.label;
+            container.appendChild(title);
+            const grid = document.createElement('div');
+            grid.className = 'btn-grid';
+            group.values.forEach(v => {
+                const btn = document.createElement('button');
+                btn.className = 'angle-btn';
+                btn.innerText = v + '°';
+                btn.onclick = () => addPointDirectly(v);
+                grid.appendChild(btn);
+            });
+            container.appendChild(grid);
+        });
+    }
+
+    function updateFormulaField() {
+        const base = document.getElementById('baseFunc').value;
+        document.getElementById('customExp').value = base + "(x)";
+        clearPoints();
+    }
+
+    // 【終極修復】自動轉譯數學語法 (解決 3sin(2x) 導致程式報錯並落在 x 軸的問題)
+    function evaluateY(deg) {
+        const xVal = (deg * Math.PI) / 180;
+        let expStr = document.getElementById('customExp').value;
+        
+        // 1. 移除開頭可能的 "y=" 或 "f(x)="
+        expStr = expStr.replace(/^(y\s*=|f\(x\)\s*=)/i, "").trim();
+        
+        // 2. 自動補上隱含的乘號 (處理 3sin -> 3*sin, 2x -> 2*x 的人類直覺寫法)
+        expStr = expStr.replace(/(\d)\s*([a-zA-Z(])/g, "$1*$2");
+        expStr = expStr.replace(/([x)])\s*(\d)/gi, "$1*$2");
+        
+        // 3. 轉譯為 JS 執行代碼
+        let processedExp = expStr.replace(/\bsin\b/gi, "Math.sin")
+                                 .replace(/\bcos\b/gi, "Math.cos")
+                                 .replace(/\btan\b/gi, "Math.tan")
+                                 .replace(/\babs\b/gi, "Math.abs")
+                                 .replace(/\bpi\b/gi, "Math.PI")
+                                 .replace(/\bsqrt\b/gi, "Math.sqrt");
+
+        try {
+            // 使用轉換過的安全字串進行計算
+            const calcFunc = new Function('x', `return ${processedExp};`);
+            const result = calcFunc(xVal);
+            return (typeof result === 'number' && !isNaN(result)) ? result : 0;
+        } catch(e) {
+            console.error("運算解析出錯，回傳 0 以防崩潰:", e);
+            return 0;
+        }
+    }
+
+    function addPointDirectly(deg) {
+        const yValue = evaluateY(deg);
+        plottedPoints.push({deg: deg, y: yValue, showLine: true}); // 按鈕描點：顯示虛線
+        drawAll();
+    }
+
+    function addPointBySlider() {
+        const deg = parseFloat(document.getElementById('angleSlider').value);
+        document.getElementById('sliderVal').innerText = deg;
+        const yValue = evaluateY(deg);
+        plottedPoints.push({deg: deg, y: yValue, showLine: false}); // 滑桿描點：不顯示虛線
+        drawAll();
+    }
+
+    function clearPoints() {
+        plottedPoints = [];
+        drawAll();
+    }
+
+    function drawCoordinate() {
+        const {originX, originY, scaleX, scaleY} = config;
+        ctx.strokeStyle = '#f2f2f2';
+        ctx.lineWidth = 1;
+        for(let d = -360; d <= 540; d += 30) {
+            let x = originX + d * scaleX;
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+        }
+        for(let v = -3; v <= 3; v += 1) {
+            let y = originY - v * scaleY;
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+        }
+
+        ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.fillStyle = '#333';
+        ctx.beginPath(); ctx.moveTo(10, originY); ctx.lineTo(canvas.width - 20, originY); ctx.stroke();
+        drawArrow(canvas.width - 20, originY, 0);
+        ctx.font = "bold 14px Times New Roman";
+        ctx.fillText("x", canvas.width - 35, originY + 25);
+
+        ctx.beginPath(); ctx.moveTo(originX, canvas.height - 10); ctx.lineTo(originX, 20); ctx.stroke();
+        drawArrow(originX, 20, -Math.PI/2);
+        ctx.fillText("y", originX - 25, 25);
+
+        ctx.font = "12px Arial";
+        const markers = [{d:-360, t:"-2π"}, {d:-180, t:"-π"}, {d:0, t:"0"}, {d:180, t:"π"}, {d:360, t:"2π"}, {d:540, t:"3π"}];
+        markers.forEach(m => {
+            let x = originX + m.d * scaleX;
+            ctx.fillText(m.t, x - 10, originY + 20);
+            ctx.beginPath(); ctx.moveTo(x, originY-5); ctx.lineTo(x, originY+5); ctx.stroke();
+        });
+
+        [-2, -1, 1, 2].forEach(v => {
+            let y = originY - v * scaleY;
+            ctx.fillText(v, originX - 20, y + 5);
+            ctx.beginPath(); ctx.moveTo(originX-5, y); ctx.lineTo(originX+5, y); ctx.stroke();
+        });
+    }
+
+    function drawArrow(x, y, angle) {
+        ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-10, -5); ctx.lineTo(-10, 5); ctx.fill();
+        ctx.restore();
+    }
+
+    function drawPlottedPoints() {
+        const {originX, originY, scaleX, scaleY} = config;
+        plottedPoints.forEach(p => {
+            let x = originX + p.deg * scaleX;
+            let y = originY - p.y * scaleY;
+            
+            // 描繪點位
+            ctx.fillStyle = '#e67e22';
+            ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI*2); ctx.fill();
+            
+            // 依據來源判斷是否顯示虛線
+            if(p.showLine) {
+                ctx.setLineDash([2, 4]); ctx.strokeStyle = '#bbb';
+                ctx.beginPath(); ctx.moveTo(x, originY); ctx.lineTo(x, y); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(originX, y); ctx.lineTo(x, y); ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        });
+    }
+
+    function drawAll() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawCoordinate();
+        drawPlottedPoints(); 
+    }
+
+    initButtons();
+    drawAll();
+</script>
+</body>
+</html>
