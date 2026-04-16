@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>三角函數圖形大挑戰</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #27ae60; --error: #e74c3c; --bg: #ecf0f1; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; }
+        
+        .game-container { background: white; width: 950px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; position: relative; }
+        
+        .status-bar { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; background: var(--primary); color: white; padding: 15px 25px; border-radius: 12px; font-size: 1.2rem; }
+        .score-box { color: #f1c40f; font-weight: bold; }
+        .timer-box { font-family: monospace; font-size: 1.5rem; }
+
+        .question-side { display: flex; flex-direction: column; justify-content: center; }
+        .q-text { font-size: 1.4rem; font-weight: bold; margin-bottom: 25px; color: #34495e; line-height: 1.4; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .opt-btn { padding: 15px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 10px; background: white; cursor: pointer; transition: 0.2s; text-align: left; }
+        .opt-btn:hover { background: #f8f9fa; border-color: #3498db; }
+        .opt-btn.correct { background: #2ecc71 !important; color: white; border-color: #27ae60; }
+        .opt-btn.wrong { background: #e74c3c !important; color: white; border-color: #c0392b; animation: shake 0.3s; }
+
+        .graph-side { background: #fff; border: 1px solid #eee; border-radius: 15px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        canvas { background: #fafafa; border-radius: 5px; }
+
+        .overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.95); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; border-radius: 20px; }
+        .start-btn { padding: 20px 50px; font-size: 2rem; background: var(--accent); color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .start-btn:hover { transform: scale(1.05); }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+<h1 style="color: var(--primary);">🎯 三角函數圖形大挑戰</h1>
+
+<div class="game-container">
+    <div class="status-bar">
+        <div>得分：<span id="score" class="score-box">0</span></div>
+        <div class="timer-box">⏳ <span id="timer">90</span>s</div>
+        <div id="feedback" style="font-weight: bold;">準備好了嗎？</div>
+    </div>
+
+    <div class="question-side">
+        <div id="questionText" class="q-text">點擊下方按鈕開始遊戲！</div>
+        <div id="options" class="options-grid"></div>
+    </div>
+
+    <div class="graph-side">
+        <canvas id="gameCanvas" width="420" height="320"></canvas>
+    </div>
+
+    <div id="gameOverlay" class="overlay" style="display: flex;">
+        <h2 id="resultTitle" style="font-size: 2.5rem; margin-bottom: 10px;">準備挑戰？</h2>
+        <p id="resultScore" style="font-size: 1.5rem; margin-bottom: 30px;">題型包含：基本圖型、週期、變換、值域判斷</p>
+        <button class="start-btn" onclick="startGame()">開始遊戲</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let score = 0;
+    let timeLeft = 90;
+    let timerId = null;
+    let currentQuestion = null;
+    let isAnswering = false;
+
+    // 擴充題庫：移除絕對值，強化平移與伸縮
+    const rawQuizData = [
+        { type: 'id', func: (x) => Math.sin(x), label: 'y = sin(x)', q: '請問圖中顯示的是哪一個函數圖形？' },
+        { type: 'id', func: (x) => Math.cos(x), label: 'y = cos(x)', q: '請問圖中顯示的是哪一個函數圖形？' },
+        { type: 'id', func: (x) => Math.tan(x), label: 'y = tan(x)', q: '請問圖中顯示的是哪一個函數圖形？' },
+        
+        { type: 'attr', func: (x) => Math.sin(x), label: '2π', q: '函數 y = sin(x) 的「週期」為何？', options: ['π/2', 'π', '2π', '4π'] },
+        { type: 'attr', func: (x) => Math.cos(2*x), label: 'π', q: '函數 y = cos(2x) 的「週期」為何？', options: ['π/2', 'π', '2π', '4π'] },
+        { type: 'attr', func: (x) => Math.sin(0.5*x), label: '4π', q: '函數 y = sin(x/2) 的「週期」為何？', options: ['π', '2π', '3π', '4π'] },
+
+        { type: 'attr', func: (x) => Math.sin(x), label: '-1 ≤ y ≤ 1', q: '請問 y = sin(x) 的「值域」範圍為何？', options: ['-1 ≤ y ≤ 1', '-2 ≤ y ≤ 2', '0 ≤ y ≤ 1', 'y 為實數'] },
+        { type: 'attr', func: (x) => 2 * Math.cos(x), label: '-2 ≤ y ≤ 2', q: '請問 y = 2cos(x) 的「值域」範圍為何？', options: ['-1 ≤ y ≤ 1', '-2 ≤ y ≤ 2', '-2 ≤ y ≤ 0', '0 ≤ y ≤ 2'] },
+        { type: 'attr', func: (x) => Math.sin(x) + 1, label: '0 ≤ y ≤ 2', q: '請問 y = sin(x) + 1 的「值域」範圍為何？', options: ['-1 ≤ y ≤ 1', '0 ≤ y ≤ 2', '1 ≤ y ≤ 2', '-1 ≤ y ≤ 2'] },
+        { type: 'attr', func: (x) => 2 * Math.sin(x) - 1, label: '-3 ≤ y ≤ 1', q: '請問 y = 2sin(x) - 1 的「值域」範圍為何？', options: ['-2 ≤ y ≤ 2', '-3 ≤ y ≤ 1', '-1 ≤ y ≤ 1', '-2 ≤ y ≤ 0'] },
+
+        { type: 'trans', func: (x) => Math.sin(2 * x), label: 'y = sin(2x)', q: '觀察圖形，波形變得比平常密集（週期減半），這最可能是哪一個函數？' },
+        { type: 'trans', func: (x) => 3 * Math.sin(x), label: 'y = 3sin(x)', q: '圖中波峰高度達到 3（振幅變大），請問這是哪一個函數？' },
+        { type: 'trans', func: (x) => Math.cos(x) - 1, label: 'y = cos(x) - 1', q: '圖中圖形整體向下平移了 1 單位，這是哪一個函數？' },
+        { type: 'trans', func: (x) => Math.sin(x) + 2, label: 'y = sin(x) + 2', q: '圖中圖形整體向上平移了 2 單位，這是哪一個函數？' },
+        { type: 'trans', func: (x) => 2 * Math.cos(2 * x), label: 'y = 2cos(2x)', q: '此圖形振幅為 2 且週期為 π，請問這是哪一個函數？' },
+        
+        { type: 'pick', func: (x) => Math.cos(x), label: 'y = cos(x)', q: '請問右圖是否為 y = cos(x) 的正確圖形？' },
+        { type: 'pick', func: (x) => Math.sin(2 * x), label: 'y = sin(2x)', q: '請問右圖是否為 y = sin(2x) 的正確圖形？' },
+        { type: 'pick', func: (x) => Math.cos(x) + 1, label: 'y = cos(x) + 1', q: '請問右圖是否為 y = cos(x) + 1 的正確圖形？' }
+    ];
+
+    function drawArrow(x, y, angle) {
+        ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-8, -4); ctx.lineTo(-8, 4); ctx.closePath(); ctx.fill();
+        ctx.restore();
+    }
+
+    function drawGraph(func) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const originX = canvas.width / 2;
+        const originY = canvas.height / 2;
+        const scaleX = 35; const scaleY = 40;
+
+        ctx.strokeStyle = '#f0f0f0'; ctx.lineWidth = 1;
+        for(let i = -6; i <= 6; i++) {
+            let x = originX + (i * Math.PI/2) * scaleX;
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+        }
+        for(let j = -4; j <= 4; j++) {
+            let y = originY - j * scaleY;
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+        }
+
+        ctx.strokeStyle = '#333'; ctx.fillStyle = '#333'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(10, originY); ctx.lineTo(canvas.width - 15, originY); ctx.stroke();
+        drawArrow(canvas.width - 15, originY, 0);
+        ctx.beginPath(); ctx.moveTo(originX, canvas.height - 10); ctx.lineTo(originX, 15); ctx.stroke();
+        drawArrow(originX, 15, -Math.PI/2);
+
+        ctx.font = "bold 14px Arial";
+        ctx.fillText("x", canvas.width - 10, originY + 5);
+        ctx.fillText("y", originX - 5, 12);
+
+        ctx.font = "10px Arial";
+        const xMarkers = [{v: -Math.PI, t: "-π"}, {v: -Math.PI/2, t: "-π/2"}, {v: 0, t: "0"}, {v: Math.PI/2, t: "π/2"}, {v: Math.PI, t: "π"}, {v: 2*Math.PI, t: "2π"}];
+        xMarkers.forEach(m => {
+            let x = originX + m.v * scaleX;
+            ctx.fillText(m.t, x - 10, originY + 15);
+            ctx.beginPath(); ctx.moveTo(x, originY-3); ctx.lineTo(x, originY+3); ctx.stroke();
+        });
+
+        [-2, -1, 1, 2, 3].forEach(v => {
+            let y = originY - v * scaleY;
+            ctx.fillText(v, originX - 15, y + 4);
+            ctx.beginPath(); ctx.moveTo(originX-3, y); ctx.lineTo(originX+3, y); ctx.stroke();
+        });
+
+        ctx.strokeStyle = '#e67e22'; ctx.lineWidth = 3;
+        ctx.beginPath();
+        let first = true;
+        for (let px = 0; px < canvas.width; px++) {
+            let x = (px - originX) / scaleX;
+            let y = func(x);
+            if (Math.abs(y) > 10) { first = true; continue; }
+            let py = originY - y * scaleY;
+            if (first) { ctx.moveTo(px, py); first = false; } 
+            else { ctx.lineTo(px, py); }
+        }
+        ctx.stroke();
+    }
+
+    function nextQuestion() {
+        isAnswering = false;
+        document.getElementById('feedback').innerText = "挑戰中...";
+        document.getElementById('feedback').style.color = "white";
+
+        const randIdx = Math.floor(Math.random() * rawQuizData.length);
+        const baseQ = rawQuizData[randIdx];
+        currentQuestion = JSON.parse(JSON.stringify(baseQ));
+
+        if(currentQuestion.type === 'pick') {
+            const isActuallyTrue = Math.random() > 0.5;
+            if(!isActuallyTrue) {
+                const wrongList = [(x)=>Math.cos(x), (x)=>Math.sin(2*x), (x)=>Math.sin(x)+1, (x)=>2*Math.cos(x)];
+                currentQuestion.displayFunc = wrongList[Math.floor(Math.random()*wrongList.length)];
+                currentQuestion.correctAnswer = "錯誤";
+            } else {
+                currentQuestion.displayFunc = baseQ.func;
+                currentQuestion.correctAnswer = "正確";
+            }
+        } else {
+            currentQuestion.displayFunc = baseQ.func;
+            currentQuestion.correctAnswer = baseQ.label;
+        }
+
+        document.getElementById('questionText').innerText = currentQuestion.q;
+        drawGraph(currentQuestion.displayFunc);
+
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = '';
+
+        let opts = [];
+        if (currentQuestion.type === 'pick') {
+            opts = ["正確", "錯誤"];
+        } else if (currentQuestion.type === 'attr') {
+            opts = [...currentQuestion.options];
+        } else {
+            opts = [currentQuestion.label];
+            const pool = ['y = sin(x)', 'y = cos(x)', 'y = tan(x)', 'y = 2sin(x)', 'y = sin(2x)', 'y = sin(x)+1', 'y = cos(x)-1', 'y = sin(x/2)', 'y = 2cos(2x)', 'y = sin(x)+2'];
+            while (opts.length < 4) {
+                let d = pool[Math.floor(Math.random() * pool.length)];
+                if (!opts.includes(d)) opts.push(d);
+            }
+            opts.sort(() => Math.random() - 0.5);
+        }
+
+        opts.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt, btn);
+            optionsDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, btn) {
+        if (isAnswering) return;
+        isAnswering = true;
+
+        if (selected === currentQuestion.correctAnswer) {
+            score += 10;
+            btn.classList.add('correct');
+            document.getElementById('feedback').innerText = "正確！ +10";
+            document.getElementById('feedback').style.color = "#2ecc71";
+        } else {
+            score = Math.max(0, score - 5);
+            btn.classList.add('wrong');
+            document.getElementById('feedback').innerText = "答錯了！ -5";
+            document.getElementById('feedback').style.color = "#e74c3c";
+            Array.from(document.getElementsByClassName('opt-btn')).forEach(b => {
+                if (b.innerText === currentQuestion.correctAnswer) b.classList.add('correct');
+            });
+        }
+        document.getElementById('score').innerText = score;
+        setTimeout(nextQuestion, 1200);
+    }
+
+    function startGame() {
+        score = 0; timeLeft = 90;
+        document.getElementById('score').innerText = score;
+        document.getElementById('gameOverlay').style.display = 'none';
+        if (timerId) clearInterval(timerId);
+        timerId = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = timeLeft;
+            if (timeLeft <= 0) endGame();
+        }, 1000);
+        nextQuestion();
+    }
+
+    function endGame() {
+        clearInterval(timerId);
+        document.getElementById('gameOverlay').style.display = 'flex';
+        document.getElementById('resultTitle').innerText = "時間到！";
+        document.getElementById('resultScore').innerText = "最終得分：" + score;
+        document.querySelector('.start-btn').innerText = "再挑戰一次";
+    }
+
+    drawGraph((x) => Math.sin(x));
+</script>
+</body>
+</html>
