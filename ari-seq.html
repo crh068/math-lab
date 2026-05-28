@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3-1.2 等差數列闖關之旅</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Microsoft JhengHei';
+        background-color: #f4f9ff;
+        color: #333;
+        max-width: 850px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.8;
+        font-size: 1.25rem;
+    }
+    h1 {
+        text-align: center;
+        color: #0056b3;
+        font-size: 2.4em;
+        margin-bottom: 30px;
+    }
+    .stage {
+        background-color: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        display: none; 
+        border-left: 8px solid #ff7f50;
+    }
+    .stage.active {
+        display: block;
+        animation: fadeIn 0.6s ease forwards;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .stage h2 {
+        color: #ff7f50;
+        border-bottom: 2px dashed #ffe4d6;
+        padding-bottom: 10px;
+        margin-top: 0;
+        font-size: 1.5em;
+    }
+    .question-box {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 15px;
+        border: 1px solid #e9ecef;
+    }
+    input[type="number"], select {
+        padding: 8px;
+        font-size: 1.15rem;
+        border: 2px solid #ced4da;
+        border-radius: 5px;
+        width: 90px;
+        text-align: center;
+        transition: border-color 0.3s;
+    }
+    input[type="number"]:focus, select:focus {
+        border-color: #80bdff;
+        outline: none;
+    }
+    input.small-input {
+        width: 70px;
+    }
+    button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 15px;
+        transition: background-color 0.3s, transform 0.1s;
+    }
+    button:hover {
+        background-color: #218838;
+    }
+    button:active {
+        transform: scale(0.98);
+    }
+    .msg {
+        margin-top: 15px;
+        font-weight: bold;
+        min-height: 24px;
+        padding: 15px;
+        border-radius: 5px;
+        display: none;
+    }
+    .error { 
+        color: #721c24; 
+        background-color: #f8d7da; 
+        border: 1px solid #f5c6cb;
+        display: block;
+    }
+    .success { 
+        color: #155724; 
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        display: block;
+    }
+    .success-screen {
+        text-align: center;
+        background-color: #fff3cd;
+        border: 2px solid #ffeeba;
+        border-left: 2px solid #ffeeba;
+    }
+    .success-screen h2 {
+        color: #856404;
+        border-bottom: none;
+        font-size: 2em;
+    }
+    .math-font {
+        font-style: italic;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 1.15em;
+    }
+    hr {
+        border-top: 1px solid #ccc;
+        margin: 20px 0;
+    }
+    .highlight-num {
+        color: #e74c3c;
+        font-size: 1.25em;
+        font-weight: bold;
+    }
+    .highlight-sub {
+        color: #007bff;
+        font-weight: bold;
+    }
+    .big-paren {
+        font-size: 1.8em;
+        vertical-align: middle;
+        color: #0056b3;
+    }
+</style>
+</head>
+<body>
+  <h1>💡 3-1.2 等差數列探索闖關</h1>
+  
+  <div id="stage1" class="stage active">
+    <h2>第一關：發現數列規律</h2>
+    <p>觀察下列數列，請問任意相鄰兩項中，「<b>後項減去前項</b>」的差各是多少？</p>
+    <div class="question-box">
+        <p><b>數列一：</b> <b id="s1-seq1" class="math-font"></b></p>
+        <p>答：相鄰兩項的差為 <input type="number" id="s1-ans1" class="small-input"></p>
+        <hr>
+        <p><b>數列二：</b> <b id="s1-seq2" class="math-font"></b></p>
+        <p>答：相鄰兩項的差為 <input type="number" id="s1-ans2" class="small-input"></p>
+    </div>
+    <button onclick="checkStage1()">提交答案</button>
+    <div id="s1-msg" class="msg"></div>
+  </div>
+
+  <div id="stage2" class="stage">
+    <h2>第二關：認識首項與公差</h2>
+    <p>像上一關那樣，「後項減前項」皆為同一個固定數值的數列，我們稱為「<b>等差數列</b>」。</p>
+    <ul>
+        <li>這個固定的差稱為「<b>公差</b>」，用符號 <span class="math-font">d</span> 表示。</li>
+        <li>第一個數字稱為「<b>首項</b>」，用符號 <span class="math-font">a₁</span> 表示。</li>
+    </ul>
+    <div class="question-box">
+        <p><b>【題目一】</b>觀察等差數列： <b id="s2-seq1" class="math-font"></b></p>
+        <p>請問首項 <span class="math-font">a₁</span> = <input type="number" id="s2-a1-1" class="small-input"> ，公差 <span class="math-font">d</span> = <input type="number" id="s2-d-1" class="small-input"></p>
+        <hr>
+        <p><b>【題目二】</b>觀察等差數列： <b id="s2-seq2" class="math-font"></b></p>
+        <p>請問首項 <span class="math-font">a₁</span> = <input type="number" id="s2-a1-2" class="small-input"> ，公差 <span class="math-font">d</span> = <input type="number" id="s2-d-2" class="small-input"></p>
+    </div>
+    <button onclick="checkStage2()">提交答案</button>
+    <div id="s2-msg" class="msg"></div>
+  </div>
+
+  <div id="stage3" class="stage">
+    <h2>第三關：推導一般項公式</h2>
+    <p>既然等差數列每往下一項，就會多加一次公差 (<span class="math-font">d</span>)，我們來觀察規律：</p>
+    <div class="question-box">
+        <ul style="list-style-type: none; padding-left: 0; line-height: 2.2;">
+            <li><span class="math-font">a<sub class="highlight-sub">1</sub> = a₁</span></li>
+            <li><span class="math-font">a<sub class="highlight-sub">2</sub> = a₁ + <span class="highlight-num">1</span> × d</span></li>
+            <li><span class="math-font">a<sub class="highlight-sub">3</sub> = a₂ + d = (a₁ + d) + d = a₁ + <span class="highlight-num">2</span> × d</span></li>
+            <li><span class="math-font">a<sub class="highlight-sub">4</sub> = a₃ + d = a₁ + <span class="highlight-num">3</span> × d</span></li>
+            <li><span class="math-font">a<sub class="highlight-sub">5</sub> = a₄ + d = a₁ + </span><input type="number" id="s3-n1" class="small-input"> <span class="math-font">× d</span></li>
+            <li><span class="math-font">a<sub class="highlight-sub">6</sub> = a₅ + d = a₁ + </span><input type="number" id="s3-n2" class="small-input"> <span class="math-font">× d</span></li>
+        </ul>
+        <hr>
+        <p>聰明的你，請試著推廣到第 <span class="math-font">n</span> 項的公式：</p>
+        <p>
+            <span class="math-font">a<sub class="highlight-sub">n</sub> = a₁ + </span>
+            <select id="s3-sel" style="width: 120px;">
+                <option value="">請選擇</option>
+                <option value="n">n</option>
+                <option value="n-1">(n - 1)</option>
+                <option value="n+1">(n + 1)</option>
+            </select>
+            <span class="math-font"> × d</span>
+        </p>
+    </div>
+    <button onclick="checkStage3()">提交答案</button>
+    <div id="s3-msg" class="msg"></div>
+  </div>
+
+  <div id="stage4" class="stage">
+    <h2>第四關：牛刀小試</h2>
+    <p>太棒了！你已經成功導出等差數列的一般項公式：<br>
+       <b style="font-size: 1.2em; color:#d35400; background-color:#fff3cd; padding:5px 10px; border-radius:5px;">a<sub>n</sub> = a₁ + (n - 1)d</b>
+    </p>
+    <div class="question-box">
+        <p><b>【隨堂演練】</b></p>
+        <p>設一等差數列首項為 <b id="s4-a1-text"></b>，公差為 <b id="s4-d-text"></b>，試求第 <b id="s4-n-text"></b> 項 (<span class="math-font">a<sub id="s4-n-sub1"></sub></span>) 是多少？</p>
+        
+        <div style="background-color: #fff; padding: 15px; border-radius: 8px; border: 2px dashed #b8daff; margin-bottom: 15px;">
+            <p style="margin-top: 0; color: #0056b3; font-weight: bold;">請先填寫計算算式：</p>
+            <p><span class="math-font">a<sub id="s4-n-sub2"></sub> = </span> 
+                <input type="number" id="s4-h-a1" class="small-input" placeholder="首項"> + 
+                <span class="big-paren">(</span> 
+                <input type="number" id="s4-h-n" class="small-input" placeholder="項數"> - 1 
+                <span class="big-paren">)</span> × 
+                <input type="number" id="s4-h-d" class="small-input" placeholder="公差">
+            </p>
+        </div>
+        
+        <p>答：第 <span id="s4-n-text2"></span> 項 = <input type="number" id="s4-ans"></p>
+    </div>
+    <button onclick="checkStage4()">提交答案</button>
+    <div id="s4-msg" class="msg"></div>
+  </div>
+
+  <div id="stage5" class="stage success-screen">
+    <h2>🎉 任務完成！ 🎉</h2>
+    <p>恭喜你過關斬將！你已經完全掌握了「等差數列」的定義與一般項公式的推導！<br>
+    數學的規律就藏在生活之中，繼續保持探索的好奇心吧！</p>
+    <button onclick="location.reload()" style="background-color:#17a2b8; font-size: 1.3rem;">再挑戰一次 (新題目)</button>
+  </div>
+
+  <script>
+    let gameData = {};
+
+    // 初始化題目函數
+    function initGame() {
+        // 第一關隨機題目
+        let s1_a1 = Math.floor(Math.random() * 21) - 10; 
+        let s1_d1 = Math.floor(Math.random() * 5) + 3; 
+        gameData.s1_ans1 = s1_d1;
+        document.getElementById('s1-seq1').innerText = `${s1_a1}, ${s1_a1+s1_d1}, ${s1_a1+2*s1_d1}, ${s1_a1+3*s1_d1}, ${s1_a1+4*s1_d1}, ...`;
+
+        let s1_a2 = Math.floor(Math.random() * 15) + 10; 
+        let s1_d2 = -(Math.floor(Math.random() * 5) + 2); 
+        gameData.s1_ans2 = s1_d2;
+        document.getElementById('s1-seq2').innerText = `${s1_a2}, ${s1_a2+s1_d2}, ${s1_a2+2*s1_d2}, ${s1_a2+3*s1_d2}, ${s1_a2+4*s1_d2}, ...`;
+
+        // 第二關隨機題目
+        let s2_a1_1 = Math.floor(Math.random() * 20) - 5; 
+        let s2_d_1 = -(Math.floor(Math.random() * 6) + 3); 
+        gameData.s2_a1_1 = s2_a1_1;
+        gameData.s2_d_1 = s2_d_1;
+        document.getElementById('s2-seq1').innerText = `${s2_a1_1}, ${s2_a1_1+s2_d_1}, ${s2_a1_1+2*s2_d_1}, ${s2_a1_1+3*s2_d_1}, ...`;
+
+        let s2_a1_2 = -(Math.floor(Math.random() * 15) + 5); 
+        let s2_d_2 = Math.floor(Math.random() * 5) + 5; 
+        gameData.s2_a1_2 = s2_a1_2;
+        gameData.s2_d_2 = s2_d_2;
+        document.getElementById('s2-seq2').innerText = `${s2_a1_2}, ${s2_a1_2+s2_d_2}, ${s2_a1_2+2*s2_d_2}, ${s2_a1_2+3*s2_d_2}, ...`;
+
+        // 第四關隨機題目
+        let s4_a1 = Math.floor(Math.random() * 15) - 5; 
+        let s4_d = Math.floor(Math.random() * 11) - 5; 
+        if(s4_d === 0) s4_d = 4; 
+        let s4_n = Math.floor(Math.random() * 10) + 11; 
+        
+        gameData.s4_a1 = s4_a1;
+        gameData.s4_d = s4_d;
+        gameData.s4_n = s4_n;
+        gameData.s4_ans = s4_a1 + (s4_n - 1) * s4_d;
+
+        document.getElementById('s4-a1-text').innerText = s4_a1;
+        document.getElementById('s4-d-text').innerText = s4_d;
+        document.getElementById('s4-n-text').innerText = s4_n;
+        document.getElementById('s4-n-sub1').innerText = s4_n;
+        document.getElementById('s4-n-sub2').innerText = s4_n;
+        document.getElementById('s4-n-text2').innerText = s4_n;
+    }
+
+    // 確保網頁DOM元素讀取完畢後，直接呼叫初始化函數產生數列
+    document.addEventListener("DOMContentLoaded", function() {
+        initGame();
+    });
+
+    function showMsg(id, text, isError) {
+        const el = document.getElementById(id);
+        el.innerHTML = text;
+        el.className = 'msg ' + (isError ? 'error' : 'success');
+    }
+
+    function nextStage(currentId, nextId) {
+        document.getElementById(currentId).querySelector('button').style.display = 'none';
+        const inputs = document.getElementById(currentId).querySelectorAll('input, select');
+        inputs.forEach(input => input.disabled = true);
+
+        setTimeout(() => {
+            const nextStageEl = document.getElementById(nextId);
+            nextStageEl.classList.add('active');
+            nextStageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 800);
+    }
+
+    function checkStage1() {
+        const ans1 = parseInt(document.getElementById('s1-ans1').value);
+        const ans2 = parseInt(document.getElementById('s1-ans2').value);
+        
+        if (ans1 === gameData.s1_ans1 && ans2 === gameData.s1_ans2) {
+            showMsg('s1-msg', '✅ 答對了！你精準地找出了數列的規律。準備進入下一關...', false);
+            nextStage('stage1', 'stage2');
+        } else {
+            showMsg('s1-msg', '❌ 提示：請動手算算看，拿「後面的數字」減去「前面的數字」（注意正負號喔），兩題都要算對！', true);
+        }
+    }
+
+    function checkStage2() {
+        const a1_1 = parseInt(document.getElementById('s2-a1-1').value);
+        const d_1 = parseInt(document.getElementById('s2-d-1').value);
+        const a1_2 = parseInt(document.getElementById('s2-a1-2').value);
+        const d_2 = parseInt(document.getElementById('s2-d-2').value);
+        
+        let allCorrect = (a1_1 === gameData.s2_a1_1 && d_1 === gameData.s2_d_1 && 
+                          a1_2 === gameData.s2_a1_2 && d_2 === gameData.s2_d_2);
+
+        if (allCorrect) {
+            showMsg('s2-msg', '✅ 完全正確！你已經清楚認識首項與公差了。準備進入下一關...', false);
+            nextStage('stage2', 'stage3');
+        } else {
+            showMsg('s2-msg', '❌ 提示：首項(a₁)是「第一個數字」；公差(d)是「後項減前項」，請仔細檢查兩題的正負號與答案！', true);
+        }
+    }
+
+    function checkStage3() {
+        const n1 = document.getElementById('s3-n1').value;
+        const n2 = document.getElementById('s3-n2').value;
+        const sel = document.getElementById('s3-sel').value;
+        
+        if (n1 === '4' && n2 === '5' && sel === 'n-1') {
+            showMsg('s3-msg', '✅ 太棒了！你成功找到了規律，親自導出了公式！準備進入下一關...', false);
+            nextStage('stage3', 'stage4');
+        } else if (n1 !== '4' || n2 !== '5') {
+            showMsg('s3-msg', '❌ 提示：請觀察上面的規律，第 3 項加 2 個 d，第 4 項加 3 個 d，以此類推...', true);
+        } else {
+            showMsg('s3-msg', '❌ 提示：加 d 的數量總是比項數「少 1」，所以第 n 項會加上 (n-1) 個 d 喔！', true);
+        }
+    }
+
+    function checkStage4() {
+        const h_a1 = parseInt(document.getElementById('s4-h-a1').value);
+        const h_n = parseInt(document.getElementById('s4-h-n').value);
+        const h_d = parseInt(document.getElementById('s4-h-d').value);
+        const ans = parseInt(document.getElementById('s4-ans').value);
+        
+        let formCorrect = (h_a1 === gameData.s4_a1 && h_n === gameData.s4_n && h_d === gameData.s4_d);
+        let ansCorrect = (ans === gameData.s4_ans);
+
+        if (formCorrect && ansCorrect) {
+            showMsg('s4-msg', '✅ 算式與計算完全正確！恭喜你學會了！', false);
+            nextStage('stage4', 'stage5');
+        } else if (!formCorrect) {
+            showMsg('s4-msg', '❌ 提示：請檢查算式填寫是否正確！(請依序填入：首項、項數、公差，並注意正負號)', true);
+        } else {
+            showMsg('s4-msg', '❌ 提示：算式填對了！但最後的答案計算有誤，請記得「先乘除後加減」喔！', true);
+        }
+    }
+  </script>
+</body>
+</html>
