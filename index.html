@@ -9,16 +9,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-gradient: radial-gradient(120% 120% at 50% 10%, #0b0f19 0%, #06080f 100%);
-            --sidebar-bg: rgba(15, 22, 36, 0.7);
-            --card-bg: rgba(22, 31, 51, 0.4);
-            --card-hover-bg: rgba(28, 39, 64, 0.6);
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
-            --border-color: rgba(255, 255, 255, 0.06);
-            --border-hover: rgba(99, 102, 241, 0.4);
-            --glow-color: rgba(99, 102, 241, 0.15);
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            --sidebar-bg: rgba(255, 255, 255, 0.8);
+            --card-bg: #ffffff;
+            --card-hover-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+            --border-color: rgba(0, 0, 0, 0.06);
+            --border-hover: rgba(79, 70, 229, 0.3);
+            --glow-color: rgba(79, 70, 229, 0.08);
         }
 
         * {
@@ -33,15 +33,15 @@
             color: var(--text-main);
             display: flex;
             min-height: 100vh;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.01em;
         }
 
-        /* 現代化毛玻璃側邊欄 */
+        /* 現代化明亮毛玻璃側邊欄 */
         aside {
             width: 280px;
             background: var(--sidebar-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-right: 1px solid var(--border-color);
             padding: 2.5rem 1.75rem;
             position: fixed;
@@ -56,8 +56,8 @@
 
         .brand h1 {
             font-size: 1.4rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            font-weight: 800;
+            background: var(--primary-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             display: flex;
@@ -70,7 +70,8 @@
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            margin-top: 0.25rem;
+            margin-top: 0.35rem;
+            font-weight: 500;
         }
 
         .nav-links {
@@ -78,24 +79,24 @@
         }
 
         .nav-links li {
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
 
         .nav-links a {
-            color: var(--text-muted);
+            color: #334155;
             text-decoration: none;
             font-size: 0.9rem;
             font-weight: 500;
             display: flex;
             align-items: center;
             padding: 0.75rem 1rem;
-            border-radius: 10px;
+            border-radius: 12px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .nav-links a:hover {
-            background: rgba(255, 255, 255, 0.03);
-            color: #6366f1;
+            background: rgba(79, 70, 229, 0.05);
+            color: #4f46e5;
             transform: translateX(4px);
         }
 
@@ -108,9 +109,9 @@
         }
 
         .section-title {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            color: #ffffff;
+            color: #1e293b;
             margin: 4rem 0 1.5rem 0;
             display: flex;
             align-items: center;
@@ -131,7 +132,7 @@
             border-radius: 2px;
         }
 
-        /* 現代感學具卡片網格 */
+        /* 明亮感學具卡片網格 */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -147,6 +148,7 @@
             flex-direction: column;
             justify-content: space-between;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
             position: relative;
             overflow: hidden;
         }
@@ -155,7 +157,7 @@
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(800px circle at var(--x, 0px) var(--y, 0px), rgba(99, 102, 241, 0.08), transparent 40%);
+            background: radial-gradient(800px circle at var(--x, 0px) var(--y, 0px), rgba(79, 70, 229, 0.03), transparent 40%);
             z-index: -1;
             opacity: 0;
             transition: opacity 0.3s;
@@ -163,9 +165,8 @@
 
         .card:hover {
             transform: translateY(-5px);
-            background: var(--card-hover-bg);
             border-color: var(--border-hover);
-            box-shadow: 0 10px 30px -10px var(--glow-color);
+            box-shadow: 0 20px 25px -5px var(--glow-color), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
         }
 
         .card:hover::before {
@@ -173,9 +174,9 @@
         }
 
         .card-title {
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             font-weight: 600;
-            color: #ffffff;
+            color: #0f172a;
             margin-bottom: 0.75rem;
             line-height: 1.4;
         }
@@ -191,9 +192,9 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.04);
-            color: #ffffff;
-            border: 1px solid var(--border-color);
+            background: #f1f5f9;
+            color: #1e293b;
+            border: 1px solid transparent;
             padding: 0.75rem;
             border-radius: 12px;
             text-decoration: none;
@@ -205,8 +206,8 @@
 
         .card:hover .card-btn {
             background: var(--primary-gradient);
-            border-color: transparent;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
         }
 
         .card-btn:active {
@@ -255,7 +256,6 @@
 </head>
 <body>
 
-    <!-- 側邊欄 -->
     <aside>
         <div class="brand">
             <h1>MATH LAB</h1>
@@ -269,10 +269,8 @@
         </ul>
     </aside>
 
-    <!-- 主要內容 -->
     <main>
         
-        <!-- 分類 1 -->
         <section id="trig-base">
             <h2 class="section-title">函數基礎與極坐標演示</h2>
             <div class="grid">
@@ -335,118 +333,9 @@
             </div>
         </section>
 
-        <!-- 分類 2 -->
         <section id="trig-graph">
             <h2 class="section-title">圖形理論與波形轉換</h2>
             <div class="grid">
                 <div class="card">
                     <div>
-                        <div class="card-title">三角函數圖形 (挑戰)</div>
-                        <div class="card-desc">透過動態拉桿與限制，探索正弦與餘弦波形的極限動態演變。</div>
-                    </div>
-                    <a href="Trig_Graph_Challenge.html" class="card-btn" target="_blank">進入實驗室</a>
-                </div>
-                <div class="card">
-                    <div>
-                        <div class="card-title">三角函數圖形動態演練</div>
-                        <div class="card-desc">完美融合單位圓軌跡與連續三角函數波形投影的幾何動態。</div>
-                    </div>
-                    <a href="Trig_Graph.html.html" class="card-btn" target="_blank">進入實驗室</a>
-                </div>
-                <div class="card">
-                    <div>
-                        <div class="card-title">三角函數圖形轉換實驗室</div>
-                        <div class="card-desc">實驗並探討振幅、週期、水平與垂直平移對波形曲線的複合影響。</div>
-                    </div>
-                    <a href="Trig-Transform-Lab.html" class="card-btn" target="_blank">進入實驗室</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- 分類 3 -->
-        <section id="trig-quiz">
-            <h2 class="section-title">概念評量與互動挑戰</h2>
-            <div class="grid">
-                <div class="card">
-                    <div>
-                        <div class="card-title">三角函數小測驗</div>
-                        <div class="card-desc">即時檢測三角函數核心概念、定義與函數值求值的綜合評量。</div>
-                    </div>
-                    <a href="Trig-Quiz-Challenge.html" class="card-btn" target="_blank">進入實驗室</a>
-                </div>
-                <div class="card">
-                    <div>
-                        <div class="card-title">象限角正負號挑戰</div>
-                        <div class="card-desc">速解與快速判斷三角函數在四個象限中正負性質的思維遊戲。</div>
-                    </div>
-                    <a href="Quadrantal_Angles_Sign_Challen..." class="card-btn" target="_blank">進入實驗室</a>
-                </div>
-                <div class="card">
-                    <div>
-                        <div class="card-title">任意角挑戰</div>
-                        <div class="card-desc">精準針對廣義角與化簡公式計算所設計的進階時限挑戰。</div>
-                    </div>
-                    <a href="AnyAngle_Challenge.html" class="card-btn" target="_blank">進入實驗室</a>
-                </div>
-                <div class="card">
-                    <div>
-                        <div class="card-title">三角函數益智遊戲</div>
-                        <div class="card-desc">打破傳統題海，結合趣味機制與三角函數知識的互動遊戲。</div>
-                    </div>
-                    <a href="Trigonometry-game.html" class="card-btn" target="_blank">進入實驗室</a>
-                </div>
-                <div class="card">
-                    <div>
-                        <div class="card-title">專案課程教材 (1150309)</div>
-                        <div class="card-desc">特定進度與數位實驗專案之全方位綜合性演練平台。</div>
-                    </div>
-                    <a href="1150309_207.html" class="card-btn" target="_blank">進入實驗室</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- 分類 4 -->
-        <section id="sequences">
-            <h2 class="section-title">演算法、數列與代數基礎</h2>
-            <div class="grid">
-                <div class="card">
-                    <div>
-                        <div class="card-title">等差數列實驗室</div>
-                        <div class="card-desc">動態自訂首項與公差，實時觀測數列線性增長規律與動態分佈。</div>
-                    </div>
-                    <a href="ari-seq.html" class="card-btn" target="_blank">進入實驗室</a>
-                </div>
-                <div class="card">
-                    <div>
-                        <div class="card-title">等比數列實驗室</div>
-                        <div class="card-desc">視覺化展現等比數列隨公比大小產生的指數擴散或收斂軌跡。</div>
-                    </div>
-                    <a href="geo-seq.html" class="card-btn" target="_blank">進入實驗室</a>
-                </div>
-                <div class="card">
-                    <div>
-                        <div class="card-title">多項式長除法</div>
-                        <div class="card-desc">結構化、步驟化演示多項式長除法的推導算式與代數邏輯。</div>
-                    </div>
-                    <a href="poly-long-div.html" class="card-btn" target="_blank">進入實驗室</a>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- 微互動：滑鼠動態微光效果腳本 -->
-    <script>
-        const cards = document.querySelectorAll('.card');
-        cards.forEach(card => {
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                card.style.setProperty('--x', `${x}px`);
-                card.style.setProperty('--y', `${y}px`);
-            });
-        });
-    </script>
-</body>
-</html>
+                        <div class="card-title">三角函數圖形 (挑戰
