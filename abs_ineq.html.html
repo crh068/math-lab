@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>絕對值不等式關卡大冒險 - iPad 舒適闖關版</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --text: #1f2937;
+      --success: #10b981;
+      --error: #ef4444;
+      --warning: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px 16px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 針對 iPad 調整容器尺寸與邊距 */
+    .container {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 840px;
+      border-radius: 20px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      padding: 32px 36px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 開始畫面樣式 */
+    .start-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .start-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .concept-summary-card {
+      background: #f8fafc;
+      border: 2px solid #cbd5e1;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: left;
+      margin-bottom: 28px;
+      width: 100%;
+    }
+
+    .concept-summary-card h3 {
+      font-size: 20px;
+      color: var(--primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .concept-summary-card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .concept-summary-card li {
+      font-size: 16.5px;
+      line-height: 1.6;
+      color: #334155;
+      position: relative;
+      padding-left: 26px;
+    }
+
+    .concept-summary-card li::before {
+      content: '📌';
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .highlight-badge {
+      background: #eef2ff;
+      color: #3730a3;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    /* 進度條與大關卡節點 */
+    .progress-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .progress-container::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      height: 6px;
+      width: 100%;
+      background: #e5e7eb;
+      z-index: 1;
+      border-radius: 3px;
+    }
+
+    .progress-bar-fill {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      height: 6px;
+      background: var(--primary);
+      z-index: 1;
+      transition: width 0.3s ease;
+      width: 0%;
+      border-radius: 3px;
+    }
+
+    .step-node {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+      z-index: 2;
+      transition: all 0.25s ease;
+      user-select: none;
+    }
+
+    .step-node.unlocked {
+      cursor: pointer;
+    }
+
+    .step-node.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 0 0 5px rgba(79, 70, 229, 0.25);
+      transform: scale(1.08);
+    }
+
+    .step-node.completed {
+      background: var(--success);
+      color: white;
+    }
+
+    .level-header {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* 觀念引導盒 */
+    .concept-box {
+      background: #eef2ff;
+      border-left: 5px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 10px;
+      font-size: 16.5px;
+      color: #3730a3;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    /* 題目區塊 */
+    .question-card {
+      background: #f8fafc;
+      border: 2px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .math-expr {
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--primary);
+      margin: 8px 0;
+      letter-spacing: 1px;
+    }
+
+    /* 互動數線區 */
+    .numberline-container {
+      background: #ffffff;
+      border: 2px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 24px;
+      text-align: center;
+      touch-action: none;
+    }
+
+    .numberline-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 10px;
+    }
+
+    canvas#numberline-canvas {
+      width: 100%;
+      height: 140px;
+      display: block;
+      cursor: pointer;
+    }
+
+    /* 分步求解小關卡樣式 */
+    .steps-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .step-subgroup {
+      background: #ffffff;
+      border: 2px solid #cbd5e1;
+      padding: 16px 20px;
+      border-radius: 14px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .step-subgroup.active {
+      border-color: var(--primary);
+      box-shadow: 0 4px 16px rgba(79, 70, 229, 0.15);
+      background: #f8fafc;
+    }
+
+    .step-subgroup.completed {
+      border-color: var(--success);
+      background: #f0fdf4;
+    }
+
+    .step-label {
+      font-size: 16px;
+      font-weight: 700;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-badge-success {
+      color: var(--success);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    input[type="number"] {
+      width: 85px;
+      height: 50px;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+
+    input[type="number"]:disabled {
+      background-color: #e2e8f0;
+      color: #334155;
+      border-color: #cbd5e1;
+    }
+
+    .btn {
+      width: 100%;
+      height: 54px;
+      border: none;
+      border-radius: 12px;
+      background: var(--primary);
+      color: white;
+      font-size: 19px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:active {
+      transform: scale(0.99);
+    }
+
+    .btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: #64748b;
+      margin-top: 10px;
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .btn-hint {
+      background: transparent;
+      color: var(--warning);
+      border: 2px solid var(--warning);
+      margin-top: 12px;
+      display: none;
+    }
+
+    .btn-hint:hover {
+      background: #fffbeeb5;
+    }
+
+    .hint-box {
+      margin-top: 14px;
+      padding: 14px 18px;
+      background: #fef3c7;
+      border-left: 5px solid var(--warning);
+      color: #92400e;
+      border-radius: 8px;
+      font-size: 16px;
+      display: none;
+      white-space: pre-line;
+      line-height: 1.5;
+    }
+
+    .feedback {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .feedback.correct {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .feedback.wrong {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .review-banner {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #475569;
+      margin-bottom: 12px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .victory-screen {
+      display: none;
+      text-align: center;
+      padding: 30px 0;
+    }
+
+    .badge {
+      font-size: 90px;
+      animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0); }
+      100% { transform: scale(1); }
+    }
+
+    .victory-title {
+      font-size: 28px;
+      color: var(--primary);
+      margin: 18px 0;
+    }
+
+    .victory-desc {
+      color: #4b5563;
+      font-size: 17px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    canvas#confetti {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <canvas id="confetti"></canvas>
+  
+  <!-- 開始畫面 (預設顯示) -->
+  <div class="start-screen" id="start-ui">
+    <h1 class="start-title">📐 絕對值不等式大冒險</h1>
+    
+    <div class="concept-summary-card">
+      <h3>🧠 闖關觀念統整指南</h3>
+      <ul>
+        <li><b>幾何意義</b>：絕對值 <span class="highlight-badge">|x|</span> 代表數線上點 x 與原點 0 的<b>距離</b>。</li>
+        <li><b>夾中間（小於型）</b>：<span class="highlight-badge">|x| &lt; a</span> 表示距離小於 a，範圍夾在兩點之間：<b>-a &lt; x &lt; a</b>。</li>
+        <li><b>向外擴（大於型）</b>：<span class="highlight-badge">|x| &gt; a</span> 表示距離大於 a，範圍向兩側外擴：<b>x &lt; -a 或 x &gt; a</b>。</li>
+        <li><b>數線圖示規範</b>：無包含等於號（&lt;, &gt;）時，端點必須以<span class="highlight-badge">空心圓</span>表示。</li>
+        <li><b>多步驟拆解原則</b>：求解如 <span class="highlight-badge">|2x + b| &lt; c</span> 時，遵循三大步驟：<br><b>① 去絕對值 ➔ ② 移項消常數 ➔ ③ 同除係數求解</b>。</li>
+      </ul>
+    </div>
+
+    <button class="btn" onclick="startGame()">🚀 開始闖關 / 進入關卡 1</button>
+  </div>
+
+  <!-- 遊戲主介面 -->
+  <div id="game-ui" style="display: none;">
+    <div class="progress-container">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+      <div class="step-node active unlocked" id="node-1" onclick="jumpToLevel(0)">1</div>
+      <div class="step-node" id="node-2" onclick="jumpToLevel(1)">2</div>
+      <div class="step-node" id="node-3" onclick="jumpToLevel(2)">3</div>
+      <div class="step-node" id="node-4" onclick="jumpToLevel(3)">4</div>
+      <div class="step-node" id="node-5" onclick="jumpToLevel(4)">5</div>
+      <div class="step-node" id="node-6" onclick="jumpToLevel(5)">6</div>
+    </div>
+
+    <div class="level-header">
+      <span id="level-title">關卡 1</span>
+      <span id="review-tag" style="font-size: 14px; color: var(--success); display: none;">🔍 複習模式</span>
+    </div>
+    
+    <div class="concept-box" id="concept-text">核心觀念...</div>
+    
+    <div class="question-card">
+      <p style="color: #64748b; font-size: 15px;">求解下列絕對值不等式：</p>
+      <div class="math-expr" id="math-question">|x| &lt; 5</div>
+    </div>
+
+    <!-- 互動數線區 (僅關卡 1, 4 顯示) -->
+    <div class="numberline-container" id="numberline-box">
+      <div class="numberline-title">🖐️ 拖曳數線上的「空心圓點」找出解區間（若超過範圍會變紅色警示）</div>
+      <canvas id="numberline-canvas"></canvas>
+    </div>
+
+    <!-- 動態步驟區域 -->
+    <div class="steps-wrapper" id="steps-container">
+      <!-- 步驟卡片會動態渲染於此 -->
+    </div>
+
+    <div id="active-action-area">
+      <button class="btn" id="submit-btn" onclick="checkAnswer()">提交答案</button>
+      <button class="btn btn-hint" id="hint-btn" onclick="toggleHint()">💡 需要解題提示嗎？</button>
+    </div>
+
+    <div id="review-action-area" style="display: none;">
+      <div class="review-banner">已完成本關卡！您正在複習觀念。</div>
+      <button class="btn btn-secondary" onclick="returnToLatestLevel()">回到最新闖關進度 ➔</button>
+    </div>
+    
+    <div class="hint-box" id="hint-text"></div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <!-- 通關畫面 -->
+  <div class="victory-screen" id="victory-ui">
+    <div class="badge">🏆</div>
+    <h2 class="victory-title">恭喜通關！絕對值大師！</h2>
+    <p class="victory-desc">
+      你已經完整掌握了從基礎到進階的 6 大絕對值幾何型態！<br>
+      按下下方按鈕可重新開始，挑戰全新隨機產生的題目！
+    </p>
+    <button class="btn" onclick="resetGame()">再次挑戰（回到觀念統整）</button>
+  </div>
+</div>
+
+<script>
+  let levels = [];
+  let currentLevelIdx = 0;
+  let maxUnlockedLevelIdx = 0;
+  let currentSubStepIdx = 0;
+  let wrongAttempts = 0;
+  let confettiAnimationId = null;
+
+  // 數線控制變數
+  let canvas, ctx;
+  let handles = [];
+  let activeHandleIdx = -1;
+  const minVal = -15, maxVal = 15;
+
+  // 隨機生成題目數據 (共 6 關)
+  function generateRandomLevels() {
+    return [
+      // 關卡 1: |x| < a
+      (() => {
+        const a = Math.floor(Math.random() * 7) + 3;
+        return {
+          id: 1,
+          title: "關卡 1：幾何啟航（基礎 |x| < a）",
+          concept: `💡 <b>關鍵觀念</b>：|x| 代表 x 與原點 0 的距離。|x| < ${a} 表示 x 到 0 的距離「小於 ${a}」，範圍會夾在 -${a} 與 ${a} 之間。`,
+          question: `|x| < ${a}`,
+          hasNumberline: true,
+          defaultHandles: [-2, 2],
+          subSteps: [
+            {
+              title: "求解 x 的範圍",
+              html: `<div class="input-group">
+                       <input type="number" id="ans_0_1" oninput="syncInputsToHandles()">
+                       <span>&lt; x &lt;</span>
+                       <input type="number" id="ans_0_2" oninput="syncInputsToHandles()">
+                     </div>`,
+              answers: [-a, a],
+              hint: `💡 提示：從原點往左、往右延伸最多 ${a} 個單位，範圍夾在 -${a} 與 ${a} 之間。`
+            }
+          ]
+        };
+      })(),
+      // 關卡 2: |x - b| < a (b 不為 0)
+      (() => {
+        const bOptions = [-4, -3, -2, -1, 1, 2, 3, 4];
+        const b = bOptions[Math.floor(Math.random() * bOptions.length)];
+        const a = Math.floor(Math.random() * 5) + 3;
+        const sign = b > 0 ? `- ${b}` : `+ ${Math.abs(b)}`;
+        const innerExpr = `x ${sign}`;
+        const step2Op = b > 0 ? `+${b}` : `-${Math.abs(b)}`;
+        return {
+          id: 2,
+          title: "關卡 2：逐步求解（|x - b| < a）",
+          concept: `💡 <b>關鍵觀念</b>：去絕對值時，中間保留完整式子 ${innerExpr}，左右兩邊加上負號與正號。再經由「移項」求出 x。`,
+          question: `|${innerExpr}| < ${a}`,
+          hasNumberline: false,
+          subSteps: [
+            {
+              title: "小關卡 2-1：去絕對值",
+              html: `<div class="input-group">
+                       <input type="number" id="ans_0_1">
+                       <span>&lt; ${innerExpr} &lt;</span>
+                       <input type="number" id="ans_0_2">
+                     </div>`,
+              answers: [-a, a],
+              hint: `💡 提示：去絕對值寫成：-${a} < ${innerExpr} < ${a}`
+            },
+            {
+              title: "小關卡 2-2：移項求解 x",
+              html: `<div class="input-group">
+                       <input type="number" id="ans_1_1">
+                       <span>&lt; x &lt;</span>
+                       <input type="number" id="ans_1_2">
+                     </div>`,
+              answers: [b - a, b + a],
+              hint: `💡 提示：各邊「${step2Op}」（移項求出 x 的範圍）`
+            }
+          ]
+        };
+      })(),
+      // 關卡 3: |2x + k| < c (k 不為 0)
+      (() => {
+        const mOptions = [-3, -2, -1, 1, 2, 3];
+        const m = mOptions[Math.floor(Math.random() * mOptions.length)];
+        const r = Math.floor(Math.random() * 4) + 2;
+        const k = -2 * m;
+        const c = 2 * r;
+        const sign = k > 0 ? `+ ${k}` : `- ${Math.abs(k)}`;
+        const innerExpr = `2x ${sign}`;
+        const step2Op = k > 0 ? `-${k}` : `+${Math.abs(k)}`;
+        return {
+          id: 3,
+          title: "關卡 3：三步拆解（|2x + b| < c）",
+          concept: `💡 <b>關鍵觀念</b>：逐步拆解！先去絕對值 ➔ 移項消去常數 ➔ 同除以 2 解出 x。`,
+          question: `|${innerExpr}| < ${c}`,
+          hasNumberline: false,
+          subSteps: [
+            {
+              title: "小關卡 3-1：去絕對值",
+              html: `<div class="input-group">
+                       <input type="number" id="ans_0_1">
+                       <span>&lt; ${innerExpr} &lt;</span>
+                       <input type="number" id="ans_0_2">
+                     </div>`,
+              answers: [-c, c],
+              hint: `💡 提示：去絕對值寫成：-${c} < ${innerExpr} < ${c}`
+            },
+            {
+              title: "小關卡 3-2：移項消去常數",
+              html: `<div class="input-group">
+                       <input type="number" id="ans_1_1">
+                       <span>&lt; 2x &lt;</span>
+                       <input type="number" id="ans_1_2">
+                     </div>`,
+              answers: [-c - k, c - k],
+              hint: `💡 提示：各邊「${step2Op}」（消去常數項）`
+            },
+            {
+              title: "小關卡 3-3：同除以 2 求解 x",
+              html: `<div class="input-group">
+                       <input type="number" id="ans_2_1">
+                       <span>&lt; x &lt;</span>
+                       <input type="number" id="ans_2_2">
+                     </div>`,
+              answers: [m - r, m + r],
+              hint: `💡 提示：各邊「÷2」（同除以 2 算出 x 的邊界）`
+            }
+          ]
+        };
+      })(),
+      // 關卡 4: |x| > a
+      (() => {
+        const a = Math.floor(Math.random() * 6) + 3;
+        return {
+          id: 4,
+          title: "關卡 4：向外延伸（基礎 |x| > a）",
+          concept: `💡 <b>關鍵觀念</b>：|x| > ${a} 表示 x 到原點 0 的距離「大於 ${a}」，範圍會向 0 的左、右兩側外擴延伸（x < -${a} 或 x > ${a}）。`,
+          question: `|x| > ${a}`,
+          hasNumberline: true,
+          type: "or_range",
+          defaultHandles: [-1, 1],
+          subSteps: [
+            {
+              title: "求解 x 的範圍",
+              html: `<div class="input-group">
+                       <span>x &lt;</span>
+                       <input type="number" id="ans_0_1" oninput="syncInputsToHandles()">
+                       <span style="margin: 0 10px;">或</span>
+                       <span>x &gt;</span>
+                       <input type="number" id="ans_0_2" oninput="syncInputsToHandles()">
+                     </div>`,
+              answers: [-a, a],
+              hint: `💡 提示：距離大於 ${a}，代表往左超過 -${a}（x < -${a}），或往右超過 ${a}（x > ${a}）。`
+            }
+          ]
+        };
+      })(),
+      // 關卡 5: |x - b| > a (b 不為 0)
+      (() => {
+        const bOptions = [-4, -3, -2, -1, 1, 2, 3, 4];
+        const b = bOptions[Math.floor(Math.random() * bOptions.length)];
+        const a = Math.floor(Math.random() * 4) + 3;
+        const sign = b > 0 ? `- ${b}` : `+ ${Math.abs(b)}`;
+        const innerExpr = `x ${sign}`;
+        const step2Op = b > 0 ? `+${b}` : `-${Math.abs(b)}`;
+        return {
+          id: 5,
+          title: "關卡 5：平移擴充（|x - b| > a）",
+          concept: `💡 <b>關鍵觀念</b>：絕對值內有加減常數時，先拆成兩側外擴區域，再經由移項求出答案。`,
+          question: `|${innerExpr}| > ${a}`,
+          hasNumberline: false,
+          type: "or_range",
+          subSteps: [
+            {
+              title: "小關卡 5-1：去絕對值",
+              html: `<div class="input-group">
+                       <span>${innerExpr} &lt;</span>
+                       <input type="number" id="ans_0_1">
+                       <span style="margin: 0 10px;">或</span>
+                       <span>${innerExpr} &gt;</span>
+                       <input type="number" id="ans_0_2">
+                     </div>`,
+              answers: [-a, a],
+              hint: `💡 提示：去絕對值寫成：${innerExpr} < -${a} 或 ${innerExpr} > ${a}`
+            },
+            {
+              title: "小關卡 5-2：移項求解 x",
+              html: `<div class="input-group">
+                       <span>x &lt;</span>
+                       <input type="number" id="ans_1_1">
+                       <span style="margin: 0 10px;">或</span>
+                       <span>x &gt;</span>
+                       <input type="number" id="ans_1_2">
+                     </div>`,
+              answers: [b - a, b + a],
+              hint: `💡 提示：各邊「${step2Op}」（移項求解 x）`
+            }
+          ]
+        };
+      })(),
+      // 關卡 6: |2x - k| > c (k 不為 0)
+      (() => {
+        const kArr = [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5];
+        const cArr = [3, 5, 7, 9];
+        const k = kArr[Math.floor(Math.random() * kArr.length)];
+        const c = cArr[Math.floor(Math.random() * cArr.length)];
+        const sign = k > 0 ? `+ ${k}` : `- ${Math.abs(k)}`;
+        const innerExpr = `2x ${sign}`;
+        const step2Op = k > 0 ? `-${k}` : `+${Math.abs(k)}`;
+        
+        const ans1_step2 = -c - k;
+        const ans2_step2 = c - k;
+        const ans1_step3 = ans1_step2 / 2;
+        const ans2_step3 = ans2_step2 / 2;
+
+        return {
+          id: 6,
+          title: "關卡 6：終極挑戰（|2x - b| > c）",
+          concept: `💡 <b>關鍵觀念</b>：結合倍率與平移！先去絕對值 ➔ 移項消去常數 ➔ 同除以 2 解出 x。`,
+          question: `|${innerExpr}| > ${c}`,
+          hasNumberline: false,
+          type: "or_range",
+          subSteps: [
+            {
+              title: "小關卡 6-1：去絕對值",
+              html: `<div class="input-group">
+                       <span>${innerExpr} &lt;</span>
+                       <input type="number" id="ans_0_1">
+                       <span style="margin: 0 10px;">或</span>
+                       <span>${innerExpr} &gt;</span>
+                       <input type="number" id="ans_0_2">
+                     </div>`,
+              answers: [-c, c],
+              hint: `💡 提示：去絕對值寫成：${innerExpr} < -${c} 或 ${innerExpr} > ${c}`
+            },
+            {
+              title: "小關卡 6-2：移項消去常數",
+              html: `<div class="input-group">
+                       <span>2x &lt;</span>
+                       <input type="number" id="ans_1_1">
+                       <span style="margin: 0 10px;">或</span>
+                       <span>2x &gt;</span>
+                       <input type="number" id="ans_1_2">
+                     </div>`,
+              answers: [ans1_step2, ans2_step2],
+              hint: `💡 提示：各邊「${step2Op}」（移項消去常數）`
+            },
+            {
+              title: "小關卡 6-3：同除以 2 求解 x",
+              html: `<div class="input-group">
+                       <span>x &lt;</span>
+                       <input type="number" id="ans_2_1">
+                       <span style="margin: 0 10px;">或</span>
+                       <span>x &gt;</span>
+                       <input type="number" id="ans_2_2">
+                     </div>`,
+              answers: [ans1_step3, ans2_step3],
+              hint: `💡 提示：各邊「÷2」（同除以 2 求解）`
+            }
+          ]
+        };
+      })()
+    ];
+  }
+
+  function startGame() {
+    document.getElementById('start-ui').style.display = 'none';
+    document.getElementById('game-ui').style.display = 'block';
+    loadLevel();
+  }
+
+  function initCanvas() {
+    canvas = document.getElementById('numberline-canvas');
+    ctx = canvas.getContext('2d');
+    
+    resizeCanvas();
+    
+    canvas.addEventListener('pointerdown', onPointerDown);
+    canvas.addEventListener('pointermove', onPointerMove);
+    canvas.addEventListener('pointerup', onPointerUp);
+    canvas.addEventListener('pointercancel', onPointerUp);
+  }
+
+  function resizeCanvas() {
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = 140 * dpr;
+  }
+
+  function valToX(val) {
+    const dpr = window.devicePixelRatio || 1;
+    const pad = 40 * dpr;
+    const w = canvas.width - 2 * pad;
+    return pad + ((val - minVal) / (maxVal - minVal)) * w;
+  }
+
+  function xToVal(x) {
+    const dpr = window.devicePixelRatio || 1;
+    const pad = 40 * dpr;
+    const w = canvas.width - 2 * pad;
+    let v = minVal + ((x - pad) / w) * (maxVal - minVal);
+    v = Math.round(v);
+    return Math.max(minVal, Math.min(maxVal, v));
+  }
+
+  function isExceeded() {
+    const level = levels[currentLevelIdx];
+    if (!level.hasNumberline) return false;
+
+    const sorted = [...handles].sort((a,b) => a - b);
+    const ans = level.subSteps[0].answers;
+
+    if (level.type === 'or_range') {
+      return sorted[0] > ans[0] || sorted[1] < ans[1];
+    } else {
+      return sorted[0] < ans[0] || sorted[1] > ans[1];
+    }
+  }
+
+  function drawNumberLine() {
+    if (!ctx || !canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.width;
+    const h = canvas.height;
+    const centerY = h / 2 + 12 * dpr;
+
+    ctx.clearRect(0, 0, w, h);
+
+    const exceeded = isExceeded();
+    const themeColor = exceeded ? '#ef4444' : '#4f46e5';
+    const fillColor = exceeded ? 'rgba(239, 68, 68, 0.35)' : 'rgba(79, 70, 229, 0.3)';
+
+    // 畫主數線軸
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 3.5 * dpr;
+    ctx.beginPath();
+    ctx.moveTo(15 * dpr, centerY);
+    ctx.lineTo(w - 15 * dpr, centerY);
+    ctx.stroke();
+
+    // 數線箭頭
+    ctx.fillStyle = '#94a3b8';
+    ctx.beginPath();
+    ctx.moveTo(w - 10 * dpr, centerY);
+    ctx.lineTo(w - 22 * dpr, centerY - 7 * dpr);
+    ctx.lineTo(w - 22 * dpr, centerY + 7 * dpr);
+    ctx.fill();
+
+    // 刻度與數字
+    ctx.fillStyle = '#475569';
+    ctx.font = `${12 * dpr}px sans-serif`;
+    ctx.textAlign = 'center';
+
+    for (let i = minVal; i <= maxVal; i += 2) {
+      const x = valToX(i);
+      ctx.beginPath();
+      ctx.moveTo(x, centerY - 6 * dpr);
+      ctx.lineTo(x, centerY + 6 * dpr);
+      ctx.stroke();
+      ctx.fillText(i.toString(), x, centerY + 24 * dpr);
+    }
+
+    const level = levels[currentLevelIdx];
+    ctx.fillStyle = fillColor;
+
+    const sorted = [...handles].sort((a,b) => a - b);
+    const x1 = valToX(sorted[0]);
+    const x2 = valToX(sorted[1]);
+
+    // 填滿解區間色塊
+    if (level.type === 'or_range') {
+      ctx.fillRect(15 * dpr, centerY - 15 * dpr, x1 - 15 * dpr, 30 * dpr);
+      ctx.fillRect(x2, centerY - 15 * dpr, w - 15 * dpr - x2, 30 * dpr);
+    } else {
+      ctx.fillRect(x1, centerY - 15 * dpr, x2 - x1, 30 * dpr);
+    }
+
+    // 超過警示文字
+    if (exceeded) {
+      ctx.fillStyle = '#ef4444';
+      ctx.font = `bold ${14 * dpr}px sans-serif`;
+      ctx.fillText('⚠️ 數字已超過解的範圍！', w / 2, 22 * dpr);
+    }
+
+    // 畫端點控制項 (空心圓)
+    handles.forEach((val, idx) => {
+      const x = valToX(val);
+      
+      // 觸控外圈反饋
+      if (activeHandleIdx === idx) {
+        ctx.beginPath();
+        ctx.arc(x, centerY, 18 * dpr, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(79, 70, 229, 0.2)';
+        ctx.fill();
+      }
+
+      // 空心圓核心：白底填滿 + 主色加粗邊框
+      ctx.beginPath();
+      ctx.arc(x, centerY, 9 * dpr, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.strokeStyle = themeColor;
+      ctx.lineWidth = 3.5 * dpr;
+      ctx.stroke();
+
+      // 端點數值標籤
+      ctx.fillStyle = exceeded ? '#991b1b' : '#312e81';
+      ctx.font = `bold ${14 * dpr}px sans-serif`;
+      ctx.fillText(val.toString(), x, centerY - 22 * dpr);
+    });
+  }
+
+  function onPointerDown(e) {
+    if (currentLevelIdx < maxUnlockedLevelIdx) return;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const mouseX = (e.clientX - rect.left) * dpr;
+    const mouseY = (e.clientY - rect.top) * dpr;
+    const centerY = canvas.height / 2 + 12 * dpr;
+
+    let closestIdx = -1;
+    let minDist = 40 * dpr;
+
+    handles.forEach((val, idx) => {
+      const hX = valToX(val);
+      const dist = Math.hypot(mouseX - hX, mouseY - centerY);
+      if (dist < minDist) {
+        minDist = dist;
+        closestIdx = idx;
+      }
+    });
+
+    if (closestIdx !== -1) {
+      activeHandleIdx = closestIdx;
+      canvas.setPointerCapture(e.pointerId);
+      drawNumberLine();
+    }
+  }
+
+  function onPointerMove(e) {
+    if (activeHandleIdx === -1) return;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const mouseX = (e.clientX - rect.left) * dpr;
+    
+    const newVal = xToVal(mouseX);
+    handles[activeHandleIdx] = newVal;
+    
+    syncHandlesToInputs();
+    drawNumberLine();
+  }
+
+  function onPointerUp(e) {
+    if (activeHandleIdx !== -1) {
+      activeHandleIdx = -1;
+      drawNumberLine();
+    }
+  }
+
+  function syncHandlesToInputs() {
+    const level = levels[currentLevelIdx];
+    if (!level.hasNumberline) return;
+
+    const sorted = [...handles].sort((a,b) => a - b);
+    const inputs = document.querySelectorAll('#substep-0 input[type="number"]');
+    sorted.forEach((val, i) => {
+      if (inputs[i]) inputs[i].value = val;
+    });
+  }
+
+  function syncInputsToHandles() {
+    const level = levels[currentLevelIdx];
+    if (!level.hasNumberline) return;
+
+    const inputs = document.querySelectorAll('#substep-0 input[type="number"]');
+    handles.forEach((_, i) => {
+      if (inputs[i] && inputs[i].value !== "") {
+        handles[i] = parseInt(inputs[i].value) || 0;
+      }
+    });
+    drawNumberLine();
+  }
+
+  function loadLevel() {
+    const level = levels[currentLevelIdx];
+    const isReview = currentLevelIdx < maxUnlockedLevelIdx;
+
+    document.getElementById('level-title').innerText = level.title;
+    document.getElementById('concept-text').innerHTML = level.concept;
+    document.getElementById('math-question').innerText = level.question;
+    document.getElementById('hint-text').style.display = 'none';
+    document.getElementById('feedback').style.display = 'none';
+    document.getElementById('hint-btn').style.display = 'none';
+
+    document.getElementById('review-tag').style.display = isReview ? 'inline' : 'none';
+    document.getElementById('active-action-area').style.display = isReview ? 'none' : 'block';
+    document.getElementById('review-action-area').style.display = isReview ? 'block' : 'none';
+
+    const numberlineBox = document.getElementById('numberline-box');
+    if (level.hasNumberline) {
+      numberlineBox.style.display = 'block';
+      handles = isReview ? [...level.subSteps[0].answers] : [...(level.defaultHandles || [-2, 2])];
+    } else {
+      numberlineBox.style.display = 'none';
+    }
+
+    const container = document.getElementById('steps-container');
+    container.innerHTML = '';
+
+    level.subSteps.forEach((step, idx) => {
+      const stepEl = document.createElement('div');
+      stepEl.className = 'step-subgroup';
+      stepEl.id = `substep-${idx}`;
+      stepEl.innerHTML = `
+        <div class="step-label" id="label-substep-${idx}">
+          ${step.title}
+        </div>
+        ${step.html}
+      `;
+      container.appendChild(stepEl);
+    });
+
+    if (isReview) {
+      level.subSteps.forEach((step, idx) => {
+        const stepContainer = document.getElementById(`substep-${idx}`);
+        stepContainer.style.display = 'flex';
+        stepContainer.classList.add('completed');
+        const inputs = stepContainer.querySelectorAll('input[type="number"]');
+        inputs.forEach((inp, iIdx) => {
+          inp.value = step.answers[iIdx];
+          inp.disabled = true;
+        });
+
+        const label = document.getElementById(`label-substep-${idx}`);
+        if (!label.querySelector('.step-badge-success')) {
+          const badge = document.createElement('span');
+          badge.className = 'step-badge-success';
+          badge.innerText = ' ✓ 正確';
+          label.appendChild(badge);
+        }
+      });
+    } else {
+      renderSubStepsVisibility();
+      if (level.hasNumberline) syncHandlesToInputs();
+    }
+
+    if (level.hasNumberline) {
+      setTimeout(() => {
+        resizeCanvas();
+        drawNumberLine();
+      }, 60);
+    }
+    
+    updateProgressBar();
+  }
+
+  function jumpToLevel(targetIdx) {
+    if (targetIdx <= maxUnlockedLevelIdx && targetIdx !== currentLevelIdx) {
+      currentLevelIdx = targetIdx;
+      currentSubStepIdx = 0;
+      wrongAttempts = 0;
+      loadLevel();
+    }
+  }
+
+  function returnToLatestLevel() {
+    jumpToLevel(maxUnlockedLevelIdx);
+  }
+
+  function renderSubStepsVisibility() {
+    const level = levels[currentLevelIdx];
+    level.subSteps.forEach((_, idx) => {
+      const el = document.getElementById(`substep-${idx}`);
+      if (!el) return;
+
+      if (idx < currentSubStepIdx) {
+        el.style.display = 'flex';
+        el.classList.add('completed');
+        el.classList.remove('active');
+      } else if (idx === currentSubStepIdx) {
+        el.style.display = 'flex';
+        el.classList.add('active');
+        el.classList.remove('completed');
+        const firstInput = el.querySelector('input[type="number"]');
+        if (firstInput) firstInput.focus();
+      } else {
+        el.style.display = 'none';
+      }
+    });
+  }
+
+  function updateProgressBar() {
+    const total = levels.length;
+    const fillPercent = (maxUnlockedLevelIdx / (total - 1)) * 100;
+    document.getElementById('progress-fill').style.width = fillPercent + '%';
+
+    for (let i = 0; i < total; i++) {
+      const node = document.getElementById(`node-${i + 1}`);
+      node.classList.remove('active', 'completed', 'unlocked');
+      
+      if (i <= maxUnlockedLevelIdx) {
+        node.classList.add('unlocked');
+      }
+
+      if (i < maxUnlockedLevelIdx) {
+        node.classList.add('completed');
+        node.innerText = '✓';
+      } else if (i === maxUnlockedLevelIdx) {
+        node.innerText = i + 1;
+      } else {
+        node.innerText = i + 1;
+      }
+
+      if (i === currentLevelIdx) {
+        node.classList.add('active');
+      }
+    }
+  }
+
+  function checkAnswer() {
+    const level = levels[currentLevelIdx];
+    const step = level.subSteps[currentSubStepIdx];
+    
+    const stepContainer = document.getElementById(`substep-${currentSubStepIdx}`);
+    const inputs = stepContainer.querySelectorAll('input[type="number"]');
+    const userVals = Array.from(inputs).map(inp => parseFloat(inp.value));
+
+    if (userVals.some(v => isNaN(v))) {
+      showFeedback('wrong', '⚠️ 請先填寫完整數值再提交！');
+      return;
+    }
+
+    const isCorrect = userVals.length === step.answers.length && 
+                      userVals.every((v, idx) => v === step.answers[idx]);
+
+    if (isCorrect) {
+      inputs.forEach(inp => inp.disabled = true);
+      
+      const label = document.getElementById(`label-substep-${currentSubStepIdx}`);
+      if (!label.querySelector('.step-badge-success')) {
+        const badge = document.createElement('span');
+        badge.className = 'step-badge-success';
+        badge.innerText = ' ✓ 正確';
+        label.appendChild(badge);
+      }
+
+      currentSubStepIdx++;
+      wrongAttempts = 0;
+      document.getElementById('hint-btn').style.display = 'none';
+      document.getElementById('hint-text').style.display = 'none';
+
+      if (currentSubStepIdx < level.subSteps.length) {
+        showFeedback('correct', '🎉 步驟正確！進入下一個小關卡！');
+        renderSubStepsVisibility();
+      } else {
+        showFeedback('correct', '🎉 太棒了！本關卡全部步驟皆計算正確！');
+        
+        if (currentLevelIdx === maxUnlockedLevelIdx) {
+          maxUnlockedLevelIdx = Math.min(levels.length, maxUnlockedLevelIdx + 1);
+        }
+
+        setTimeout(() => {
+          if (maxUnlockedLevelIdx < levels.length) {
+            currentLevelIdx = maxUnlockedLevelIdx;
+            currentSubStepIdx = 0;
+            loadLevel();
+          } else {
+            showVictoryScreen();
+          }
+        }, 1200);
+      }
+    } else {
+      wrongAttempts++;
+      showFeedback('wrong', '❌ 答案不太對喔，再檢查一下正負號或計算過程！');
+      if (wrongAttempts >= 2) {
+        document.getElementById('hint-btn').style.display = 'block';
+        document.getElementById('hint-text').innerText = step.hint;
+      }
+    }
+  }
+
+  function showFeedback(type, message) {
+    const feedbackEl = document.getElementById('feedback');
+    feedbackEl.style.display = 'block';
+    feedbackEl.className = `feedback ${type}`;
+    feedbackEl.innerText = message;
+  }
+
+  function toggleHint() {
+    const hintBox = document.getElementById('hint-text');
+    hintBox.style.display = hintBox.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function showVictoryScreen() {
+    document.getElementById('game-ui').style.display = 'none';
+    document.getElementById('victory-ui').style.display = 'block';
+    document.getElementById('progress-fill').style.width = '100%';
+    const nodeLast = document.getElementById('node-6');
+    if (nodeLast) {
+      nodeLast.classList.add('completed');
+      nodeLast.innerText = '✓';
+    }
+    launchConfetti();
+  }
+
+  function resetGame() {
+    if (confettiAnimationId !== null) {
+      cancelAnimationFrame(confettiAnimationId);
+      confettiAnimationId = null;
+    }
+
+    const cCanvas = document.getElementById('confetti');
+    if (cCanvas) {
+      const cCtx = cCanvas.getContext('2d');
+      cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
+    }
+
+    currentLevelIdx = 0;
+    maxUnlockedLevelIdx = 0;
+    currentSubStepIdx = 0;
+    wrongAttempts = 0;
+    levels = generateRandomLevels();
+
+    document.getElementById('start-ui').style.display = 'flex';
+    document.getElementById('game-ui').style.display = 'none';
+    document.getElementById('victory-ui').style.display = 'none';
+  }
+
+  function launchConfetti() {
+    const cCanvas = document.getElementById('confetti');
+    const cCtx = cCanvas.getContext('2d');
+    cCanvas.width = cCanvas.parentElement.clientWidth;
+    cCanvas.height = cCanvas.parentElement.clientHeight;
+
+    const pieces = [];
+    const colors = ['#f43f5e', '#3b82f6', '#10b981', '#eab308', '#a855f7'];
+
+    for (let i = 0; i < 90; i++) {
+      pieces.push({
+        x: Math.random() * cCanvas.width,
+        y: Math.random() * cCanvas.height - cCanvas.height,
+        size: Math.random() * 8 + 5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        speed: Math.random() * 3 + 2,
+        rotation: Math.random() * 360
+      });
+    }
+
+    function draw() {
+      cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
+      pieces.forEach((p) => {
+        cCtx.save();
+        cCtx.fillStyle = p.color;
+        cCtx.translate(p.x, p.y);
+        cCtx.rotate((p.rotation * Math.PI) / 180);
+        cCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        cCtx.restore();
+
+        p.y += p.speed;
+        p.rotation += 2;
+
+        if (p.y > cCanvas.height) {
+          p.y = -10;
+          p.x = Math.random() * cCanvas.width;
+        }
+      });
+      confettiAnimationId = requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  window.addEventListener('resize', () => {
+    resizeCanvas();
+    if (levels[currentLevelIdx] && levels[currentLevelIdx].hasNumberline) {
+      drawNumberLine();
+    }
+  });
+
+  initCanvas();
+  resetGame();
+</script>
+</body>
+</html>
