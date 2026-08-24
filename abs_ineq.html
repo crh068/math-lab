@@ -552,7 +552,7 @@
   let activeHandleIdx = -1;
   const minVal = -15, maxVal = 15;
 
-  // 隨機生成題目數據 (共 6 關)
+  // 隨機生成題目數據 (共 6 關，皆確保解答為整數)
   function generateRandomLevels() {
     return [
       // 關卡 1: |x| < a
@@ -617,7 +617,7 @@
           ]
         };
       })(),
-      // 關卡 3: |2x + k| < c (k 不為 0)
+      // 關卡 3: |2x + k| < c
       (() => {
         const mOptions = [-3, -2, -1, 1, 2, 3];
         const m = mOptions[Math.floor(Math.random() * mOptions.length)];
@@ -737,24 +737,25 @@
           ]
         };
       })(),
-      // 關卡 6: |2x - k| > c (k 不為 0)
+      // 關卡 6: |2x + k| > c (修正確保全為整數解)
       (() => {
-        const kArr = [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5];
-        const cArr = [3, 5, 7, 9];
-        const k = kArr[Math.floor(Math.random() * kArr.length)];
-        const c = cArr[Math.floor(Math.random() * cArr.length)];
+        const mOptions = [-3, -2, -1, 1, 2, 3];
+        const m = mOptions[Math.floor(Math.random() * mOptions.length)];
+        const r = Math.floor(Math.random() * 4) + 2;
+        const k = -2 * m;
+        const c = 2 * r;
         const sign = k > 0 ? `+ ${k}` : `- ${Math.abs(k)}`;
         const innerExpr = `2x ${sign}`;
         const step2Op = k > 0 ? `-${k}` : `+${Math.abs(k)}`;
-        
+
         const ans1_step2 = -c - k;
         const ans2_step2 = c - k;
-        const ans1_step3 = ans1_step2 / 2;
-        const ans2_step3 = ans2_step2 / 2;
+        const ans1_step3 = m - r;
+        const ans2_step3 = m + r;
 
         return {
           id: 6,
-          title: "關卡 6：終極挑戰（|2x - b| > c）",
+          title: "關卡 6：終極挑戰（|2x + b| > c）",
           concept: `💡 <b>關鍵觀念</b>：結合倍率與平移！先去絕對值 ➔ 移項消去常數 ➔ 同除以 2 解出 x。`,
           question: `|${innerExpr}| > ${c}`,
           hasNumberline: false,
