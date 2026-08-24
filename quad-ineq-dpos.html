@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>一元二次不等式(D>0)</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-sub: #475569;
+      --border: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px 12px;
+      font-size: 18px;
+    }
+
+    /* 灑花 Canvas 畫布 */
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1001;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 850px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      padding: 28px 24px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-sub);
+    }
+
+    .quest-tracker {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 16px 0 12px 0;
+    }
+
+    .quest-badge {
+      padding: 8px 16px;
+      border-radius: 20px;
+      background: #e2e8f0;
+      color: #64748b;
+      font-size: 0.95rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .quest-badge.active {
+      background: #e0e7ff;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+
+    .quest-badge.completed {
+      background: #dcfce7;
+      color: #15803d;
+      border: 2px solid #86efac;
+    }
+
+    .q-header-banner {
+      text-align: center;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 1.25rem;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .q-header-banner.q1-mode {
+      background: #e0e7ff;
+      color: #3730a3;
+      border: 2px solid #818cf8;
+    }
+
+    .q-header-banner.q2-mode {
+      background: #fef3c7;
+      color: #92400e;
+      border: 2px solid #f59e0b;
+    }
+
+    .math-x, i {
+      font-family: 'Times New Roman', Times, serif;
+      font-style: italic;
+      font-weight: bold;
+    }
+
+    .level-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 0 24px 0;
+      position: relative;
+    }
+
+    .level-nav::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 10%;
+      right: 10%;
+      height: 4px;
+      background: var(--border);
+      z-index: 1;
+      transform: translateY(-50%);
+    }
+
+    .nav-btn {
+      position: relative;
+      z-index: 2;
+      background: var(--card-bg);
+      border: 3px solid var(--border);
+      color: #94a3b8;
+      min-width: 60px;
+      height: 60px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 0 12px;
+      transition: all 0.25s ease;
+      user-select: none;
+    }
+
+    .nav-btn.active {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #e0e7ff;
+      transform: scale(1.05);
+    }
+
+    .nav-btn.unlocked {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .nav-btn.disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .curriculum-banner {
+      background: #eff6ff;
+      border: 2px solid #93c5fd;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      color: #1e40af;
+      font-weight: bold;
+      font-size: 1rem;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .concept-card {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .concept-card h2 {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-bottom: 16px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 8px;
+    }
+
+    .concept-list {
+      list-style: none;
+    }
+
+    .concept-list li {
+      margin-bottom: 16px;
+      line-height: 1.6;
+      font-size: 1.15rem;
+      position: relative;
+      padding-left: 28px;
+    }
+
+    .concept-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .problem-box {
+      background: #eef2ff;
+      border-left: 6px solid var(--primary);
+      border-radius: 8px;
+      padding: 18px 20px;
+      font-size: 1.45rem;
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+
+    .problem-raw-sub {
+      font-size: 1.15rem;
+      color: #64748b;
+      margin-bottom: 6px;
+      font-weight: normal;
+    }
+
+    .problem-sub-factored {
+      font-size: 1.2rem;
+      color: var(--primary);
+      margin-top: 6px;
+      font-weight: normal;
+    }
+
+    .transform-interactive-card {
+      background: #fffbe8;
+      border: 2px dashed #f59e0b;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .transform-interactive-card h3 {
+      color: #b45309;
+      font-size: 1.3rem;
+      margin-bottom: 12px;
+    }
+
+    .transform-form {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin: 16px 0 10px 0;
+    }
+
+    .tf-input {
+      width: 75px;
+      height: 50px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-align: center;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      outline: none;
+      background: white;
+    }
+
+    .tf-select-sign {
+      height: 50px;
+      padding: 0 8px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      background: #f8fafc;
+      color: var(--primary);
+      cursor: pointer;
+    }
+
+    .tf-select {
+      height: 50px;
+      padding: 0 10px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      background: white;
+      color: var(--primary);
+      cursor: pointer;
+    }
+
+    .tf-live-preview-box {
+      margin-bottom: 16px;
+      font-size: 1.15rem;
+      color: #92400e;
+      background: #fef3c7;
+      padding: 8px 16px;
+      border-radius: 10px;
+      display: inline-block;
+      font-weight: bold;
+    }
+
+    .recap-card {
+      background: #ecfdf5;
+      border: 2px solid #a7f3d0;
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .recap-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.15rem;
+      color: #065f46;
+    }
+
+    .recap-badge {
+      background: #10b981;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .mini-number-line {
+      position: relative;
+      height: 70px;
+      width: 100%;
+      background: white;
+      border-radius: 10px;
+      border: 1px solid #a7f3d0;
+      margin-top: 4px;
+    }
+
+    .mini-line {
+      position: absolute;
+      top: 60%;
+      left: 8%;
+      right: 12%;
+      height: 4px;
+      background: #475569;
+      transform: translateY(-50%);
+    }
+
+    .mini-line::after {
+      content: '';
+      position: absolute;
+      right: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 10px solid #475569;
+    }
+
+    .mini-point {
+      position: absolute;
+      top: 60%;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      border: 4px solid var(--primary);
+      transform: translate(-50%, -50%);
+      z-index: 5;
+    }
+
+    .mini-point.solid { background: var(--primary); }
+
+    .mini-point-label {
+      position: absolute;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-weight: bold;
+      font-size: 1rem;
+      color: #1e293b;
+    }
+
+    .mini-region-tag {
+      position: absolute;
+      top: 10px;
+      transform: translateX(-50%);
+      font-weight: bold;
+      font-size: 1.1rem;
+      padding: 2px 10px;
+      border-radius: 12px;
+    }
+
+    .mini-region-tag.pos { background: #dcfce7; color: #15803d; }
+    .mini-region-tag.neg { background: #fee2e2; color: #b91c1c; }
+
+    .handwritten-card {
+      background: #ffffff;
+      border: 2px solid #cbd5e1;
+      border-radius: 16px;
+      padding: 24px 16px;
+      margin: 20px auto;
+      max-width: 520px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .cross-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 2.2rem;
+      font-weight: bold;
+      user-select: none;
+    }
+
+    .term-blue { color: #2563eb; font-size: 2.4rem; }
+    .term-red-x {
+      color: #dc2626;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      font-size: 2.2rem;
+    }
+
+    .bracket-symbol { color: #2563eb; font-size: 2.8rem; font-weight: 300; }
+    .cross-svg-box {
+      width: 70px;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .inputs-column { display: flex; flex-direction: column; gap: 14px; }
+    .hw-input {
+      width: 90px;
+      height: 54px;
+      font-size: 1.8rem;
+      font-weight: bold;
+      text-align: center;
+      border: 3px solid #94a3b8;
+      border-radius: 12px;
+      color: #dc2626;
+      outline: none;
+      background: #fafafa;
+    }
+
+    .hw-input:focus {
+      border-color: #2563eb;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+
+    .red-divider {
+      width: 100%;
+      height: 4px;
+      background-color: #dc2626;
+      margin: 20px 0 16px 0;
+      border-radius: 2px;
+    }
+
+    .cross-sum-result {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #16a34a;
+      min-height: 2.5rem;
+      letter-spacing: 1px;
+    }
+
+    .factored-preview {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 1.3rem;
+      color: #475569;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px dashed #cbd5e1;
+    }
+
+    .number-line-container {
+      position: relative;
+      margin: 40px 0 30px 0;
+      height: 140px;
+      width: 100%;
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .number-line {
+      position: absolute;
+      top: 60%;
+      left: 8%;
+      right: 12%;
+      height: 6px;
+      background: #475569;
+      transform: translateY(-50%);
+    }
+
+    .number-line::after {
+      content: '';
+      position: absolute;
+      right: -14px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-top: 9px solid transparent;
+      border-bottom: 9px solid transparent;
+      border-left: 15px solid #475569;
+    }
+
+    .point {
+      position: absolute;
+      top: 60%;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: white;
+      border: 5px solid var(--primary);
+      transform: translate(-50%, -50%);
+      z-index: 5;
+    }
+
+    .point.solid { background: var(--primary); }
+
+    .point-label {
+      position: absolute;
+      top: 38px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-weight: bold;
+      font-size: 1.3rem;
+    }
+
+    .region-btn {
+      position: absolute;
+      top: 15px;
+      transform: translateX(-50%);
+      min-width: 60px;
+      height: 48px;
+      border-radius: 24px;
+      border: 2px solid var(--border);
+      background: white;
+      font-size: 1.3rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      user-select: none;
+    }
+
+    .region-btn.positive { background: #dcfce7; color: #15803d; border-color: #86efac; }
+    .region-btn.negative { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+
+    .radio-group {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin: 20px 0;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      background: #f1f5f9;
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: 2px solid transparent;
+    }
+
+    .radio-label:has(input:checked) {
+      border-color: var(--primary);
+      background: #e0e7ff;
+    }
+
+    .radio-label input { width: 22px; height: 22px; }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .option-card {
+      padding: 22px;
+      border: 3px solid var(--border);
+      border-radius: 14px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 1.3rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      background: white;
+    }
+
+    .option-card.selected {
+      border-color: var(--primary);
+      background: #e0e7ff;
+      color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      min-height: 60px;
+      padding: 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 20px;
+    }
+
+    .btn:active { background: var(--primary-hover); }
+
+    .btn-next {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 12px 24px;
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.15rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .btn-next:hover {
+      background: #059669;
+      transform: translateY(-2px);
+    }
+
+    .feedback {
+      margin-top: 20px;
+      padding: 18px 20px;
+      border-radius: 12px;
+      display: none;
+      font-size: 1.15rem;
+      line-height: 1.6;
+    }
+
+    .feedback.success {
+      display: block !important;
+      background: #dcfce7;
+      color: #15803d;
+      border: 2px solid #86efac;
+    }
+
+    .feedback.error {
+      display: block !important;
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 2px solid #fca5a5;
+    }
+
+    .celebration-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(5px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .celebration-card {
+      background: white;
+      padding: 36px 28px;
+      border-radius: 24px;
+      max-width: 580px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .trophy-badge {
+      font-size: 4.5rem;
+      margin-bottom: 12px;
+    }
+
+    .celebration-card h2 {
+      font-size: 2rem;
+      color: #15803d;
+      margin-bottom: 12px;
+    }
+
+    .celebration-card p {
+      font-size: 1.15rem;
+      color: var(--text-sub);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .summary-box {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: left;
+      font-size: 1.05rem;
+      color: #334155;
+      margin-bottom: 24px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .summary-box div { margin-bottom: 10px; }
+    .summary-box div:last-child { margin-bottom: 0; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes popUp { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+    @media (max-width: 600px) {
+      .options-grid { grid-template-columns: 1fr; }
+      .cross-diagram { font-size: 1.8rem; }
+      .hw-input { width: 75px; height: 48px; font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 灑花專用全螢幕畫布 -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="container">
+    <header>
+      <h1>一元二次不等式(D>0)</h1>
+      <p class="subtitle">雙重題型挑戰：掌握二次項係數正負的解法心法</p>
+    </header>
+
+    <!-- 題目進度指示器 -->
+    <div class="quest-tracker">
+      <div class="quest-badge active" id="badge-q1">
+        <span>第 1 題：<i class="math-x">a</i> = 1 型</span>
+      </div>
+      <div class="quest-badge" id="badge-q2">
+        <span>第 2 題：<i class="math-x">a</i> = -1 型</span>
+      </div>
+    </div>
+
+    <!-- 當前題目顯眼識別橫幅 -->
+    <div class="q-header-banner q1-mode" id="q-header-banner">
+      <span id="q-header-title">📌 當前挑戰：【第 1 題】<i class="math-x">a</i> = 1 正係數型</span>
+    </div>
+
+    <!-- 頂部關卡導航列 -->
+    <div class="level-nav">
+      <button class="nav-btn active" id="nav-intro" onclick="switchStage('intro')">觀念</button>
+      <button class="nav-btn disabled" id="nav-1" onclick="switchStage(1)">關卡 1</button>
+      <button class="nav-btn disabled" id="nav-2" onclick="switchStage(2)">關卡 2</button>
+      <button class="nav-btn disabled" id="nav-3" onclick="switchStage(3)">關卡 3</button>
+    </div>
+
+    <!-- 觀念總覽畫面 -->
+    <div id="stage-intro" class="stage-block">
+      <div class="curriculum-banner">
+        📌 <b>教材單元定位：</b>判別式 <b><i class="math-x">D</i> &gt; 0</b>（與 <i class="math-x">x</i> 軸相交於相異兩點）之解集題型
+      </div>
+
+      <div class="concept-card">
+        <h2>觀念統整：一元二次不等式解法步驟</h2>
+        <ul class="concept-list">
+          <li>
+            <b>二次項係數化為正數（互動練習）：</b>確保最高次項係數為正數。若遇到 <span class="math-expr"><i class="math-x">a</i> = -1</span>，將兩邊<b>同乘以 -1</b>，同時將<b>不等號方向翻轉</b>（例如：&gt; 翻轉為 &lt;）。
+          </li>
+          <li>
+            <b>因式分解求邊界：</b>利用十字相乘法拆解成 
+            <span class="math-expr">(<i class="math-x">x</i> + a)(<i class="math-x">x</i> + b)</span> 形式，求得兩邊界根 <span class="math-expr"><i class="math-x">x</i> = p, q</span>。
+          </li>
+          <li>
+            <b>數線點位繪製：</b>將兩根標記於數線上。不含等號（<span class="math-expr">&lt;, &gt;</span>）畫<b>空心點</b>；含等號（<span class="math-expr">&le;, &ge;</span>）畫<b>實心點</b>。
+          </li>
+          <li>
+            <b>正負區間分界：</b>二次項係數為正時，數線右側由右至左依序填入「正 &rarr; 負 &rarr; 正」。
+          </li>
+          <li>
+            <b>選取解集：</b>整理後的式子「<b>&gt; 0 取正數區間</b>（兩側）」；「<b>&lt; 0 取負數區間</b>（中間）」。
+          </li>
+        </ul>
+      </div>
+      <button class="btn" onclick="startCompleteChallenge()">開始雙題關卡挑戰</button>
+    </div>
+
+    <!-- 關卡 1：係數整理與十字相乘法 -->
+    <div id="stage-1" class="stage-block" style="display: none;">
+      <div class="problem-box">
+        原題目：<span class="problem-raw-text"></span>
+      </div>
+
+      <!-- 第 2 題專屬：學生互動式同乘 -1 變號區 -->
+      <div id="a-negative-interactive" class="transform-interactive-card" style="display: none;">
+        <h3>⚡ 互動任務【步驟 1】：將二次項係數化為正數</h3>
+        <p style="font-size: 1.05rem; color: #78350f; margin-bottom: 10px;">
+          請將原式兩邊同乘以 -1，並選擇正確的正負號與係數，以及<b>翻轉後的不等號</b>：
+        </p>
+
+        <div class="transform-form">
+          <span><i class="math-x">x</i><sup>2</sup></span>
+          
+          <select id="tf-b-sign" class="tf-select-sign" onchange="updateTransformLivePreview()">
+            <option value="+">+</option>
+            <option value="-">-</option>
+          </select>
+          <input type="number" id="tf-b-num" class="tf-input" placeholder="b" min="0" oninput="updateTransformLivePreview()">
+          <span><i class="math-x">x</i></span>
+          
+          <select id="tf-c-sign" class="tf-select-sign" onchange="updateTransformLivePreview()">
+            <option value="+">+</option>
+            <option value="-">-</option>
+          </select>
+          <input type="number" id="tf-c-num" class="tf-input" placeholder="c" min="0" oninput="updateTransformLivePreview()">
+          
+          <select id="tf-op" class="tf-select" onchange="updateTransformLivePreview()">
+            <option value=">">&gt;</option>
+            <option value="<">&lt;</option>
+            <option value=">=">&ge;</option>
+            <option value="<=">&le;</option>
+          </select>
+          <span>0</span>
+        </div>
+
+        <div class="tf-live-preview-box">
+          實時式子預覽：<span id="tf-preview-expr"><i>x</i><sup>2</sup> + ...</span>
+        </div>
+
+        <button class="btn" style="background: #d97706;" onclick="checkTransformInteractive()">驗證變號與不等號翻轉</button>
+      </div>
+
+      <!-- 十字相乘卡片 -->
+      <div id="cross-multiplication-wrapper">
+        <p style="text-align: center; color: var(--text-sub); margin-bottom: 12px;">
+          【步驟 2】請在手寫十字相乘圖形中填入正確數字，拆解式子：
+        </p>
+
+        <div class="handwritten-card">
+          <div class="cross-diagram">
+            <span class="term-blue"><i class="math-x">x</i><sup>2</sup></span>
+            <span class="bracket-symbol">&lt;</span>
+            <div class="term-red-x">
+              <span class="math-x">x</span>
+              <span class="math-x">x</span>
+            </div>
+
+            <div class="cross-svg-box">
+              <svg class="cross-x-svg" viewBox="0 0 70 110">
+                <line x1="10" y1="20" x2="60" y2="90" stroke="#10b981" stroke-width="5" stroke-linecap="round"/>
+                <line x1="10" y1="90" x2="60" y2="20" stroke="#10b981" stroke-width="5" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <div class="inputs-column">
+              <input type="number" id="l1-a" class="hw-input" placeholder="a">
+              <input type="number" id="l1-b" class="hw-input" placeholder="b">
+            </div>
+            <span class="bracket-symbol">&gt;</span>
+            <span class="term-blue" id="l1-constant">+6</span>
+          </div>
+
+          <div class="red-divider"></div>
+
+          <div class="cross-sum-result" id="cross-sum-text">
+            0<i class="math-x">x</i> + 0<i class="math-x">x</i> = 0<i class="math-x">x</i>
+          </div>
+
+          <div class="factored-preview" id="factored-preview-text">
+            因式分解預覽：( <i class="math-x">x</i> + a )( <i class="math-x">x</i> + b ) &lt; 0
+          </div>
+        </div>
+
+        <button class="btn" onclick="checkLevel1()">驗證因式分解</button>
+      </div>
+    </div>
+
+    <!-- 關卡 2：數線防線 -->
+    <div id="stage-2" class="stage-block" style="display: none;">
+      <div class="problem-box">
+        <div id="l2-raw-problem-box" class="problem-raw-sub" style="display: none;">
+          原題目：<span class="problem-raw-text"></span>
+        </div>
+        <div>
+          <span class="stage-title-label-2">待解不等式：</span><span class="problem-transformed-text"></span>
+        </div>
+        <div class="problem-sub-factored">
+          因式分解型態：<span class="problem-factored-text"></span>
+        </div>
+      </div>
+
+      <div class="recap-card">
+        <div class="recap-header">
+          <span class="recap-badge">關卡 1 成果</span>
+          <span id="l1-recap-text"></span>
+        </div>
+      </div>
+
+      <p style="text-align: center; color: var(--text-sub); margin-bottom: 12px;">
+        【關卡 2】請選擇數線邊界點型態，並點擊按鈕切換各區間的正負號：
+      </p>
+
+      <div class="radio-group">
+        <label class="radio-label">
+          <input type="radio" name="pointType" value="open" onchange="renderPoints()">
+          空心點（不含等號 &lt;, &gt;）
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="pointType" value="solid" onchange="renderPoints()">
+          實心點（包含等號 &le;, &ge;）
+        </label>
+      </div>
+
+      <div class="number-line-container">
+        <div class="number-line"></div>
+        
+        <button class="region-btn" id="reg-1" style="left: 20%;" onclick="toggleRegion(1)">?</button>
+        <button class="region-btn" id="reg-2" style="left: 50%;" onclick="toggleRegion(2)">?</button>
+        <button class="region-btn" id="reg-3" style="left: 80%;" onclick="toggleRegion(3)">?</button>
+
+        <div class="point" id="p1" style="left: 35%;"><span class="point-label" id="p1-label">2</span></div>
+        <div class="point" id="p2" style="left: 65%;"><span class="point-label" id="p2-label">3</span></div>
+      </div>
+
+      <button class="btn" onclick="checkLevel2()">驗證數線標記</button>
+    </div>
+
+    <!-- 關卡 3：區域解鎖 -->
+    <div id="stage-3" class="stage-block" style="display: none;">
+      <div class="problem-box">
+        <div id="l3-raw-problem-box" class="problem-raw-sub" style="display: none;">
+          原題目：<span class="problem-raw-text"></span>
+        </div>
+        <div>
+          <span class="stage-title-label-3">求解不等式：</span><span class="problem-transformed-text"></span>
+        </div>
+        <div class="problem-sub-factored">
+          因式分解型態：<span class="problem-factored-text"></span>
+        </div>
+      </div>
+
+      <div class="recap-card">
+        <div class="recap-header">
+          <span class="recap-badge">關卡 2 數線成果</span>
+          <span id="l2-recap-text"></span>
+        </div>
+        
+        <div class="mini-number-line">
+          <div class="mini-line"></div>
+          <span class="mini-region-tag pos" style="left: 20%;">+</span>
+          <span class="mini-region-tag neg" style="left: 50%;">-</span>
+          <span class="mini-region-tag pos" style="left: 80%;">+</span>
+          <div class="mini-point" id="m-p1" style="left: 35%;"><span class="mini-point-label" id="m-p1-label">2</span></div>
+          <div class="mini-point" id="m-p2" style="left: 65%;"><span class="mini-point-label" id="m-p2-label">3</span></div>
+        </div>
+      </div>
+
+      <p style="text-align: center; color: var(--text-sub); margin-bottom: 12px;">
+        【關卡 3】請根據關卡 2 的數線結果，選出正確的解集：
+      </p>
+
+      <div class="options-grid" id="options-container">
+        <!-- 動態渲染選項 -->
+      </div>
+
+      <button class="btn" onclick="checkLevel3()">提交最終答案</button>
+    </div>
+
+    <!-- 反饋訊息區 -->
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <!-- 最終完成學習之鼓勵彈窗 -->
+  <div id="celebration-modal" class="celebration-overlay" style="display: none;">
+    <div class="celebration-card">
+      <div class="trophy-badge">🏆</div>
+      <h2>恭喜完成雙重關卡！</h2>
+      <p>你已經完美破解 <i class="math-x">a</i> = 1 與 <i class="math-x">a</i> = -1 兩大題型！</p>
+      
+      <div class="summary-box" id="celebration-summary">
+        <!-- 動態雙題覆盤 -->
+      </div>
+
+      <button class="btn" onclick="restartCompleteApp()">重新產生全新題目挑戰</button>
+    </div>
+  </div>
+
+  <script>
+    let currentQIndex = 1; // 1: a=1, 2: a=-1
+    let unlockedStage = 1;
+    let currentStage = 'intro';
+    
+    let questionsData = { 1: {}, 2: {} };
+    let completedLog = { 1: null, 2: null };
+    
+    let userRegions = ["?", "?", "?"];
+    let selectedOption = null;
+    let isTransformedVerified = false;
+
+    /* --- 動態灑花 (Confetti) 動畫邏輯 --- */
+    let confettiAnimId = null;
+    let confettiParticles = [];
+
+    function startConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const colors = ['#f43f5e', '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#facc15'];
+      confettiParticles = [];
+      for (let i = 0; i < 120; i++) {
+        confettiParticles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          size: Math.random() * 10 + 6,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: Math.random() * 4 - 2,
+          vy: Math.random() * 3 + 2,
+          rot: Math.random() * 360,
+          vrot: Math.random() * 10 - 5
+        });
+      }
+
+      function update() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        confettiParticles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vrot;
+
+          if (p.y > canvas.height) {
+            p.y = -20;
+            p.x = Math.random() * canvas.width;
+          }
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rot * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          ctx.restore();
+        });
+        confettiAnimId = requestAnimationFrame(update);
+      }
+
+      if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+      update();
+    }
+
+    function stopConfetti() {
+      if (confettiAnimId) {
+        cancelAnimationFrame(confettiAnimId);
+        confettiAnimId = null;
+      }
+      const canvas = document.getElementById('confetti-canvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      confettiParticles = [];
+    }
+
+    window.addEventListener('resize', () => {
+      const canvas = document.getElementById('confetti-canvas');
+      if (canvas && confettiAnimId) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+    });
+
+    /* --- 主要教學學具邏輯 --- */
+    function formatPolynomial(a, b, c, opHtml) {
+      let str = "";
+      if (a === 1) str += "<i>x</i><sup>2</sup>";
+      else str += "-<i>x</i><sup>2</sup>";
+
+      if (b === 1) str += " + <i>x</i>";
+      else if (b === -1) str += " - <i>x</i>";
+      else if (b > 0) str += ` + ${b}<i>x</i>`;
+      else if (b < 0) str += ` - ${Math.abs(b)}<i>x</i>`;
+
+      if (c > 0) str += ` + ${c}`;
+      else if (c < 0) str += ` - ${Math.abs(c)}`;
+
+      str += ` ${opHtml} 0`;
+      return str;
+    }
+
+    function formatFactorVal(val) {
+      return val >= 0 ? `+ ${val}` : `- ${Math.abs(val)}`;
+    }
+
+    function flipOp(op) {
+      if (op === '<') return '>';
+      if (op === '>') return '<';
+      if (op === '<=') return '>=';
+      if (op === '>=') return '<=';
+      return op;
+    }
+
+    function getOpHtml(op) {
+      if (op === '<') return '&lt;';
+      if (op === '>') return '&gt;';
+      if (op === '<=') return '&le;';
+      if (op === '>=') return '&ge;';
+      return op;
+    }
+
+    function generateQuestionData(aCoeff, forceInclusive) {
+      const candidates = [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5];
+      let p = candidates[Math.floor(Math.random() * candidates.length)];
+      let q = candidates[Math.floor(Math.random() * candidates.length)];
+      
+      while (p === q) {
+        q = candidates[Math.floor(Math.random() * candidates.length)];
+      }
+
+      if (p > q) { let temp = p; p = q; q = temp; }
+
+      const allOps = [
+        { op: '<', html: '&lt;', isInclusive: false },
+        { op: '>', html: '&gt;', isInclusive: false },
+        { op: '<=', html: '&le;', isInclusive: true },
+        { op: '>=', html: '&ge;', isInclusive: true }
+      ];
+
+      const availableOps = (forceInclusive !== undefined) 
+        ? allOps.filter(o => o.isInclusive === forceInclusive)
+        : allOps;
+
+      const selectedOp = availableOps[Math.floor(Math.random() * availableOps.length)];
+
+      const transB = -(p + q);
+      const transC = p * q;
+
+      let rawOp = selectedOp.op;
+      let transOp = selectedOp.op;
+
+      if (aCoeff === -1) {
+        rawOp = flipOp(selectedOp.op);
+      }
+
+      let rawB = (aCoeff === 1) ? transB : -transB;
+      let rawC = (aCoeff === 1) ? transC : -transC;
+
+      const rawPolyHTML = formatPolynomial(aCoeff, rawB, rawC, getOpHtml(rawOp));
+      const transPolyHTML = formatPolynomial(1, transB, transC, getOpHtml(transOp));
+
+      const factorA = -p;
+      const factorB = -q;
+      const factoredPolyHTML = `(<i>x</i> ${formatFactorVal(factorA)})(<i>x</i> ${formatFactorVal(factorB)}) ${getOpHtml(transOp)} 0`;
+
+      const targetSign = (transOp === '<' || transOp === '<=') ? '-' : '+';
+
+      const optBetweenOpen = `${p} &lt; <i>x</i> &lt; ${q}`;
+      const optBetweenClosed = `${p} &le; <i>x</i> &le; ${q}`;
+      const optOutsideOpen = `<i>x</i> &lt; ${p} 或 <i>x</i> &gt; ${q}`;
+      const optOutsideClosed = `<i>x</i> &le; ${p} 或 <i>x</i> &ge; ${q}`;
+
+      let correctKey = '';
+      if (transOp === '<') correctKey = 'between_open';
+      if (transOp === '<=') correctKey = 'between_closed';
+      if (transOp === '>') correctKey = 'outside_open';
+      if (transOp === '>=') correctKey = 'outside_closed';
+
+      const optionsList = [
+        { key: 'between_open', label: 'A', text: optBetweenOpen },
+        { key: 'outside_open', label: 'B', text: optOutsideOpen },
+        { key: 'between_closed', label: 'C', text: optBetweenClosed },
+        { key: 'outside_closed', label: 'D', text: optOutsideClosed }
+      ];
+
+      let correctOptionText = optionsList.find(o => o.key === correctKey).text;
+
+      return {
+        aCoeff, p, q,
+        rawB, rawC, rawOp,
+        transB, transC, transOp,
+        transOpHtml: getOpHtml(transOp),
+        rawPolyHTML,
+        transPolyHTML,
+        factoredPolyHTML,
+        isInclusive: selectedOp.isInclusive,
+        targetSign,
+        factorA, factorB,
+        correctKey,
+        correctOptionText,
+        optionsList
+      };
+    }
+
+    function initBothQuestions() {
+      const q1Inclusive = Math.random() < 0.5;
+
+      questionsData[1] = generateQuestionData(1, q1Inclusive);
+      questionsData[2] = generateQuestionData(-1, !q1Inclusive);
+      completedLog = { 1: null, 2: null };
+      
+      document.getElementById('badge-q1').className = 'quest-badge active';
+      document.getElementById('badge-q2').className = 'quest-badge';
+    }
+
+    function loadQuestionUI(qIdx) {
+      currentQIndex = qIdx;
+      const q = questionsData[qIdx];
+
+      const banner = document.getElementById('q-header-banner');
+      const bannerTitle = document.getElementById('q-header-title');
+      const l2Raw = document.getElementById('l2-raw-problem-box');
+      const l3Raw = document.getElementById('l3-raw-problem-box');
+
+      if (q.aCoeff === 1) {
+        banner.className = 'q-header-banner q1-mode';
+        bannerTitle.innerHTML = '📌 當前挑戰：【第 1 題】<i class="math-x">a</i> = 1 正係數型';
+        l2Raw.style.display = 'none';
+        l3Raw.style.display = 'none';
+        document.querySelectorAll('.stage-title-label-2').forEach(el => el.innerText = "待解不等式：");
+        document.querySelectorAll('.stage-title-label-3').forEach(el => el.innerText = "求解不等式：");
+      } else {
+        banner.className = 'q-header-banner q2-mode';
+        bannerTitle.innerHTML = '⚡ 當前挑戰：【第 2 題】<i class="math-x">a</i> = -1 負係數型';
+        l2Raw.style.display = 'block';
+        l3Raw.style.display = 'block';
+        document.querySelectorAll('.stage-title-label-2').forEach(el => el.innerText = "整理後的式子：");
+        document.querySelectorAll('.stage-title-label-3').forEach(el => el.innerText = "求解整理後的式子：");
+      }
+
+      document.querySelectorAll('.problem-raw-text').forEach(el => el.innerHTML = q.rawPolyHTML);
+      document.querySelectorAll('.problem-transformed-text').forEach(el => el.innerHTML = q.transPolyHTML);
+      document.querySelectorAll('.problem-factored-text').forEach(el => el.innerHTML = q.factoredPolyHTML);
+
+      const interactiveCard = document.getElementById('a-negative-interactive');
+      const crossWrapper = document.getElementById('cross-multiplication-wrapper');
+
+      if (q.aCoeff === -1) {
+        interactiveCard.style.display = 'block';
+        crossWrapper.style.display = 'none';
+        isTransformedVerified = false;
+
+        document.getElementById('tf-b-sign').value = '+';
+        document.getElementById('tf-b-num').value = '';
+        document.getElementById('tf-c-sign').value = '+';
+        document.getElementById('tf-c-num').value = '';
+        document.getElementById('tf-op').value = '>';
+        updateTransformLivePreview();
+      } else {
+        interactiveCard.style.display = 'none';
+        crossWrapper.style.display = 'block';
+        isTransformedVerified = true;
+      }
+
+      document.getElementById('l1-constant').innerText = (q.transC >= 0 ? '+' : '') + q.transC;
+      document.getElementById('l1-a').value = '';
+      document.getElementById('l1-b').value = '';
+      updateHandwrittenMath();
+
+      document.querySelectorAll('input[name="pointType"]').forEach(r => r.checked = false);
+      document.getElementById('p1-label').innerText = q.p;
+      document.getElementById('p2-label').innerText = q.q;
+      renderPoints();
+
+      userRegions = ["?", "?", "?"];
+      for (let i = 1; i <= 3; i++) {
+        const btn = document.getElementById(`reg-${i}`);
+        btn.className = "region-btn";
+        btn.innerText = "?";
+      }
+
+      document.getElementById('m-p1-label').innerText = q.p;
+      document.getElementById('m-p2-label').innerText = q.q;
+      const mp1 = document.getElementById('m-p1');
+      const mp2 = document.getElementById('m-p2');
+      if (q.isInclusive) {
+        mp1.classList.add('solid');
+        mp2.classList.add('solid');
+      } else {
+        mp1.classList.remove('solid');
+        mp2.classList.remove('solid');
+      }
+
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+      q.optionsList.forEach(opt => {
+        const div = document.createElement('div');
+        div.className = 'option-card';
+        div.setAttribute('data-key', opt.key);
+        div.innerHTML = `${opt.label}) ${opt.text}`;
+        div.onclick = function() { selectOption(this, opt.key); };
+        optionsContainer.appendChild(div);
+      });
+
+      unlockedStage = 1;
+      selectedOption = null;
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.id !== 'nav-intro') {
+          btn.className = 'nav-btn disabled';
+        }
+      });
+    }
+
+    function updateTransformLivePreview() {
+      const bSign = document.getElementById('tf-b-sign').value;
+      const bNumVal = document.getElementById('tf-b-num').value;
+      const cSign = document.getElementById('tf-c-sign').value;
+      const cNumVal = document.getElementById('tf-c-num').value;
+      const opVal = document.getElementById('tf-op').value;
+
+      let expr = "<i>x</i><sup>2</sup>";
+
+      if (bNumVal !== "") {
+        const bNum = Math.abs(parseInt(bNumVal));
+        if (bNum === 1) {
+          expr += ` ${bSign} <i>x</i>`;
+        } else if (bNum === 0) {
+        } else {
+          expr += ` ${bSign} ${bNum}<i>x</i>`;
+        }
+      } else {
+        expr += ` ${bSign} b<i>x</i>`;
+      }
+
+      if (cNumVal !== "") {
+        const cNum = Math.abs(parseInt(cNumVal));
+        expr += ` ${cSign} ${cNum}`;
+      } else {
+        expr += ` ${cSign} c`;
+      }
+
+      expr += ` ${getOpHtml(opVal)} 0`;
+      document.getElementById('tf-preview-expr').innerHTML = expr;
+    }
+
+    document.getElementById('l1-a').addEventListener('input', updateHandwrittenMath);
+    document.getElementById('l1-b').addEventListener('input', updateHandwrittenMath);
+
+    function updateHandwrittenMath() {
+      const q = questionsData[currentQIndex];
+      const aVal = document.getElementById('l1-a').value;
+      const bVal = document.getElementById('l1-b').value;
+      const a = parseInt(aVal) || 0;
+      const b = parseInt(bVal) || 0;
+
+      const termA = `${a}<i>x</i>`;
+      const termB = (b >= 0) ? `+ ${b}<i>x</i>` : `- ${Math.abs(b)}<i>x</i>`;
+      const sum = a + b;
+      const sumTerm = `${sum}<i>x</i>`;
+
+      document.getElementById('cross-sum-text').innerHTML = `${termA} ${termB} = ${sumTerm}`;
+
+      const strA = aVal ? formatFactorVal(a) : '+ a';
+      const strB = bVal ? formatFactorVal(b) : '+ b';
+      document.getElementById('factored-preview-text').innerHTML = `因式分解預覽：( <i>x</i> ${strA} )( <i>x</i> ${strB} ) ${q.transOpHtml} 0`;
+    }
+
+    function showFeedback(text, isSuccess, customBtnHtml = '') {
+      const fb = document.getElementById('feedback');
+      fb.className = `feedback ${isSuccess ? 'success' : 'error'}`;
+      
+      let html = text;
+      if (customBtnHtml) {
+        html += `<br>${customBtnHtml}`;
+      }
+
+      fb.innerHTML = html;
+      fb.style.display = 'block';
+      fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function clearFeedback() {
+      const fb = document.getElementById('feedback');
+      fb.style.display = 'none';
+      fb.className = 'feedback';
+    }
+
+    function switchStage(stage) {
+      if (typeof stage === 'number' && stage > unlockedStage) return;
+
+      currentStage = stage;
+      clearFeedback();
+
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      
+      if (stage === 'intro') {
+        document.getElementById('nav-intro').classList.add('active');
+      } else {
+        document.getElementById(`nav-${stage}`).classList.add('active');
+      }
+
+      document.querySelectorAll('.stage-block').forEach(b => b.style.display = 'none');
+      document.getElementById(`stage-${stage}`).style.display = 'block';
+    }
+
+    function goToNextStage(nextStage) {
+      clearFeedback();
+      switchStage(nextStage);
+    }
+
+    function unlockStage(stage) {
+      if (stage > unlockedStage) {
+        unlockedStage = stage;
+      }
+      const navBtn = document.getElementById(`nav-${stage}`);
+      navBtn.classList.remove('disabled');
+      navBtn.classList.add('unlocked');
+    }
+
+    function startCompleteChallenge() {
+      stopConfetti();
+      initBothQuestions();
+      loadQuestionUI(1);
+      unlockStage(1);
+      switchStage(1);
+    }
+
+    function checkTransformInteractive() {
+      const q = questionsData[2];
+      const bSign = document.getElementById('tf-b-sign').value;
+      const bNumRaw = parseInt(document.getElementById('tf-b-num').value);
+      const cSign = document.getElementById('tf-c-sign').value;
+      const cNumRaw = parseInt(document.getElementById('tf-c-num').value);
+      const userOp = document.getElementById('tf-op').value;
+
+      if (isNaN(bNumRaw) || isNaN(cNumRaw)) {
+        showFeedback("<b>請填寫完整的二次式係數數值！</b>", false);
+        return;
+      }
+
+      const userB = (bSign === '+') ? Math.abs(bNumRaw) : -Math.abs(bNumRaw);
+      const userC = (cSign === '+') ? Math.abs(cNumRaw) : -Math.abs(cNumRaw);
+
+      if (userOp === q.rawOp) {
+        showFeedback(
+          "<b>忘記翻轉不等號！</b><br>同乘以 -1 時，不等號方向必須翻轉（例如：&gt; 翻轉為 &lt;）。", 
+          false
+        );
+        return;
+      }
+
+      if (userB === q.transB && userC === q.transC && userOp === q.transOp) {
+        isTransformedVerified = true;
+        showFeedback(
+          `<b>變號與不等號翻轉正確！</b><br>成功整理為二次項係數為正的式子：<b>${q.transPolyHTML}</b>。<br>請接著進行【步驟 2】十字相乘因式分解。`, 
+          true
+        );
+        
+        document.getElementById('cross-multiplication-wrapper').style.display = 'block';
+        document.getElementById('cross-multiplication-wrapper').scrollIntoView({ behavior: 'smooth' });
+      } else {
+        showFeedback(
+          "<b>係數變號有誤：</b><br>兩邊同乘 -1 時，一次項與常數項的正負號都要改變！請檢查正負號與數值是否正確。", 
+          false
+        );
+      }
+    }
+
+    function checkLevel1() {
+      const q = questionsData[currentQIndex];
+
+      if (q.aCoeff === -1 && !isTransformedVerified) {
+        showFeedback("<b>請先完成上方【步驟 1】的同乘 -1 與不等號翻轉驗證！</b>", false);
+        return;
+      }
+
+      const a = parseInt(document.getElementById('l1-a').value);
+      const b = parseInt(document.getElementById('l1-b').value);
+
+      if ((a === q.factorA && b === q.factorB) || (a === q.factorB && b === q.factorA)) {
+        const factorAStr = formatFactorVal(q.factorA);
+        const factorBStr = formatFactorVal(q.factorB);
+        
+        document.getElementById('l1-recap-text').innerHTML = 
+          `因式分解完成：<b>(<i>x</i> ${factorAStr})(<i>x</i> ${factorBStr}) ${q.transOpHtml} 0</b>（邊界根：<b><i>x</i> = ${q.p}, ${q.q}</b>）`;
+
+        showFeedback(
+          `<b>十字拆解正確！</b><br>成功拆解式子為 (<i>x</i> ${factorAStr})(<i>x</i> ${factorBStr}) ${q.transOpHtml} 0。<br>求得兩邊界根：<i>x</i> = ${q.p} 與 <i>x</i> = ${q.q}。`, 
+          true, 
+          `<button class="btn-next" onclick="goToNextStage(2)">進入關卡 2 ➔</button>`
+        );
+        unlockStage(2);
+      } else {
+        showFeedback(
+          `<b>拆解不正確：</b><br>請檢查兩數相乘是否等於常數項（a × b = ${q.transC}），且交叉相減項合併後是否等於一次項（${q.transB}<i>x</i>）。`, 
+          false
+        );
+      }
+    }
+
+    function toggleRegion(idx) {
+      const btn = document.getElementById(`reg-${idx}`);
+      if (userRegions[idx - 1] === "?") {
+        userRegions[idx - 1] = "+";
+        btn.className = "region-btn positive";
+      } else if (userRegions[idx - 1] === "+") {
+        userRegions[idx - 1] = "-";
+        btn.className = "region-btn negative";
+      } else {
+        userRegions[idx - 1] = "+";
+        btn.className = "region-btn positive";
+      }
+      btn.innerText = userRegions[idx - 1];
+    }
+
+    function renderPoints() {
+      const checkedRadio = document.querySelector('input[name="pointType"]:checked');
+      const p1 = document.getElementById('p1');
+      const p2 = document.getElementById('p2');
+
+      if (!checkedRadio) {
+        p1.classList.remove('solid');
+        p2.classList.remove('solid');
+        return;
+      }
+
+      if (checkedRadio.value === 'solid') {
+        p1.classList.add('solid');
+        p2.classList.add('solid');
+      } else {
+        p1.classList.remove('solid');
+        p2.classList.remove('solid');
+      }
+    }
+
+    function checkLevel2() {
+      const q = questionsData[currentQIndex];
+      const checkedRadio = document.querySelector('input[name="pointType"]:checked');
+
+      if (!checkedRadio) {
+        showFeedback("<b>請先選擇端點型態（空心點或實心點）！</b>", false);
+        return;
+      }
+
+      const userPointType = checkedRadio.value;
+      const expectedType = q.isInclusive ? "solid" : "open";
+
+      if (userPointType !== expectedType) {
+        showFeedback(
+          `<b>端點標記錯誤：</b><br>本題不等號為 ${q.transOpHtml}（${q.isInclusive ? '包含等號' : '不含等號'}），邊界點應選擇「<b>${q.isInclusive ? '實心點' : '空心點'}</b>」。`, 
+          false
+        );
+        return;
+      }
+
+      if (userRegions[0] === "+" && userRegions[1] === "-" && userRegions[2] === "+") {
+        const pointText = q.isInclusive ? '實心點' : '空心點';
+        document.getElementById('l2-recap-text').innerHTML = 
+          `邊界標記：<b>${pointText} (${q.p}, ${q.q})</b> ｜ 正負區間標記如下：`;
+
+        showFeedback(
+          `<b>數線標記完全正確！</b><br>成功標示正負區間：<i>x</i> &gt; ${q.q} 為正，${q.p} &lt; <i>x</i> &lt; ${q.q} 為負，<i>x</i> &lt; ${q.p} 為正。`, 
+          true, 
+          `<button class="btn-next" onclick="goToNextStage(3)">進入關卡 3 ➔</button>`
+        );
+        unlockStage(3);
+      } else {
+        showFeedback(
+          `<b>區間正負號有誤：</b><br>提示：當判別式 D &gt; 0 且最高次項係數為正時，數線最右側區間為「+」，向左依序交替為「+ &rarr; - &rarr; +」。`, 
+          false
+        );
+      }
+    }
+
+    function selectOption(el, key) {
+      document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedOption = key;
+    }
+
+    function checkLevel3() {
+      const q = questionsData[currentQIndex];
+      if (!selectedOption) {
+        showFeedback("<b>請點選一個解集選項！</b>", false);
+        return;
+      }
+
+      if (selectedOption === q.correctKey) {
+        completedLog[currentQIndex] = q;
+
+        if (currentQIndex === 1) {
+          document.getElementById('badge-q1').className = 'quest-badge completed';
+          document.getElementById('badge-q1').innerHTML = '✓ 第 1 題：<i class="math-x">a</i> = 1 型';
+          document.getElementById('badge-q2').className = 'quest-badge active';
+
+          showFeedback(
+            `<b>第 1 題完美通關！</b><br>恭喜掌握 <i class="math-x">a</i> = 1 正係數型！接下來進入第 2 題：<i class="math-x">a</i> = -1 的負係數自主變號挑戰。`, 
+            true, 
+            `<button class="btn-next" onclick="startQuestion2()">進入第 2 題（a = -1 型）挑戰 ➔</button>`
+          );
+        } else {
+          document.getElementById('badge-q2').className = 'quest-badge completed';
+          document.getElementById('badge-q2').innerHTML = '✓ 第 2 題：<i class="math-x">a</i> = -1 型';
+
+          const q1 = completedLog[1];
+          const q2 = completedLog[2];
+
+          document.getElementById('celebration-summary').innerHTML = `
+            <div><b>【第 1 題：<i class="math-x">a</i> = 1 正係數型】</b></div>
+            <div>・題目：${q1.rawPolyHTML}</div>
+            <div>・因式分解型態：${q1.factoredPolyHTML}</div>
+            <div>・最終解集：<b>${q1.correctOptionText}</b></div>
+            <hr style="margin: 12px 0; border: none; border-top: 1px dashed #cbd5e1;">
+            <div><b>【第 2 題：<i class="math-x">a</i> = -1 負係數型】</b></div>
+            <div>・原式：${q2.rawPolyHTML}</div>
+            <div>・整理後的式子：${q2.transPolyHTML}</div>
+            <div>・因式分解型態：${q2.factoredPolyHTML}</div>
+            <div>・最終解集：<b>${q2.correctOptionText}</b></div>
+          `;
+
+          document.getElementById('celebration-modal').style.display = 'flex';
+          startConfetti();
+        }
+      } else {
+        const targetDesc = q.targetSign === '-' ? '負數區間（-）' : '正數區間（+）';
+        showFeedback(
+          `<b>選取區間有誤：</b><br>本題需根據邊界與符號，選取數線上標記為<b>${targetDesc}</b>的範圍。`, 
+          false
+        );
+      }
+    }
+
+    function startQuestion2() {
+      clearFeedback();
+      loadQuestionUI(2);
+      unlockStage(1);
+      switchStage(1);
+    }
+
+    function restartCompleteApp() {
+      stopConfetti();
+      document.getElementById('celebration-modal').style.display = 'none';
+      startCompleteChallenge();
+    }
+
+    window.onload = function() {
+      initBothQuestions();
+    };
+  </script>
+</body>
+</html>
