@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1-1.1 多項式基本概念 ── iPad大字體自主學習學具</title>
+
+    <!-- KaTeX 數學專用字型渲染套件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #3730a3;
+            --primary-light: #e0e7ff;
+            --secondary: #0284c7;
+            --secondary-light: #e0f2fe;
+            --success: #15803d;
+            --success-light: #dcfce7;
+            --warning: #b45309;
+            --warning-light: #fef3c7;
+            --danger: #dc2626;
+            --bg-main: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #334155;
+            --border-color: #94a3b8;
+            --radius: 16px;
+        }
+
+        /* 移除 * 通配符中的 font-family，避免蓋掉 KaTeX 數學字型 */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            font-size: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+        }
+
+        /* 保護 KaTeX 內部符號字型不被全域字型覆蓋 */
+        .katex, .katex * {
+            font-family: KaTeX_Main, KaTeX_Math, KaTeX_AMS, serif !important;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            padding: 16px 32px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-header {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-header:active { transform: scale(0.97); }
+
+        main {
+            max-width: 1280px;
+            margin: 16px auto;
+            padding: 0 24px 24px 24px;
+            flex: 1;
+            width: 100%;
+        }
+
+        .stage-nav {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            padding: 10px 4px;
+            border: 2px solid var(--border-color);
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            opacity: 0.5;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            font-weight: 600;
+            min-height: 64px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .nav-btn.unlocked { opacity: 1; border-color: var(--primary); }
+        .nav-btn.active {
+            border-color: var(--primary);
+            background-color: var(--primary-light);
+            font-weight: 800;
+            opacity: 1;
+            color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.2);
+        }
+        .nav-btn.completed {
+            border-color: var(--success);
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.15fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .card-panel {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #e2e8f0;
+            padding-bottom: 14px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            color: var(--primary);
+            margin: 0;
+            font-weight: 800;
+        }
+
+        .concept-learn-card {
+            background-color: var(--secondary-light);
+            border-left: 6px solid var(--secondary);
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            line-height: 1.75;
+            color: #0c4a6e;
+        }
+
+        .concept-learn-card h4 {
+            margin: 0 0 10px 0;
+            color: var(--secondary);
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .interaction-box {
+            background-color: #f8fafc;
+            border: 2px dashed var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .input-row label {
+            min-width: 250px;
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .custom-input {
+            height: 54px;
+            font-size: 1.35rem;
+            padding: 8px 16px;
+            border: 3px solid var(--border-color);
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            transition: border-color 0.2s;
+            background: white;
+            color: var(--text-dark);
+        }
+
+        .custom-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            background: #fafafa;
+        }
+
+        .custom-input.poly-input {
+            width: 100%;
+            max-width: 440px;
+            text-align: left;
+            padding: 0 20px;
+        }
+
+        .opt-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .opt-btn {
+            background: white;
+            border: 3px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px 20px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            line-height: 1.5;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .opt-btn:active { transform: scale(0.99); }
+        .opt-btn.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .classify-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .classify-item-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .classify-select {
+            height: 48px;
+            padding: 6px 12px;
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+            font-size: 1.05rem;
+            font-weight: bold;
+            background: white;
+        }
+
+        .reorder-pointer-board {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            justify-content: center;
+            padding: 16px 0;
+            touch-action: none;
+        }
+
+        .pointer-tile {
+            background: white;
+            border: 3px solid var(--primary);
+            border-radius: 16px;
+            padding: 16px 24px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            user-select: none;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pointer-tile:active {
+            transform: scale(0.96);
+        }
+
+        .pointer-tile.selected-tile {
+            border-color: #f59e0b;
+            background-color: #fef3c7;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.4);
+            transform: translateY(-4px);
+        }
+
+        .hint-box {
+            background-color: var(--warning-light);
+            border-left: 6px solid var(--warning);
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: var(--warning);
+            display: none;
+            line-height: 1.6;
+        }
+
+        .action-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-top: auto;
+        }
+
+        .btn-submit {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 36px;
+            border-radius: 14px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(55, 48, 163, 0.3);
+            min-height: 56px;
+        }
+
+        .btn-submit:active { transform: scale(0.97); }
+
+        .btn-secondary {
+            background-color: #e2e8f0;
+            border: 2px solid var(--border-color);
+            padding: 14px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.05rem;
+            min-height: 52px;
+        }
+
+        .highlight-red {
+            color: var(--danger);
+            font-weight: 800;
+        }
+
+        .section-divider {
+            font-weight: 800;
+            color: var(--primary);
+            border-bottom: 2px dashed var(--primary-light);
+            padding-bottom: 6px;
+            margin: 16px 0 12px 0;
+            font-size: 1.1rem;
+        }
+
+        .katex { font-size: 1.15em !important; }
+
+        .modal-bg {
+            position: fixed;
+            top:0; left:0; width:100vw; height:100vh;
+            background: rgba(0,0,0,0.6);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+
+        .modal-bg.active { opacity: 1; pointer-events: auto; }
+
+        .modal-body {
+            background: white; border-radius: var(--radius);
+            max-width: 900px; width: 92%; max-height: 88vh; overflow-y: auto;
+            padding: 32px; position: relative; font-size: 1.1rem;
+        }
+
+        .modal-close {
+            position: absolute; top: 20px; right: 24px;
+            font-size: 2rem; border: none; background: none; cursor: pointer; font-weight: bold;
+        }
+
+        .concept-item {
+            background: #f8fafc; border: 2px solid #e2e8f0;
+            border-radius: 12px; padding: 16px 20px; margin-bottom: 14px;
+        }
+
+        .concept-item h5 { margin: 0 0 6px 0; color: var(--primary); font-size: 1.2rem; font-weight: 800; }
+
+        #confettiCanvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 2000;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span>📐</span> 1-1.1 多項式基本概念 ── iPad 大字體互動學具
+        </div>
+        <button class="btn-header" onclick="openConceptModal()">📚 1-1.1 名詞字典</button>
+    </header>
+
+    <main>
+        <div class="stage-nav" id="stageNav"></div>
+
+        <div class="game-layout">
+            <div class="card-panel">
+                <div class="card-header">
+                    <h3 class="card-title" id="stageTitle">載入中...</h3>
+                    <span id="subBadge" style="background:var(--primary-light); color:var(--primary); padding:6px 14px; border-radius:20px; font-size:1rem; font-weight:bold;">子關卡 1/2</span>
+                </div>
+
+                <div class="concept-learn-card" id="conceptLearnCard">
+                    <h4 id="conceptCardTitle">💡 觀念導覽</h4>
+                    <div id="conceptCardContent">觀念載入中...</div>
+                </div>
+
+                <div style="margin-top:auto; padding-top:20px;">
+                    <button class="btn-secondary" onclick="generateAndReloadCurrent()" style="width:100%;">🎲 重新產生本關隨機新題</button>
+                </div>
+            </div>
+
+            <div class="card-panel">
+                <div class="question-text" id="questionText"></div>
+                <div class="interaction-box" id="interactionBox"></div>
+
+                <div class="hint-box" id="hintBox">
+                    💡 <strong>觀念提醒：</strong> <span id="hintText"></span>
+                </div>
+
+                <div class="action-row">
+                    <button class="btn-secondary" onclick="resetCurrentSubStage()">🔄 重置輸入</button>
+                    <button class="btn-submit" onclick="checkAnswer()">確認提交 ➔</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 名詞字典 Modal -->
+    <div class="modal-bg" id="conceptModal">
+        <div class="modal-body">
+            <button class="modal-close" onclick="closeConceptModal()">✕</button>
+            <h2 style="color:var(--primary); margin-top:0; font-size:1.7rem;">📖 1-1.1 多項式核心名詞字典</h2>
+            
+            <div class="concept-item">
+                <h5>1. 不定元 (Indeterminate)</h5>
+                <p>多項式中代表抽象數值的文字符號（如 $x, y$）。不同於方程式中求解的未知數，它是代表運算的文字基底。</p>
+            </div>
+
+            <div class="concept-item">
+                <h5>2. 常數多項式 (Constant Polynomial)</h5>
+                <p>不含不定元的常數多項式 $f(x) = c$，包含兩大類：<br>
+                ① <b>零次多項式：</b>當 $c \neq 0$（例如 $f(x) = 8$ 或 $-5$），是常數多項式，<b>次數定為 0 次</b>。<br>
+                ② <b>零多項式：</b>當 $c = 0$（即 $f(x) = 0$），也是常數多項式，<b>次數不予討論（無意義）</b>。<br>
+                <b>核心結論：</b>「零次多項式」與「零多項式」兩者皆屬於「常數多項式」。</p>
+            </div>
+
+            <div class="concept-item">
+                <h5>3. 單元多項式的標準形式與四大禁區</h5>
+                <p><b>單元多項式的標準形式寫法：</b><br>
+                $$f(x) = a_n x^n + a_{n-1} x^{n-1} + \dots + a_1 x + a_0 \quad (a_n \neq 0)$$
+                <b>標準形式的兩大必要條件：</b><br>
+                • <b>指數條件：</b>次方 $n$ 必須為<b>非負整數 ($0, 1, 2, 3, \dots$)</b>。<br>
+                • <b>係數條件：</b>係數 $a_n, a_{n-1}, \dots, a_0$ 必須為實數，且領導係數 $a_n \neq 0$。<br><br>
+                <b>多項式四大禁區（不定元文字不可出現在）：</b><br>
+                ① <b>分母</b>（如 $\frac{1}{x} = x^{-1}$，違背非負整數指數條件）<br>
+                ② <b>根號內部</b>（如 $\sqrt{x} = x^{1/2}$，違背整數指數條件）<br>
+                ③ <b>指數位置</b>（如 $2^x$）<br>
+                ④ <b>絕對值內部</b>（如 $|x|$）<br><br>
+                • <b>排列規範：</b>可依<span class="highlight-red">降冪排列</span>（次方由高到低）或<span class="highlight-red">升冪排列</span>（次方由低到高）呈現。</p>
+            </div>
+
+            <div class="concept-item">
+                <h5>4. 同類項 (Like Terms) 辨識</h5>
+                <p>所含<b>不定元字母相同，且對應次方也完全相同</b>的項稱為同類項。例如：$3x^2$ 與 $-7x^2$ 為同類項。</p>
+            </div>
+
+            <div class="concept-item">
+                <h5>5. 智慧單位模型 (Smart Unit Model)</h5>
+                <p>當題目指定了特定大單位（例如「百萬元」或「公噸」）時，多項式中的數值係數即代表該單位的倍數，列式時不重複書寫單位。</p>
+            </div>
+
+            <div style="text-align: center; margin-top: 24px;">
+                <button class="btn-submit" onclick="closeConceptModal()">回到關卡練習</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通關 Modal -->
+    <div class="modal-bg" id="completionModal">
+        <div class="modal-body" style="text-align: center;">
+            <div style="font-size: 4.5rem;">🏆</div>
+            <h2 style="color: var(--success); font-size:2rem;">恭喜完成 1-1.1 多項式基本概念所有關卡！</h2>
+            <p style="font-size:1.2rem; line-height:1.7; color:var(--text-muted);">
+                你已全面掌握不定元、四大禁區與標準形式條件（$a_n \neq 0$）、常數多項式（零次與零多項式均為常數多項式）、同類項辨識與歸類，以及指標升降冪排列互動！
+            </p>
+            <button class="btn-submit" onclick="restartGame()">🎲 重新生成全新題組全盤挑戰</button>
+        </div>
+    </div>
+
+    <canvas id="confettiCanvas"></canvas>
+
+    <script>
+        const STAGE_CONFIG = [
+            { id: 1, name: "1. 不定元與智慧單位列式", subCount: 2 },
+            { id: 2, name: "2. 多項式形式與四大禁區", subCount: 2 },
+            { id: 3, name: "3. 常用名詞大拆解", subCount: 2 },
+            { id: 4, name: "4. 同類項辨識與歸類", subCount: 2 },
+            { id: 5, name: "5. 常數多項式解析與求解", subCount: 2 },
+            { id: 6, name: "6. 升冪與降冪排列互動", subCount: 2 },
+            { id: 7, name: "7. 核心觀念綜合診斷", subCount: 2 }
+        ];
+
+        let state = {
+            currentStage: 1,
+            currentSubStage: 1,
+            unlockedStage: 1,
+            completedStages: new Set(),
+            wrongCount: 0,
+            questions: {},
+            reorderTiles: [],
+            selectedTileIdx: null
+        };
+
+        function randInt(min, max, excludeZero = false) {
+            let res;
+            do {
+                res = Math.floor(Math.random() * (max - min + 1)) + min;
+            } while (excludeZero && res === 0);
+            return res;
+        }
+
+        function randChoice(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function shuffle(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function generateQuestions() {
+            const vars = ['x', 'y', 'z', 't', 'a', 'b'];
+            const v1 = randChoice(vars);
+
+            const houseP = randInt(6, 18);
+            const carP = randChoice([1, 2, 3, 4, 5]);
+
+            const degA = randInt(3, 4);
+            const leadA = randInt(-9, -2);
+            const midA = randInt(2, 8);
+            const lowA = randInt(-9, 9, true);
+            const constA = randInt(-12, 12, true);
+
+            const g_c3 = randInt(3, 8);
+            const g_c1_val = randInt(2, 9);
+            const g_c0 = randInt(1, 9);
+
+            const k1 = randInt(2, 9);
+            const k2 = randInt(-8, -2);
+            const k3 = randInt(3, 12);
+            const k4 = randInt(2, 9);
+            const constVal = randInt(5, 15);
+
+            const d3 = randInt(-8, -2);
+            const d2 = randInt(2, 9);
+            const d1 = randInt(3, 8);
+            const d0 = randInt(-9, 9, true);
+
+            const a0 = randInt(2, 9);
+            const a1 = randInt(-8, -2);
+            const a2 = randInt(3, 8);
+            const a3 = randInt(-9, -2);
+
+            state.questions = {
+                1: [
+                    {
+                        title: "1-1 「不定元」的概念認識",
+                        conceptTitle: "💡 觀念導覽：什麼是「不定元」？",
+                        conceptText: `多項式中代表抽象數值的文字符號（如 $${v1}$）稱為<b>「不定元」 (Indeterminate)</b>。它不同於解方程式時有固定解的未知數，而是運算基底。`,
+                        question: `關於多項式 $f(${v1}) = ${randInt(3,8)}${v1}^3 - ${randInt(2,7)}${v1} + ${randInt(1,9)}$ 中的文字符號 $${v1}$，下列敘述何者最正確？`,
+                        type: "mcq",
+                        options: shuffle([
+                            { text: `$${v1}$ 是用於求解固定解答的未知數`, correct: false },
+                            { text: `$${v1}$ 是多項式中的「不定元」，代表抽象文字符號`, correct: true },
+                            { text: `$${v1}$ 是一個固定數值常數`, correct: false }
+                        ]),
+                        hint: "多項式中的字母稱為「不定元」，代表抽象的文字符號，非求固定解。"
+                    },
+                    {
+                        title: "1-2 生活情境與「智慧單位模型」整合列式",
+                        conceptTitle: "💡 觀念導覽：智慧單位模型列式",
+                        conceptText: `<b>智慧單位模型：</b>當題目已指定總金額的單位為大單位（如<b>「百萬元」</b>）時，單價為 $15$ 百萬元（買 $x$ 棟）與 $1$ 百萬元（買 $y$ 部）的總金額可列為：<br>
+                        <div style="text-align:center; margin:8px 0; font-weight:bold; color:var(--primary); font-size:1.2rem;">$15x + y$ （單位：百萬元）</div>`,
+                        question: `小明投資買了 $x$ 棟房屋（每棟 $${houseP}$ 百萬元）與 $y$ 部汽車（每部 $${carP}$ 百萬元）。<br><b>請以「百萬元」為單位，在下方寫出代表「總投資金額」的完整多項式表示式：</b>`,
+                        type: "fill-poly-str",
+                        targetP1: houseP,
+                        targetV1: "x",
+                        targetP2: carP,
+                        targetV2: "y",
+                        placeholder: "例如：14x + y",
+                        formatGuide: "格式範例：14x + y（請依照數字與字母寫出，勿輸入等號或單位）",
+                        hint: "請將「房屋單價 × x」加上「汽車單價 × y」寫成多項式，保留字母 x 與 y。"
+                    }
+                ],
+                2: [
+                    {
+                        title: "2-1 單元多項式標準形式條件與四大禁區",
+                        conceptTitle: "💡 觀念導覽：標準形式寫法與四大禁區",
+                        conceptText: `<b>單元多項式的標準形式寫法：</b><br>
+                        $$f(x) = a_n x^n + a_{n-1} x^{n-1} + \\dots + a_1 x + a_0 \\quad (a_n \\neq 0)$$
+                        <b>標準形式的兩大必要條件：</b><br>
+                        • <b>指數條件：</b>次方 $n$ 必須為<b>非負整數 ($0, 1, 2, 3, \\dots$)</b>。<br>
+                        • <b>係數條件：</b>係數 $a_n, a_{n-1}, \\dots, a_0$ 必須為實數，且領導係數 $a_n \\neq 0$。<br><br>
+                        <b>多項式四大禁區（不定元 $x$ 絕不可出現的位置）：</b><br>
+                        1. <b>文字在分母</b>（如 $\\frac{1}{x} = x^{-1}$，違背非負整數指數條件）<br>
+                        2. <b>文字在根號內部</b>（如 $\\sqrt{x} = x^{1/2}$，違背整數指數條件）<br>
+                        3. <b>文字在指數位置</b>（如 $2^x$）<br>
+                        4. <b>文字在絕對值內部</b>（如 $|x|$）<br>
+                        <i>註：常數在分母（如 $\\frac{x}{3}$）仍為合法多項式！</i>`,
+                        question: "請判斷下列各式是否為合法的多項式形式，並將其正確分類：",
+                        type: "classify",
+                        items: shuffle([
+                            { text: `\\frac{${randInt(2,8)}}{x} + ${randInt(1,9)}`, answer: "非多項式 (文字在分母)" },
+                            { text: `\\sqrt{x} + ${randInt(2,8)}`, answer: "非多項式 (文字在根號)" },
+                            { text: `${randInt(2,5)}^x - ${randInt(1,9)}`, answer: "非多項式 (文字在指數)" },
+                            { text: `|x| + ${randInt(1,9)}`, answer: "非多項式 (文字在絕對值)" },
+                            { text: `\\frac{x}{${randInt(2,6)}} - ${randInt(1,9)}`, answer: "合法多項式" }
+                        ]),
+                        options: [
+                            "合法多項式",
+                            "非多項式 (文字在分母)",
+                            "非多項式 (文字在根號)",
+                            "非多項式 (文字在指數)",
+                            "非多項式 (文字在絕對值)"
+                        ],
+                        hint: "檢查不定元字母 $x$ 是否出現在「分母」、「根號內」、「指數位置」或「絕對值內」！"
+                    },
+                    {
+                        title: "2-2 單元與多元多項式分類",
+                        conceptTitle: "💡 觀念導覽：不定元的種類數量",
+                        conceptText: "• <b>單元多項式：</b>只含 $1$ 種不定元（如 $x$）。<br>• <b>多元多項式：</b>含有 $2$ 種或以上的不定元（如 $x, y$）。",
+                        question: "請將下列各式進行「單元」與「多元」多項式的分類：",
+                        type: "classify",
+                        items: shuffle([
+                            { text: `${randInt(2,5)}x^2 - ${randInt(1,6)}x + ${randInt(1,9)}`, answer: "單元多項式" },
+                            { text: `${randInt(2,5)}x^2 y - ${randInt(1,6)}xy + ${randInt(1,9)}`, answer: "多元多項式" },
+                            { text: `${randInt(3,8)}a + ${randInt(2,7)}b - ${randInt(1,9)}c`, answer: "多元多項式" }
+                        ]),
+                        options: ["單元多項式", "多元多項式"],
+                        hint: "仔細數一數式子裡出現了幾種不同的文字字母！"
+                    }
+                ],
+                3: [
+                    {
+                        title: "3-1 常用名詞拆解：項、次數與係數",
+                        conceptTitle: "💡 觀念導覽：名詞定義拆解",
+                        conceptText: `<b>觀念範例多項式：</b> $P(x) = -5x^4 + 3x^2 - x + 7$<br>
+                        • <b>「項」：</b>共有 $4$ 個項（$-5x^4, 3x^2, -x, 7$）。<br>
+                        • <b>「次數」：</b>最高次方為 $4$ 次多項式。<br>
+                        • <b>「領導係數」：</b>最高次項前的數字為 $-5$ ($a_n \\neq 0$)。<br>
+                        • <b>「常數項」：</b>不含字母的項為 $7$。`,
+                        question: `已知多項式 $f(x) = ${leadA}x^{${degA}} + ${midA}x^2 + (${lowA})x + (${constA})$，請回答下列問題：`,
+                        type: "fill-multi",
+                        inputs: [
+                            { label: "全多項式的「次數」為幾次？", answer: degA },
+                            { label: "此多項式共有幾個「項」？", answer: 4 },
+                            { label: "「領導係數」為何？", answer: leadA },
+                            { label: "「常數項」為何？", answer: constA }
+                        ],
+                        hint: "最高次方即為次數；被加減號隔開的每一塊都是一項；領導係數為最高次項前方數字（含符號）。"
+                    },
+                    {
+                        title: "3-2 常用名詞拆解：缺項與零係數",
+                        conceptTitle: "💡 觀念導覽：缺項與零係數判別",
+                        conceptText: "多項式中若沒有出現某個次方的項（例如沒有二次項 $x^2$），代表該項的<b>係數為 0</b>（被省略未寫出）。",
+                        question: `已知多項式 $g(x) = ${g_c3}x^3 - ${g_c1_val}x + ${g_c0}$，請分析各名詞：`,
+                        type: "fill-multi",
+                        inputs: [
+                            { label: "此多項式的「次數」為幾次？", answer: 3 },
+                            { label: "此多項式共有幾個「項」（不計係數為 0 者）？", answer: 3 },
+                            { label: "二次項 ($x^2$) 的係數為何？", answer: 0 },
+                            { label: "一次項 ($x$) 的係數為何？", answer: -g_c1_val }
+                        ],
+                        hint: "沒有寫出來的次方項（如 $x^2$），表示其係數為 0！一次項 $x$ 前面的負號也要算入係數中。"
+                    }
+                ],
+                4: [
+                    {
+                        title: "4-1 同類項的辨識（無合併計算）",
+                        conceptTitle: "💡 觀念導覽：同類項的辨識標準",
+                        conceptText: "<b>同類項：</b>所含<b>不定元字母相同，且對應次方也完全相同</b>的項。<br><i>特別注意：本學習模組僅進行同類項的辨識與歸類，不進行合併加減！</i><br>例如 $5x^2$ 與 $-2x^2$ 是同類項；但 $5x^2$ 與 $5x$ 不是同類項（次方不同）。",
+                        question: "下列各組單項式中，何者屬於「同類項」？",
+                        type: "mcq",
+                        options: shuffle([
+                            { text: "$3x^2$ 與 $-7x^2$", correct: true },
+                            { text: "$4x^2$ 與 $4x^3$", correct: false },
+                            { text: "$2x$ 與 $2y$", correct: false },
+                            { text: "$5x^2$ 與 $5$", correct: false }
+                        ]),
+                        hint: "檢查「文字字母」與「次方」是否兩者都完全一模一樣！"
+                    },
+                    {
+                        title: "4-2 多項式中各項的同類項歸類",
+                        conceptTitle: "💡 觀念導覽：同類項歸類組別",
+                        conceptText: "在多項式中，我們可以將具有相同次方的項目歸為同一組同類項。<b>（只需歸類組別，勿進行合併加減）</b>",
+                        question: "請將下列各式正確歸類至其對應的同類項組別：",
+                        type: "classify",
+                        items: shuffle([
+                            { text: `-4x^2`, answer: "x² 的同類項" },
+                            { text: `7x`, answer: "x 的同類項" },
+                            { text: `-9`, answer: "常數項的同類項" },
+                            { text: `\\frac{1}{2}x^2`, answer: "x² 的同類項" }
+                        ]),
+                        options: ["x² 的同類項", "x 的同類項", "常數項的同類項"],
+                        hint: "依據單項式中的字母次方（$x^2$、$x$ 或純數字）選擇對應組別。"
+                    }
+                ],
+                5: [
+                    {
+                        title: "5-1 常數多項式：零次多項式與零多項式的分類互動",
+                        conceptTitle: "💡 觀念導覽：常數多項式的核心分類觀念",
+                        conceptText: `<b>常數多項式 (Constant Polynomial)</b> 包含兩類：<br>
+                        • <b>零次多項式：</b>當 $c \\neq 0$（例如 $f(x) = 8$），<b>屬於常數多項式</b>，次數定為 0 次。<br>
+                        • <b>零多項式：</b>當 $c = 0$（即 $f(x) = 0$），<b>也屬於常數多項式</b>，次數不討論（無意義）。<br><br>
+                        <b>重要觀念：</b>零次多項式是常數多項式，零多項式也是常數多項式！`,
+                        question: "請將下列各式進行「常數多項式（零次多項式/零多項式）」與「非常數多項式」的正確歸類：",
+                        type: "classify",
+                        items: shuffle([
+                            { text: `f(x) = 15`, answer: "屬於常數多項式 (零次多項式，次數為 0)" },
+                            { text: `g(x) = 0`, answer: "屬於常數多項式 (零多項式，次數無意義)" },
+                            { text: `h(x) = -8`, answer: "屬於常數多項式 (零次多項式，次數為 0)" },
+                            { text: `p(x) = 3x + 2`, answer: "非常數多項式 (含不定元 x)" }
+                        ]),
+                        options: [
+                            "屬於常數多項式 (零次多項式，次數為 0)",
+                            "屬於常數多項式 (零多項式，次數無意義)",
+                            "非常數多項式 (含不定元 x)"
+                        ],
+                        hint: "注意：非零常數（如 15、-8）與零（0）兩者均屬於常數多項式！"
+                    },
+                    {
+                        title: "5-2 常數多項式求解：零多項式與零次多項式分開計算",
+                        conceptTitle: "💡 觀念導覽：零多項式與零次多項式求解條件",
+                        conceptText: `<b>求解條件明確拆分：</b><br>
+                        • <b>【零多項式求解】</b>若 $f(x) = 0$，則所有次方項係數與常數項<b>必須全部等於 0</b>。<br>
+                        • <b>【零次多項式求解】</b>若 $g(x) = c (c \\neq 0)$，則所有含不定元 $x$ 的項係數<b>必為 0</b>，且常數項<b>不可為 0 ($c \\neq 0$)</b>。`,
+                        question: `請分別依據「零多項式」與「零次多項式」的條件求解下列各未知數：`,
+                        type: "fill-multi-sectioned",
+                        sections: [
+                            {
+                                header: "【第一部分：零多項式係數求解】",
+                                subText: `已知多項式 $f(x) = (a - ${k1})x^2 + (b - (${k2}))x + (c - ${k3})$ 為<b>零多項式</b>：`,
+                                inputs: [
+                                    { label: "零多項式條件：求 $a$ 的值", answer: k1 },
+                                    { label: "零多項式條件：求 $b$ 的值", answer: k2 },
+                                    { label: "零多項式條件：求 $c$ 的值", answer: k3 }
+                                ]
+                            },
+                            {
+                                header: "【第二部分：零次多項式係數求解】",
+                                subText: `已知多項式 $g(x) = (d - ${k4})x + ${constVal}$ 為<b>零次多項式</b>（常數項 $c = ${constVal} \\neq 0$）：`,
+                                inputs: [
+                                    { label: "零次多項式條件：求 $d$ 的值", answer: k4 }
+                                ]
+                            }
+                        ],
+                        hint: `零多項式各項係數皆為 0（$a-${k1}=0, b-(${k2})=0, c-${k3}=0$）；零次多項式不含 $x$ 項，故 $x$ 的係數 $d-${k4}=0$。`
+                    }
+                ],
+                6: [
+                    {
+                        title: "6-1 多項式降冪排列（指標點選與交換操作）",
+                        conceptTitle: `💡 觀念導覽：多項式的<span class="highlight-red">降冪排列</span>`,
+                        conceptText: `<b><span class="highlight-red">降冪排列</span>規範：</b><br>
+                        將多項式中的各項依據<b>次方由高到低</b>依序排列（如 $x^3 \\rightarrow x^2 \\rightarrow x \\rightarrow$ 常數項）。<br>
+                        <i>注意：排列時各項前面的正負號必須隨同移動！</i>`,
+                        question: `👉 <b>互動操作說明：</b>請用指標點選某張卡片（將呈現黃色高亮），再點選另一張卡片進行<b>交換</b>。請將下列各式調整為正確的<b>【<span class="highlight-red">降冪排列</span>】</b>：`,
+                        type: "reorder",
+                        orderType: "desc",
+                        tiles: [
+                            { text: `${d1 > 0 ? '+' + d1 : d1}x`, power: 1 },
+                            { text: `${d3}x^3`, power: 3 },
+                            { text: `${d0 > 0 ? '+' + d0 : d0}`, power: 0 },
+                            { text: `${d2 > 0 ? '+' + d2 : d2}x^2`, power: 2 }
+                        ],
+                        hint: "降冪排列的次方順序應為：$x^3$ 項 $\\rightarrow x^2$ 項 $\\rightarrow x$ 項 $\\rightarrow$ 常數項。"
+                    },
+                    {
+                        title: "6-2 多項式升冪排列（指標點選與交換操作）",
+                        conceptTitle: `💡 觀念導覽：多項式的<span class="highlight-red">升冪排列</span>`,
+                        conceptText: `<b><span class="highlight-red">升冪排列</span>規範：</b><br>
+                        將多項式中的各項依據<b>次方由低到高</b>依序排列（如 常數項 $\\rightarrow x$ 一次項 $\\rightarrow x^2$ 二次項 $\\rightarrow x^3$ 三次項）。<br>
+                        <i>注意：排列時各項前面的正負號必須隨同移動！</i>`,
+                        question: `👉 <b>互動操作說明：</b>請用指標點選某張卡片（將呈現黃色高亮），再點選另一張卡片進行<b>交換</b>。請將下列各式調整為正確的<b>【<span class="highlight-red">升冪排列</span>】</b>：`,
+                        type: "reorder",
+                        orderType: "asc",
+                        tiles: [
+                            { text: `${a2 > 0 ? '+' + a2 : a2}x^2`, power: 2 },
+                            { text: `${a0 > 0 ? '+' + a0 : a0}`, power: 0 },
+                            { text: `${a3}x^3`, power: 3 },
+                            { text: `${a1}x`, power: 1 }
+                        ],
+                        hint: "升冪排列的次方順序應為：常數項 $\\rightarrow x$ 一次項 $\\rightarrow x^2$ 二次項 $\\rightarrow x^3$ 三次項。"
+                    }
+                ],
+                7: [
+                    {
+                        title: "7-1 常數多項式與多項式結構綜合檢測",
+                        conceptTitle: "💡 觀念診斷：常數多項式與結構檢測",
+                        conceptText: "檢視常數多項式（零次多項式與零多項式皆為常數多項式）與單元多項式標準形式 $a_n \\neq 0$ 之規範認知。",
+                        question: "關於多項式結構與常數多項式的敘述，下列何者<b>完全正確</b>？",
+                        type: "mcq",
+                        options: shuffle([
+                            { text: "常數多項式 $f(x) = 0$ 的次數為 0 次", correct: false },
+                            { text: "單元多項式標準形式中，不定元的次方必須全為非負整數，且領導係數 $a_n \\neq 0$", correct: true },
+                            { text: "$\\sqrt{x} + 5$ 是一個合法的零次多項式", correct: false },
+                            { text: "零多項式 $f(x) = 0$ 不屬於常數多項式", correct: false }
+                        ]),
+                        hint: "多項式次方必須是非負整數；$f(x)=0$ 是零多項式，也是常數多項式的一種，但次數無意義 (不討論)。"
+                    },
+                    {
+                        title: "7-2 1-1.1 核心觀念總診斷",
+                        conceptTitle: "💡 觀念大彙整",
+                        conceptText: "檢視你是否已完全掌握：不定元、多項式四禁區、項與次數、零多項式與零次多項式（均為常數多項式）、標準形式（$a_n \\neq 0$）與升/降冪！",
+                        question: "下列關於多項式的基本概念敘述，何者<b>錯誤</b>？",
+                        type: "mcq",
+                        options: shuffle([
+                            { text: "多項式中的文字符號稱為「不定元」", correct: false },
+                            { text: "若 $f(x) = 0$，則 $f(x)$ 為零多項式，次數為 0 次", correct: true },
+                            { text: "零次多項式與零多項式兩者皆屬於常數多項式", correct: false },
+                            { text: "$\\frac{x}{3}$ 是一個合法的一次單元多項式", correct: false }
+                        ]),
+                        hint: "$f(x) = 0$ 是「零多項式」，次數是「無意義 (不討論)」，不是 0 次！"
+                    }
+                ]
+            };
+        }
+
+        function initGame() {
+            try {
+                generateQuestions();
+                renderNav();
+                loadSubStage(1, 1);
+            } catch (err) {
+                console.error("Initialization error:", err);
+            }
+        }
+
+        function renderNav() {
+            const nav = document.getElementById('stageNav');
+            if (!nav) return;
+            nav.innerHTML = '';
+            STAGE_CONFIG.forEach(s => {
+                const isUnlocked = s.id <= state.unlockedStage;
+                const isCompleted = state.completedStages.has(s.id);
+                const isActive = s.id === state.currentStage;
+
+                const btn = document.createElement('button');
+                btn.className = `nav-btn ${isUnlocked ? 'unlocked' : ''} ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}`;
+                btn.disabled = !isUnlocked;
+                btn.onclick = () => switchStage(s.id);
+                btn.innerHTML = `<div>${s.name}</div><small style="font-size:0.8rem; margin-top:4px;">${isCompleted ? '✓已完成' : (isUnlocked ? '可挑戰' : '未解鎖')}</small>`;
+                nav.appendChild(btn);
+            });
+        }
+
+        function loadSubStage(stageId, subId) {
+            state.currentStage = stageId;
+            state.currentSubStage = subId;
+            state.wrongCount = 0;
+            state.selectedTileIdx = null;
+
+            const hintBox = document.getElementById('hintBox');
+            if (hintBox) hintBox.style.display = 'none';
+            renderNav();
+
+            const q = state.questions[stageId][subId - 1];
+
+            document.getElementById('stageTitle').innerText = q.title;
+            document.getElementById('subBadge').innerText = `子關卡 ${subId}/2`;
+            document.getElementById('conceptCardTitle').innerText = q.conceptTitle;
+            
+            const conceptCardContent = document.getElementById('conceptCardContent');
+            conceptCardContent.innerHTML = q.conceptText;
+
+            const questionText = document.getElementById('questionText');
+            questionText.innerHTML = q.question;
+
+            const box = document.getElementById('interactionBox');
+            box.innerHTML = '';
+
+            if (q.type === 'fill-poly-str') {
+                const wrap = document.createElement('div');
+                wrap.style.display = 'flex';
+                wrap.style.flexDirection = 'column';
+                wrap.style.gap = '12px';
+                wrap.innerHTML = `
+                    <label style="font-weight:bold; font-size:1.15rem;">請輸入智慧單位多項式：</label>
+                    <input type="text" class="custom-input poly-input" id="polyStrInput" placeholder="${q.placeholder}" autocomplete="off" autocapitalize="none">
+                    <span style="font-size:0.95rem; color:var(--text-muted);">${q.formatGuide}</span>
+                `;
+                box.appendChild(wrap);
+
+            } else if (q.type === 'fill-multi') {
+                q.inputs.forEach((input, idx) => {
+                    const row = document.createElement('div');
+                    row.className = 'input-row';
+                    row.innerHTML = `
+                        <label>${input.label} = </label>
+                        <input type="text" class="custom-input" id="input_${idx}" placeholder="填數字" style="width:140px;" onkeydown="handleKeydown(event, ${idx}, ${q.inputs.length})">
+                    `;
+                    box.appendChild(row);
+                });
+            } else if (q.type === 'fill-multi-sectioned') {
+                let globalInputIdx = 0;
+                q.sections.forEach((sec) => {
+                    const secHeader = document.createElement('div');
+                    secHeader.className = 'section-divider';
+                    secHeader.innerHTML = sec.header;
+                    box.appendChild(secHeader);
+
+                    if (sec.subText) {
+                        const subDiv = document.createElement('div');
+                        subDiv.style.marginBottom = '12px';
+                        subDiv.style.fontSize = '1.1rem';
+                        subDiv.innerHTML = sec.subText;
+                        box.appendChild(subDiv);
+                    }
+
+                    sec.inputs.forEach((input) => {
+                        const row = document.createElement('div');
+                        row.className = 'input-row';
+                        row.innerHTML = `
+                            <label>${input.label} = </label>
+                            <input type="text" class="custom-input" id="input_${globalInputIdx}" placeholder="填數字" style="width:140px;">
+                        `;
+                        box.appendChild(row);
+                        globalInputIdx++;
+                    });
+                });
+            } else if (q.type === 'mcq') {
+                const grid = document.createElement('div');
+                grid.className = 'opt-grid';
+                q.options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'opt-btn';
+                    btn.innerHTML = opt.text;
+                    btn.onclick = () => {
+                        document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        box.dataset.selectedIdx = idx;
+                    };
+                    grid.appendChild(btn);
+                });
+                box.appendChild(grid);
+            } else if (q.type === 'classify') {
+                const container = document.createElement('div');
+                container.className = 'classify-container';
+                q.items.forEach((item, idx) => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'classify-item-card';
+                    
+                    let optionsHTML = `<option value="">-- 請選擇歸類 --</option>`;
+                    q.options.forEach(opt => {
+                        optionsHTML += `<option value="${opt}">${opt}</option>`;
+                    });
+
+                    itemDiv.innerHTML = `
+                        <span style="font-size:1.15rem; font-weight:700;">$${item.text}$</span>
+                        <select class="classify-select" id="classify_${idx}">
+                            ${optionsHTML}
+                        </select>
+                    `;
+                    container.appendChild(itemDiv);
+                });
+                box.appendChild(container);
+
+            } else if (q.type === 'reorder') {
+                let current = shuffle([...q.tiles]);
+                let isAlreadyCorrect = true;
+                for (let i = 0; i < current.length - 1; i++) {
+                    if (q.orderType === 'desc' && current[i].power < current[i+1].power) isAlreadyCorrect = false;
+                    if (q.orderType === 'asc' && current[i].power > current[i+1].power) isAlreadyCorrect = false;
+                }
+                while (isAlreadyCorrect && q.tiles.length > 1) {
+                    current = shuffle([...q.tiles]);
+                    isAlreadyCorrect = true;
+                    for (let i = 0; i < current.length - 1; i++) {
+                        if (q.orderType === 'desc' && current[i].power < current[i+1].power) isAlreadyCorrect = false;
+                        if (q.orderType === 'asc' && current[i].power > current[i+1].power) isAlreadyCorrect = false;
+                    }
+                }
+                state.reorderTiles = current;
+                renderPointerReorderUI(box, q.orderType);
+            }
+
+            renderMathInContainer(conceptCardContent);
+            renderMathInContainer(questionText);
+            renderMathInContainer(box);
+        }
+
+        function renderPointerReorderUI(container, orderType) {
+            container.innerHTML = `
+                <div style="font-size:1.05rem; font-weight:bold; margin-bottom:12px; color:var(--primary); text-align:center;">
+                    👆 點擊卡片選取，再點擊另一張卡片即可交換位置：
+                </div>
+                <div class="reorder-pointer-board" id="pointerBoard"></div>
+            `;
+            const board = document.getElementById('pointerBoard');
+            state.reorderTiles.forEach((tile, idx) => {
+                const tileBtn = document.createElement('div');
+                tileBtn.className = `pointer-tile ${state.selectedTileIdx === idx ? 'selected-tile' : ''}`;
+                tileBtn.innerHTML = `<span>$${tile.text}$</span>`;
+                tileBtn.onclick = () => handleTilePointerClick(idx, orderType);
+                board.appendChild(tileBtn);
+            });
+            renderMathInContainer(board);
+        }
+
+        function handleTilePointerClick(clickedIdx, orderType) {
+            if (state.selectedTileIdx === null) {
+                state.selectedTileIdx = clickedIdx;
+            } else if (state.selectedTileIdx === clickedIdx) {
+                state.selectedTileIdx = null;
+            } else {
+                const temp = state.reorderTiles[state.selectedTileIdx];
+                state.reorderTiles[state.selectedTileIdx] = state.reorderTiles[clickedIdx];
+                state.reorderTiles[clickedIdx] = temp;
+                state.selectedTileIdx = null;
+            }
+            const box = document.getElementById('interactionBox');
+            renderPointerReorderUI(box, orderType);
+        }
+
+        function handleKeydown(event, idx, total) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                if (idx < total - 1) {
+                    const next = document.getElementById(`input_${idx + 1}`);
+                    if (next) next.focus();
+                } else {
+                    checkAnswer();
+                }
+            }
+        }
+
+        function generateAndReloadCurrent() {
+            generateQuestions();
+            loadSubStage(state.currentStage, state.currentSubStage);
+        }
+
+        function normalizePolyExpr(str) {
+            if (!str) return "";
+            let s = str.toLowerCase().replace(/\s+/g, '').replace(/\*/g, '');
+            s = s.replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xfee0));
+            if (s.startsWith('+')) s = s.substring(1);
+            s = s.replace(/(^|[\+\-])1([a-z])/g, '$1$2');
+            return s;
+        }
+
+        function parseAndValidatePolyString(userStr, p1, v1, p2, v2) {
+            if (!userStr || userStr.trim() === '') return { correct: false, msg: "請先輸入多項式！" };
+            
+            const normUser = normalizePolyExpr(userStr);
+            const normTarget1 = normalizePolyExpr(`${p1}${v1}+${p2}${v2}`);
+            const normTarget2 = normalizePolyExpr(`${p2}${v2}+${p1}${v1}`);
+
+            if (normUser === normTarget1 || normUser === normTarget2) {
+                return { correct: true };
+            }
+
+            if (!normUser.includes(v1) || !normUser.includes(v2)) {
+                return { correct: false, msg: `多項式必須包含不定元字母 ${v1} 與 ${v2}！` };
+            }
+
+            return { correct: false, msg: "多項式的數字係數或運算符號不正確，請再檢查！" };
+        }
+
+        function parseSmartInput(raw) {
+            if (!raw && raw !== 0) return { val: NaN };
+            let s = raw.toString().trim();
+            s = s.replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xfee0));
+            s = s.replace(/[－—–]/g, '-');
+            if (s.includes('=')) s = s.split('=').pop();
+            s = s.replace(/[\s\xa0xyzabcXYZABC\u4e00-\u9fa5]/g, '');
+            if (s.startsWith('+')) s = s.substring(1);
+            if (s === '' || s === '-') return { val: NaN };
+            const num = parseInt(s, 10);
+            return { val: isNaN(num) ? NaN : num };
+        }
+
+        function checkAnswer() {
+            const q = state.questions[state.currentStage][state.currentSubStage - 1];
+            let isCorrect = false;
+
+            if (q.type === 'fill-poly-str') {
+                const inputElem = document.getElementById('polyStrInput');
+                const valRes = parseAndValidatePolyString(inputElem ? inputElem.value : '', q.targetP1, q.targetV1, q.targetP2, q.targetV2);
+                if (!valRes.correct) {
+                    alert("❌ " + valRes.msg);
+                    return;
+                }
+                isCorrect = true;
+
+            } else if (q.type === 'fill-multi') {
+                let hasEmpty = false;
+                for (let i = 0; i < q.inputs.length; i++) {
+                    const inputElem = document.getElementById(`input_${i}`);
+                    const parsed = parseSmartInput(inputElem ? inputElem.value : '');
+                    if (isNaN(parsed.val)) hasEmpty = true;
+                }
+
+                if (hasEmpty) {
+                    alert("⚠️ 請將所有填空欄位填入數字後再提交！");
+                    return;
+                }
+
+                isCorrect = q.inputs.every((input, idx) => {
+                    const inputElem = document.getElementById(`input_${idx}`);
+                    const parsed = parseSmartInput(inputElem ? inputElem.value : '');
+                    return parsed.val === input.answer;
+                });
+
+            } else if (q.type === 'fill-multi-sectioned') {
+                let allInputs = [];
+                q.sections.forEach(sec => {
+                    sec.inputs.forEach(inp => allInputs.push(inp));
+                });
+
+                let hasEmpty = false;
+                for (let i = 0; i < allInputs.length; i++) {
+                    const inputElem = document.getElementById(`input_${i}`);
+                    const parsed = parseSmartInput(inputElem ? inputElem.value : '');
+                    if (isNaN(parsed.val)) hasEmpty = true;
+                }
+
+                if (hasEmpty) {
+                    alert("⚠️ 請將第一部分與第二部分的所有填空欄位填入數字後再提交！");
+                    return;
+                }
+
+                isCorrect = allInputs.every((input, idx) => {
+                    const inputElem = document.getElementById(`input_${idx}`);
+                    const parsed = parseSmartInput(inputElem ? inputElem.value : '');
+                    return parsed.val === input.answer;
+                });
+
+            } else if (q.type === 'mcq') {
+                const selectedIdx = document.getElementById('interactionBox').dataset.selectedIdx;
+                if (selectedIdx === undefined) {
+                    alert("⚠️ 請選擇一個選項再提交！");
+                    return;
+                }
+                isCorrect = q.options[selectedIdx].correct;
+
+            } else if (q.type === 'classify') {
+                let allSelected = true;
+                let correctAll = true;
+
+                q.items.forEach((item, idx) => {
+                    const select = document.getElementById(`classify_${idx}`);
+                    if (!select || !select.value) allSelected = false;
+                    if (select && select.value !== item.answer) correctAll = false;
+                });
+
+                if (!allSelected) {
+                    alert("⚠️ 請為每一個題目選擇正確的歸類名稱再提交！");
+                    return;
+                }
+                isCorrect = correctAll;
+
+            } else if (q.type === 'reorder') {
+                let correctOrder = true;
+                for (let i = 0; i < state.reorderTiles.length - 1; i++) {
+                    if (q.orderType === 'desc') {
+                        if (state.reorderTiles[i].power < state.reorderTiles[i+1].power) correctOrder = false;
+                    } else if (q.orderType === 'asc') {
+                        if (state.reorderTiles[i].power > state.reorderTiles[i+1].power) correctOrder = false;
+                    }
+                }
+                isCorrect = correctOrder;
+            }
+
+            if (isCorrect) {
+                alert("🎉 完全正確！答得太棒了！");
+                nextSubStage();
+            } else {
+                state.wrongCount++;
+                if (state.wrongCount >= 2) {
+                    showHint(q.hint);
+                } else {
+                    alert("❌ 答案不太對喔，再檢查看看！");
+                }
+            }
+        }
+
+        function showHint(hintText) {
+            const box = document.getElementById('hintBox');
+            if (!box) return;
+            const hintTextSpan = document.getElementById('hintText');
+            hintTextSpan.innerHTML = hintText;
+            box.style.display = 'block';
+            renderMathInContainer(hintTextSpan);
+        }
+
+        function resetCurrentSubStage() {
+            loadSubStage(state.currentStage, state.currentSubStage);
+        }
+
+        function nextSubStage() {
+            if (state.currentSubStage < 2) {
+                loadSubStage(state.currentStage, 2);
+            } else {
+                state.completedStages.add(state.currentStage);
+                if (state.currentStage === state.unlockedStage && state.unlockedStage < 7) {
+                    state.unlockedStage++;
+                }
+
+                if (state.currentStage < 7) {
+                    alert(`🌟 恭喜順利通過第 ${state.currentStage} 關！解鎖下一關！`);
+                    switchStage(state.currentStage + 1);
+                } else {
+                    showCompletionModal();
+                }
+            }
+        }
+
+        function switchStage(stageId) {
+            if (stageId <= state.unlockedStage) {
+                loadSubStage(stageId, 1);
+            }
+        }
+
+        function renderMathInContainer(container) {
+            if (!container) return;
+            try {
+                if (window.renderMathInElement && typeof window.renderMathInElement === 'function') {
+                    window.renderMathInElement(container, {
+                        delimiters: [
+                            {left: "$$", right: "$$", display: true},
+                            {left: "$", right: "$", display: false}
+                        ],
+                        throwOnError: false
+                    });
+                }
+            } catch (e) {
+                console.warn("KaTeX rendering warning:", e);
+            }
+        }
+
+        function openConceptModal() {
+            const m = document.getElementById('conceptModal');
+            if (m) {
+                m.classList.add('active');
+                renderMathInContainer(m);
+            }
+        }
+        function closeConceptModal() {
+            const m = document.getElementById('conceptModal');
+            if (m) m.classList.remove('active');
+        }
+
+        function showCompletionModal() {
+            const m = document.getElementById('completionModal');
+            if (m) {
+                m.classList.add('active');
+                renderMathInContainer(m);
+            }
+            startConfetti();
+        }
+
+        function restartGame() {
+            const m = document.getElementById('completionModal');
+            if (m) m.classList.remove('active');
+            stopConfetti();
+            state.unlockedStage = 1;
+            state.completedStages.clear();
+            generateQuestions();
+            loadSubStage(1, 1);
+        }
+
+        let confettiTimer = null;
+        function startConfetti() {
+            const canvas = document.getElementById('confettiCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const particles = Array.from({length: 120}, () => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                size: Math.random() * 10 + 6,
+                color: ['#3730a3', '#0284c7', '#15803d', '#b45309', '#b91c1c'][Math.floor(Math.random()*5)],
+                vy: Math.random() * 3 + 2,
+                vx: Math.random() * 2 - 1
+            }));
+
+            function draw() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                particles.forEach(p => {
+                    p.y += p.vy; p.x += p.vx;
+                    if (p.y > canvas.height) p.y = -10;
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x, p.y, p.size, p.size);
+                });
+            }
+            confettiTimer = setInterval(draw, 20);
+        }
+
+        function stopConfetti() {
+            if (confettiTimer) clearInterval(confettiTimer);
+            const canvas = document.getElementById('confettiCanvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initGame();
+        });
+    </script>
+</body>
+</html>
