@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>二元一次不等式圖形探索學習系統</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  body {
+    background-color: #f0f4f8;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 16px 20px;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .main-wrapper {
+    max-width: 1100px;
+    margin: 20px auto;
+    width: 100%;
+    padding: 0 15px;
+  }
+  .level-nav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .level-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: #e0e6ed;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #666;
+    transition: all 0.3s;
+  }
+  .level-badge.active {
+    background: #3498db;
+    color: white;
+  }
+  .level-badge.completed {
+    background: #2ecc71;
+    color: white;
+  }
+
+  .content-container {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  @media (max-width: 800px) {
+    .content-container {
+      flex-direction: column;
+    }
+  }
+
+  .panel {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 24px;
+    flex: 1;
+    width: 100%;
+  }
+
+  .canvas-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 20px;
+  }
+
+  .step-card {
+    background: #f8fafc;
+    border-left: 4px solid #3498db;
+    padding: 16px;
+    margin-bottom: 20px;
+    border-radius: 0 8px 8px 0;
+  }
+  .step-title {
+    font-weight: bold;
+    font-size: 1.05rem;
+    margin-bottom: 12px;
+    color: #1e293b;
+  }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  input[type="number"] {
+    width: 70px;
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .option-group {
+    display: flex;
+    gap: 12px;
+    margin: 12px 0;
+  }
+  .option-btn {
+    padding: 8px 16px;
+    border: 2px solid #cbd5e1;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+  }
+  .option-btn:hover {
+    border-color: #94a3b8;
+  }
+  .option-btn.selected {
+    border-color: #3498db;
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    font-weight: bold;
+  }
+
+  .action-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: background 0.2s;
+  }
+  .action-btn:hover {
+    background: #2563eb;
+  }
+
+  .feedback-msg {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+    display: none;
+  }
+  .feedback-msg.success {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+  }
+  .feedback-msg.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  }
+
+  /* 通關頁面樣式 */
+  #completion-screen {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    margin: 40px auto;
+    max-width: 600px;
+  }
+  #completion-screen h2 {
+    color: #16a34a;
+    font-size: 2.2rem;
+    margin-bottom: 15px;
+  }
+  #completion-screen p {
+    font-size: 1.2rem;
+    color: #475569;
+    margin-bottom: 30px;
+  }
+
+  #confetti-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 999;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<header>二元一次不等式及其圖形 互動學習系統</header>
+
+<div class="main-wrapper">
+  <div class="level-nav">
+    <div class="level-badge active" id="badge-1">第 1 關</div>
+    <div class="level-badge" id="badge-2">第 2 關</div>
+    <div class="level-badge" id="badge-3">第 3 關</div>
+    <div class="level-badge" id="badge-4">第 4 關</div>
+    <div class="level-badge" id="badge-5">第 5 關</div>
+  </div>
+
+  <!-- 主要互動區域 -->
+  <div class="content-container" id="app-container">
+    <!-- 操作與問題面板 -->
+    <div class="panel" id="control-panel">
+      <!-- 動態載入關卡內容 -->
+    </div>
+
+    <!-- 直角坐標平面圖區域 -->
+    <div class="canvas-panel" id="canvas-container">
+      <canvas id="coordCanvas" width="400" height="400"></canvas>
+    </div>
+  </div>
+
+  <!-- 恭喜完全通關頁面（不含坐標平面） -->
+  <div id="completion-screen">
+    <h2>🎉 恭喜完全通關！</h2>
+    <p>你已經完美掌握二元一次不等式與直角坐標平面區域圖形的繪製與概念！</p>
+    <button class="action-btn" onclick="restartGame()">重新開始挑戰</button>
+  </div>
+</div>
+
+<!-- 灑花 Canvas -->
+<canvas id="confetti-canvas"></canvas>
+
+<script>
+  let currentLevel = 1;
+  let currentStage = 1;
+  let selectedDotType = null; // 'solid' or 'hollow'
+  let selectedLineStyle = null; // 'solid' or 'dashed'
+
+  const canvas = document.getElementById('coordCanvas');
+  const ctx = canvas.getContext('2d');
+  const center = { x: 200, y: 200 };
+  const scale = 20; // 每個單位 20px
+
+  // 初始化畫布
+  function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawGridAndAxes();
+  }
+
+  function drawGridAndAxes() {
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#f0f0f0';
+
+    // 網格
+    for (let x = 0; x <= canvas.width; x += scale) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= canvas.height; y += scale) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+
+    // 坐標軸
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    // X軸
+    ctx.beginPath();
+    ctx.moveTo(0, center.y);
+    ctx.lineTo(canvas.width, center.y);
+    ctx.stroke();
+    // Y軸
+    ctx.beginPath();
+    ctx.moveTo(center.x, 0);
+    ctx.lineTo(center.x, canvas.height);
+    ctx.stroke();
+
+    // 原點與標籤
+    ctx.fillStyle = '#666';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('O', center.x - 12, center.y + 15);
+    ctx.fillText('X', canvas.width - 15, center.y - 8);
+    ctx.fillText('Y', center.x + 8, 15);
+  }
+
+  function toCanvasX(x) { return center.x + x * scale; }
+  function toCanvasY(y) { return center.y - y * scale; }
+
+  // 繪製點（實心圓/空心圓）
+  function drawPoint(x, y, isSolid) {
+    const cx = toCanvasX(x);
+    const cy = toCanvasY(y);
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+    if (isSolid) {
+      ctx.fillStyle = '#e74c3c';
+      ctx.fill();
+    } else {
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#e74c3c';
+      ctx.stroke();
+    }
+  }
+
+  // 繪製直線（實線/虛線）
+  function drawLine(a, b, c, isDashed) {
+    ctx.save();
+    ctx.beginPath();
+    if (isDashed) {
+      ctx.setLineDash([6, 6]);
+    } else {
+      ctx.setLineDash([]);
+    }
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#2980b9';
+
+    // 計算畫布交點
+    let points = [];
+    if (b !== 0) {
+      let y1 = (c - a * (-10)) / b;
+      let y2 = (c - a * (10)) / b;
+      points.push({ x: -10, y: y1 }, { x: 10, y: y2 });
+    } else {
+      let x = c / a;
+      points.push({ x: x, y: -10 }, { x: x, y: 10 });
+    }
+
+    ctx.moveTo(toCanvasX(points[0].x), toCanvasY(points[0].y));
+    ctx.lineTo(toCanvasX(points[1].x), toCanvasY(points[1].y));
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 繪製半平面區域陰影
+  function drawShading(a, b, c, op) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(52, 152, 219, 0.25)';
+    ctx.beginPath();
+    
+    // 遍歷網格像素點進行著色
+    for (let px = 0; px <= canvas.width; px += 4) {
+      for (let py = 0; py <= canvas.height; py += 4) {
+        let x = (px - center.x) / scale;
+        let y = (center.y - py) / scale;
+        let val = a * x + b * y;
+        let satisfies = false;
+        if (op === '>=') satisfies = val >= c;
+        if (op === '<=') satisfies = val <= c;
+        if (op === '>') satisfies = val > c;
+        if (op === '<') satisfies = val < c;
+
+        if (satisfies) {
+          ctx.fillRect(px, py, 4, 4);
+        }
+      }
+    }
+    ctx.restore();
+  }
+
+  // 載入關卡
+  function loadLevel(level) {
+    currentLevel = level;
+    currentStage = 1;
+    selectedDotType = null;
+    selectedLineStyle = null;
+    
+    // 更新上方導覽列
+    for (let i = 1; i <= 5; i++) {
+      const badge = document.getElementById(`badge-${i}`);
+      badge.classList.remove('active');
+      if (i < currentLevel) badge.classList.add('completed');
+      if (i === currentLevel) badge.classList.add('active');
+    }
+
+    const panel = document.getElementById('control-panel');
+    clearCanvas();
+
+    if (level === 1) {
+      panel.innerHTML = `
+        <h3 style="margin-bottom:15px;">第 1 關：點與直線的關係</h3>
+        <p style="margin-bottom:15px;">判斷點 (2, 1) 是否滿足不等式 <strong>x + y > 2</strong>。</p>
+        <div class="step-card">
+          <div class="step-title">計算驗證：</div>
+          <p>將 x = 2, y = 1 代入 2 + 1 = 3。</p>
+          <p style="margin-top:8px;">請問 3 > 2 是否成立？</p>
+          <div class="option-group">
+            <button class="option-btn" onclick="selectOption(this, 'true')">成立 (是)</button>
+            <button class="option-btn" onclick="selectOption(this, 'false')">不成立 (否)</button>
+          </div>
+          <button class="action-btn" onclick="checkL1()">送出答案</button>
+          <div id="fb" class="feedback-msg"></div>
+        </div>
+      `;
+      drawLine(1, 1, 2, true);
+      drawPoint(2, 1, true);
+    } 
+    else if (level === 2) {
+      panel.innerHTML = `
+        <h3 style="margin-bottom:15px;">第 2 關：尋找邊界線截距</h3>
+        <p style="margin-bottom:15px;">給定直線方程式 <strong>2x - y = 4</strong>，請找出兩軸截距點：</p>
+        <div class="step-card">
+          <div class="input-row">
+            1. 當 x = 0 時，y = <input type="number" id="l2-y" />
+          </div>
+          <div class="input-row">
+            2. 當 y = 0 時，x = <input type="number" id="l2-x" />
+          </div>
+          <button class="action-btn" onclick="checkL2()">驗證座標</button>
+          <div id="fb" class="feedback-msg"></div>
+        </div>
+      `;
+    }
+    else if (level === 3) {
+      renderL3StepA();
+    }
+    else if (level === 4) {
+      // 第4關剛進入時：坐標平面圖中不要出現題目對應的邊界線
+      clearCanvas();
+      renderL4Stage1();
+    }
+    else if (level === 5) {
+      renderL5StepA();
+    }
+  }
+
+  // --- 第 3 關 ---
+  function renderL3StepA() {
+    const panel = document.getElementById('control-panel');
+    panel.innerHTML = `
+      <h3 style="margin-bottom:15px;">第 3 關：二元一次不等式 2x + y ≥ 4</h3>
+      <div class="step-card">
+        <div class="step-title">步驟a：驗證邊界點座標 (2x + y = 4)</div>
+        <div class="input-row">
+          • 當 x = 0 時，y = <input type="number" id="l3-y" />
+        </div>
+        <div class="input-row">
+          • 當 y = 0 時，x = <input type="number" id="l3-x" />
+        </div>
+        <div style="margin-top:15px;">
+          <label><strong>互動操作：此不等式包含等號 (≥)，邊界點應繪製為？</strong></label>
+          <div class="option-group">
+            <button class="option-btn" onclick="setDotType(this, 'solid')">● 繪實心圓</button>
+            <button class="option-btn" onclick="setDotType(this, 'hollow')">○ 繪空心圓</button>
+          </div>
+        </div>
+        <button class="action-btn" onclick="checkL3StepA()">驗證步驟a</button>
+        <div id="fb" class="feedback-msg"></div>
+      </div>
+      <div id="step-b-container"></div>
+    `;
+  }
+
+  function checkL3StepA() {
+    const yVal = parseInt(document.getElementById('l3-y').value);
+    const xVal = parseInt(document.getElementById('l3-x').value);
+    const fb = document.getElementById('fb');
+
+    if (yVal === 4 && xVal === 2 && selectedDotType === 'solid') {
+      fb.className = 'feedback-msg success';
+      fb.innerText = '正確！邊界點為 (0,4) 與 (2,0)，且包含等號需繪製實心圓。';
+      fb.style.display = 'block';
+
+      clearCanvas();
+      drawPoint(0, 4, true);
+      drawPoint(2, 0, true);
+
+      renderL3StepB();
+    } else {
+      fb.className = 'feedback-msg error';
+      fb.innerText = '答案不正確或圓點類型選擇錯誤，請重新確認！';
+      fb.style.display = 'block';
+    }
+  }
+
+  function renderL3StepB() {
+    const container = document.getElementById('step-b-container');
+    container.innerHTML = `
+      <div class="step-card">
+        <div class="step-title">步驟b：繪製邊界線與判斷區域</div>
+        <p style="margin-bottom:10px;">包含等號時，邊界線應畫為？</p>
+        <div class="option-group">
+          <button class="option-btn" onclick="setLineStyle(this, 'solid')">實線</button>
+          <button class="option-btn" onclick="setLineStyle(this, 'dashed')">虛線</button>
+        </div>
+        <p style="margin:10px 0;">代入原點 (0,0) 測試：2(0) + 0 ≥ 4 成立嗎？</p>
+        <div class="option-group">
+          <button class="option-btn" onclick="selectOriginTest(this, false)">不成立 (不含原點側)</button>
+          <button class="option-btn" onclick="selectOriginTest(this, true)">成立 (含原點側)</button>
+        </div>
+        <button class="action-btn" onclick="checkL3StepB()">完成第 3 關</button>
+        <div id="fb-b" class="feedback-msg"></div>
+      </div>
+    `;
+  }
+
+  let l3OriginAns = null;
+  function selectOriginTest(btn, val) {
+    const btns = btn.parentElement.querySelectorAll('.option-btn');
+    btns.forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    l3OriginAns = val;
+  }
+
+  function checkL3StepB() {
+    const fb = document.getElementById('fb-b');
+    if (selectedLineStyle === 'solid' && l3OriginAns === false) {
+      fb.className = 'feedback-msg success';
+      fb.innerText = '完全正確！成功繪製不等式 2x + y ≥ 4 的區域！';
+      fb.style.display = 'block';
+
+      clearCanvas();
+      drawShading(2, 1, 4, '>=');
+      drawLine(2, 1, 4, false);
+      drawPoint(0, 4, true);
+      drawPoint(2, 0, true);
+
+      setTimeout(() => loadLevel(4), 1800);
+    } else {
+      fb.className = 'feedback-msg error';
+      fb.innerText = '邊界線類型或測試點判斷有誤，請再試一次。';
+      fb.style.display = 'block';
+    }
+  }
+
+  // --- 第 4 關 ---
+  function renderL4Stage1() {
+    const panel = document.getElementById('control-panel');
+    panel.innerHTML = `
+      <h3 style="margin-bottom:15px;">第 4 關：二元一次不等式 x - 2y < 2</h3>
+      <div class="step-card">
+        <div class="step-title">階段 1：題目觀察</div>
+        <p>不等式為 <strong>x - 2y < 2</strong>。</p>
+        <p style="margin-top:8px; color:#666;">（此時坐標平面保持空白，尚未出現邊界線）</p>
+        <button class="action-btn" onclick="goToL4Stage2()">開始進入階段 2</button>
+      </div>
+    `;
+  }
+
+  function goToL4Stage2() {
+    currentStage = 2;
+    const panel = document.getElementById('control-panel');
+    panel.innerHTML = `
+      <h3 style="margin-bottom:15px;">第 4 關：二元一次不等式 x - 2y < 2</h3>
+      <div class="step-card">
+        <div class="step-title">階段2 步驟a：驗證邊界點座標 (x - 2y = 2)</div>
+        <div class="input-row">
+          • 當 x = 0 時，y = <input type="number" id="l4-y" />
+        </div>
+        <div class="input-row">
+          • 當 y = 0 時，x = <input type="number" id="l4-x" />
+        </div>
+        <div style="margin-top:15px;">
+          <label><strong>互動操作：此不等式不含等號 (<)，邊界點應繪製為？</strong></label>
+          <div class="option-group">
+            <button class="option-btn" onclick="setDotType(this, 'solid')">● 繪實心圓</button>
+            <button class="option-btn" onclick="setDotType(this, 'hollow')">○ 繪空心圓</button>
+          </div>
+        </div>
+        <button class="action-btn" onclick="checkL4StepA()">驗證階段2 步驟a</button>
+        <div id="fb" class="feedback-msg"></div>
+      </div>
+      <div id="step-b-container"></div>
+    `;
+  }
+
+  function checkL4StepA() {
+    const yVal = parseInt(document.getElementById('l4-y').value);
+    const xVal = parseInt(document.getElementById('l4-x').value);
+    const fb = document.getElementById('fb');
+
+    if (yVal === -1 && xVal === 2 && selectedDotType === 'hollow') {
+      fb.className = 'feedback-msg success';
+      fb.innerText = '正確！邊界點為 (0,-1) 與 (2,0)，且不含等號需繪製空心圓。';
+      fb.style.display = 'block';
+
+      clearCanvas();
+      drawPoint(0, -1, false);
+      drawPoint(2, 0, false);
+
+      renderL4StepB();
+    } else {
+      fb.className = 'feedback-msg error';
+      fb.innerText = '答案不正確或圓點類型選擇錯誤，請重新確認！';
+      fb.style.display = 'block';
+    }
+  }
+
+  function renderL4StepB() {
+    const container = document.getElementById('step-b-container');
+    container.innerHTML = `
+      <div class="step-card">
+        <div class="step-title">階段2 步驟b：繪製虛線與區域選擇</div>
+        <p style="margin-bottom:10px;">不含等號時，邊界線應畫為？</p>
+        <div class="option-group">
+          <button class="option-btn" onclick="setLineStyle(this, 'solid')">實線</button>
+          <button class="option-btn" onclick="setLineStyle(this, 'dashed')">虛線</button>
+        </div>
+        <p style="margin:10px 0;">代入原點 (0,0) 測試：0 - 2(0) < 2 成立嗎？</p>
+        <div class="option-group">
+          <button class="option-btn" onclick="selectOriginTest(this, true)">成立 (含原點側)</button>
+          <button class="option-btn" onclick="selectOriginTest(this, false)">不成立 (不含原點側)</button>
+        </div>
+        <button class="action-btn" onclick="checkL4StepB()">完成第 4 關</button>
+        <div id="fb-b" class="feedback-msg"></div>
+      </div>
+    `;
+  }
+
+  function checkL4StepB() {
+    const fb = document.getElementById('fb-b');
+    if (selectedLineStyle === 'dashed' && l3OriginAns === true) {
+      fb.className = 'feedback-msg success';
+      fb.innerText = '完全正確！成功繪製不等式 x - 2y < 2 的區域！';
+      fb.style.display = 'block';
+
+      clearCanvas();
+      drawShading(1, -2, 2, '<');
+      drawLine(1, -2, 2, true);
+      drawPoint(0, -1, false);
+      drawPoint(2, 0, false);
+
+      setTimeout(() => loadLevel(5), 1800);
+    } else {
+      fb.className = 'feedback-msg error';
+      fb.innerText = '邊界線類型或測試點判斷有誤，請再試一次。';
+      fb.style.display = 'block';
+    }
+  }
+
+  // --- 第 5 關 ---
+  function renderL5StepA() {
+    const panel = document.getElementById('control-panel');
+    panel.innerHTML = `
+      <h3 style="margin-bottom:15px;">第 5 關：綜合挑戰 3x - y ≤ 6</h3>
+      <div class="step-card">
+        <div class="step-title">步驟a：驗證邊界點座標 (3x - y = 6)</div>
+        <div class="input-row">
+          • 當 x = 0 時，y = <input type="number" id="l5-y" />
+        </div>
+        <div class="input-row">
+          • 當 y = 0 時，x = <input type="number" id="l5-x" />
+        </div>
+        <div style="margin-top:15px;">
+          <label><strong>互動操作：此不等式包含等號 (≤)，邊界點應繪製為？</strong></label>
+          <div class="option-group">
+            <button class="option-btn" onclick="setDotType(this, 'solid')">● 繪實心圓</button>
+            <button class="option-btn" onclick="setDotType(this, 'hollow')">○ 繪空心圓</button>
+          </div>
+        </div>
+        <button class="action-btn" onclick="checkL5StepA()">驗證步驟a</button>
+        <div id="fb" class="feedback-msg"></div>
+      </div>
+      <div id="step-b-container"></div>
+    `;
+  }
+
+  function checkL5StepA() {
+    const yVal = parseInt(document.getElementById('l5-y').value);
+    const xVal = parseInt(document.getElementById('l5-x').value);
+    const fb = document.getElementById('fb');
+
+    if (yVal === -6 && xVal === 2 && selectedDotType === 'solid') {
+      fb.className = 'feedback-msg success';
+      fb.innerText = '正確！邊界點為 (0,-6) 與 (2,0)，且包含等號繪製實心圓。';
+      fb.style.display = 'block';
+
+      clearCanvas();
+      drawPoint(0, -6, true);
+      drawPoint(2, 0, true);
+
+      renderL5StepB();
+    } else {
+      fb.className = 'feedback-msg error';
+      fb.innerText = '答案不正確或圓點類型選擇錯誤，請重新確認！';
+      fb.style.display = 'block';
+    }
+  }
+
+  function renderL5StepB() {
+    const container = document.getElementById('step-b-container');
+    container.innerHTML = `
+      <div class="step-card">
+        <div class="step-title">步驟b：邊界線與區域標示</div>
+        <p style="margin-bottom:10px;">包含等號時，邊界線應畫為？</p>
+        <div class="option-group">
+          <button class="option-btn" onclick="setLineStyle(this, 'solid')">實線</button>
+          <button class="option-btn" onclick="setLineStyle(this, 'dashed')">虛線</button>
+        </div>
+        <p style="margin:10px 0;">代入原點 (0,0) 測試：3(0) - 0 ≤ 6 成立嗎？</p>
+        <div class="option-group">
+          <button class="option-btn" onclick="selectOriginTest(this, true)">成立 (含原點側)</button>
+          <button class="option-btn" onclick="selectOriginTest(this, false)">不成立 (不含原點側)</button>
+        </div>
+        <button class="action-btn" onclick="checkL5StepB()">完成通關</button>
+        <div id="fb-b" class="feedback-msg"></div>
+      </div>
+    `;
+  }
+
+  function checkL5StepB() {
+    const fb = document.getElementById('fb-b');
+    if (selectedLineStyle === 'solid' && l3OriginAns === true) {
+      fb.className = 'feedback-msg success';
+      fb.innerText = '恭喜完成最終關卡！';
+      fb.style.display = 'block';
+
+      clearCanvas();
+      drawShading(3, -1, 6, '<=');
+      drawLine(3, -1, 6, false);
+      drawPoint(0, -6, true);
+      drawPoint(2, 0, true);
+
+      setTimeout(showCompletionScreen, 1500);
+    } else {
+      fb.className = 'feedback-msg error';
+      fb.innerText = '邊界線類型或測試點判斷有誤，請再試一次。';
+      fb.style.display = 'block';
+    }
+  }
+
+  // 通用按鈕切換
+  function setDotType(btn, type) {
+    const btns = btn.parentElement.querySelectorAll('.option-btn');
+    btns.forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedDotType = type;
+  }
+
+  function setLineStyle(btn, style) {
+    const btns = btn.parentElement.querySelectorAll('.option-btn');
+    btns.forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedLineStyle = style;
+  }
+
+  let l1Ans = null;
+  function selectOption(btn, val) {
+    const btns = btn.parentElement.querySelectorAll('.option-btn');
+    btns.forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    l1Ans = val;
+  }
+
+  function checkL1() {
+    const fb = document.getElementById('fb');
+    if (l1Ans === 'true') {
+      fb.className = 'feedback-msg success';
+      fb.innerText = '正確！3 > 2 成立，因此點 (2,1) 在區域內。';
+      fb.style.display = 'block';
+      setTimeout(() => loadLevel(2), 1500);
+    } else {
+      fb.className = 'feedback-msg error';
+      fb.innerText = '不正確，請再重新計算一次。';
+      fb.style.display = 'block';
+    }
+  }
+
+  function checkL2() {
+    const yVal = parseInt(document.getElementById('l2-y').value);
+    const xVal = parseInt(document.getElementById('l2-x').value);
+    const fb = document.getElementById('fb');
+
+    if (yVal === -4 && xVal === 2) {
+      fb.className = 'feedback-msg success';
+      fb.innerText = '正確！兩截距點座標為 (0,-4) 與 (2,0)。';
+      fb.style.display = 'block';
+
+      clearCanvas();
+      drawLine(2, -1, 4, false);
+      drawPoint(0, -4, true);
+      drawPoint(2, 0, true);
+
+      setTimeout(() => loadLevel(3), 1500);
+    } else {
+      fb.className = 'feedback-msg error';
+      fb.innerText = '計算有誤，請檢查正負號與數值。';
+      fb.style.display = 'block';
+    }
+  }
+
+  // --- 完全通關與灑花 ---
+  function showCompletionScreen() {
+    document.getElementById('app-container').style.display = 'none';
+    document.getElementById('completion-screen').style.display = 'block';
+    startConfetti();
+  }
+
+  function restartGame() {
+    document.getElementById('completion-screen').style.display = 'none';
+    document.getElementById('confetti-canvas').style.display = 'none';
+    document.getElementById('app-container').style.display = 'flex';
+    loadLevel(1);
+  }
+
+  function startConfetti() {
+    const cCanvas = document.getElementById('confetti-canvas');
+    cCanvas.style.display = 'block';
+    const cCtx = cCanvas.getContext('2d');
+    cCanvas.width = window.innerWidth;
+    cCanvas.height = window.innerHeight;
+
+    const particles = [];
+    const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#4caf50', '#ffeb3b', '#ff9800'];
+
+    for (let i = 0; i < 120; i++) {
+      particles.push({
+        x: Math.random() * cCanvas.width,
+        y: Math.random() * cCanvas.height - cCanvas.height,
+        r: Math.random() * 6 + 4,
+        d: Math.random() * 10 + 10,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        tilt: Math.floor(Math.random() * 10) - 10,
+        tiltAngleIncremental: Math.random() * 0.07 + 0.05,
+        tiltAngle: 0
+      });
+    }
+
+    function renderConfetti() {
+      cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
+      for (let i = 0; i < particles.length; i++) {
+        let p = particles[i];
+        cCtx.beginPath();
+        cCtx.lineWidth = p.r;
+        cCtx.strokeStyle = p.color;
+        cCtx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+        cCtx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+        cCtx.stroke();
+      }
+
+      for (let i = 0; i < particles.length; i++) {
+        let p = particles[i];
+        p.tiltAngle += p.tiltAngleIncremental;
+        p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+        p.tilt = Math.sin(p.tiltAngle) * 15;
+
+        if (p.y > cCanvas.height) {
+          p.x = Math.random() * cCanvas.width;
+          p.y = -10;
+          p.tilt = Math.floor(Math.random() * 10) - 10;
+        }
+      }
+      requestAnimationFrame(renderConfetti);
+    }
+    renderConfetti();
+  }
+
+  // 初始化關卡 1
+  loadLevel(1);
+</script>
+</body>
+</html>
