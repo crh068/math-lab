@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1-2.1 二元一次不等式的圖解 - 闖關學習學具</title>
+
+    <!-- KaTeX 數學公式與字型 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+    <!-- Canvas Confetti 灑花動畫庫 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 1.2rem;
+        }
+
+        header {
+            background-color: #0f172a;
+            color: #ffffff;
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-steps {
+            display: flex;
+            gap: 10px;
+        }
+
+        .step-btn {
+            background-color: #334155;
+            color: #cbd5e1;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+
+        .step-btn.active {
+            background-color: #f59e0b;
+            color: #ffffff;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(245,158,11,0.4);
+        }
+
+        .step-btn.disabled {
+            background-color: #1e293b;
+            color: #64748b;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            padding: 18px;
+            gap: 18px;
+            overflow: hidden;
+        }
+
+        .panel-left {
+            flex: 1.25;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel-right {
+            flex: 0.95;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            background-color: #ffffff;
+            touch-action: none;
+        }
+
+        .card {
+            background: #f8fafc;
+            border-left: 6px solid #2563eb;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+        }
+
+        .step-block {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 14px;
+            transition: opacity 0.3s;
+        }
+
+        .step-block.locked {
+            opacity: 0.55;
+            background-color: #f8fafc;
+        }
+
+        h2 { font-size: 1.6rem; margin-top: 0; color: #1e293b; }
+        h3 { font-size: 1.35rem; margin-top: 0; color: #1e293b; }
+
+        .math-expr {
+            font-size: 1.45rem;
+            margin: 10px 0;
+            color: #0f172a;
+        }
+
+        .input-group {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.15rem;
+            flex-wrap: wrap;
+        }
+
+        input[type="number"], select {
+            font-size: 1.2rem;
+            padding: 8px 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            width: 100px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus, select:focus {
+            border-color: #2563eb;
+        }
+
+        button:disabled, select:disabled, input:disabled {
+            cursor: not-allowed !important;
+            opacity: 0.6 !important;
+        }
+
+        .btn-action {
+            background-color: #16a34a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.15rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+            font-weight: 700;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background-color: #15803d;
+        }
+
+        .btn-small {
+            padding: 6px 14px;
+            font-size: 1rem;
+            margin-top: 0;
+        }
+
+        .hint-box {
+            background-color: #fef3c7;
+            border: 1px solid #fde047;
+            color: #854d0e;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        .lock-msg {
+            color: #64748b;
+            font-size: 0.95rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        table.math-table {
+            border-collapse: collapse;
+            margin: 14px 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        table.math-table th, table.math-table td {
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            font-size: 1.15rem;
+        }
+
+        table.math-table th {
+            background-color: #f1f5f9;
+        }
+
+        .status-badge {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .status-pass { color: #16a34a; background-color: #dcfce7; }
+        .status-fail { color: #dc2626; background-color: #fee2e2; }
+
+        .victory-screen {
+            text-align: center;
+            padding: 50px 20px;
+            margin: auto;
+        }
+
+        .victory-screen h2 {
+            font-size: 2.8rem;
+            color: #16a34a;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>1-2.1 二元一次不等式的圖解</h1>
+        <div class="nav-steps" id="nav-steps">
+            <button class="step-btn active" onclick="switchLevel(0)">重點彙整</button>
+            <button class="step-btn disabled" id="btn-lvl-1" onclick="switchLevel(1)">第 1 關</button>
+            <button class="step-btn disabled" id="btn-lvl-2" onclick="switchLevel(2)">第 2 關</button>
+            <button class="step-btn disabled" id="btn-lvl-3" onclick="switchLevel(3)">第 3 關</button>
+            <button class="step-btn disabled" id="btn-lvl-4" onclick="switchLevel(4)">第 4 關</button>
+            <button class="step-btn disabled" id="btn-lvl-5" onclick="switchLevel(5)">第 5 關</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="panel-left" id="panel-left"></div>
+        <div class="panel-right" id="panel-right">
+            <canvas id="gridCanvas" width="500" height="500"></canvas>
+            <div id="canvas-range-label" style="margin-top: 12px; font-size: 1.1rem; color: #475569; font-weight: 600;"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = 0;
+        let maxUnlockedLevel = 1;
+
+        let gameState = {
+            l1: { a: 1, b: 1, c: 0, p1: [0, null], p2: [null, 0], lineVerified: false },
+            l2: { a: 1, b: 1, c: 0, points: [], currentPointIdx: 0, verifiedAllPoints: false, summaryVerified: false },
+            l3: { currentQ: 1, q1: {}, q2: {} },
+            l4: { 
+                a: -2, b: 3, c: -6, op: '>', 
+                transformedVerified: false,
+                target: { a: 2, b: -3, c: 6, op: '<', isSolid: false, region: 'left', p1: [0, 2], p2: [-3, 0] },
+                pointsVerified: false, lineVerified: false, regionVerified: false 
+            },
+            l5: { currentQ: 1, q1: {}, q2: {} }
+        };
+
+        function m(latex) {
+            return katex.renderToString(latex, { throwOnError: false });
+        }
+
+        function normalizeOp(op) {
+            if (!op) return '';
+            return op.replace(/\\/g, '').trim();
+        }
+
+        window.onload = () => {
+            initGameData();
+            renderLevel();
+            drawCanvas();
+            document.getElementById('canvas-range-label').innerHTML = '坐標平面範圍：' + m('x, y \\in [-8, 8]');
+        };
+
+        function gcd(u, v) {
+            u = Math.abs(u);
+            v = Math.abs(v);
+            while (v) {
+                let t = u % v;
+                u = v;
+                v = t;
+            }
+            return u;
+        }
+
+        function getFlippedOp(op) {
+            if (op === '>') return '<';
+            if (op === '<') return '>';
+            if (op === '\\ge') return '\\le';
+            if (op === '\\le') return '\\ge';
+            return op;
+        }
+
+        function generateL3Question(hasEqual) {
+            let x0 = 0, y0 = 0;
+            while (x0 === 0) x0 = Math.floor(Math.random() * 11) - 5;
+            while (y0 === 0) y0 = Math.floor(Math.random() * 11) - 5;
+
+            let rawA = y0;
+            let rawB = x0;
+            let rawC = -x0 * y0;
+
+            let g = gcd(gcd(rawA, rawB), rawC);
+            let a = rawA / g;
+            let b = rawB / g;
+            let c = rawC / g;
+
+            if (a < 0) {
+                a = -a; b = -b; c = -c;
+            }
+
+            let op;
+            if (hasEqual) {
+                op = Math.random() < 0.5 ? '\\ge' : '\\le';
+            } else {
+                op = Math.random() < 0.5 ? '>' : '<';
+            }
+
+            let isSolid = (op === '\\ge' || op === '\\le');
+            let region = (op === '>' || op === '\\ge') ? 'right' : 'left';
+
+            return {
+                a: a, b: b, c: c, op: op,
+                isSolid: isSolid,
+                region: region,
+                p1: [0, y0],
+                p2: [x0, 0],
+                pointsVerified: false,
+                lineVerified: false,
+                regionVerified: false
+            };
+        }
+
+        function generateL5Question(type, op) {
+            let k = 0;
+            while (k === 0) k = Math.floor(Math.random() * 11) - 5;
+
+            let isSolid = (op === '\\ge' || op === '\\le');
+
+            let region = '';
+            if (type === 'y') {
+                region = (op === '>' || op === '\\ge') ? 'upper' : 'lower';
+            } else {
+                region = (op === '>' || op === '\\ge') ? 'right' : 'left';
+            }
+
+            return {
+                type: type,
+                k: k,
+                op: op,
+                isSolid: isSolid,
+                region: region,
+                p1: type === 'y' ? [0, k] : [k, 0],
+                p2: type === 'y' ? [3, k] : [k, 3],
+                pointsVerified: false,
+                lineVerified: false,
+                regionVerified: false
+            };
+        }
+
+        function initGameData() {
+            let x0 = 0, y0 = 0;
+            while (x0 === 0) x0 = Math.floor(Math.random() * 11) - 5;
+            while (y0 === 0) y0 = Math.floor(Math.random() * 11) - 5;
+
+            let rawA = y0;
+            let rawB = x0;
+            let rawC = -x0 * y0;
+
+            let g = gcd(gcd(rawA, rawB), rawC);
+            let a1 = rawA / g;
+            let b1 = rawB / g;
+            let c1 = rawC / g;
+
+            if (a1 < 0) {
+                a1 = -a1; b1 = -b1; c1 = -c1;
+            }
+
+            gameState.l1 = { a: a1, b: b1, c: c1, p1: [0, null], p2: [null, 0], lineVerified: false };
+
+            let pts2 = generateNonCollinearPoints(a1, b1, c1);
+            gameState.l2 = { a: a1, b: b1, c: c1, points: pts2, currentPointIdx: 0, verifiedAllPoints: false, summaryVerified: false };
+
+            let q1HasEqual = Math.random() < 0.5;
+            gameState.l3 = {
+                currentQ: 1,
+                q1: generateL3Question(q1HasEqual),
+                q2: generateL3Question(!q1HasEqual)
+            };
+
+            const opsL4 = ['>', '<', '\\ge', '\\le'];
+            let origOpL4 = opsL4[Math.floor(Math.random() * opsL4.length)];
+            let targetOpL4 = getFlippedOp(origOpL4);
+
+            gameState.l4 = { 
+                a: -2, b: 3, c: -6, op: origOpL4, 
+                transformedVerified: false,
+                target: { 
+                    a: 2, b: -3, c: 6, op: targetOpL4, 
+                    isSolid: (targetOpL4 === '\\ge' || targetOpL4 === '\\le'), 
+                    region: (targetOpL4 === '>' || targetOpL4 === '\\ge') ? 'right' : 'left', 
+                    p1: [0, 2], p2: [-3, 0] 
+                },
+                pointsVerified: false, lineVerified: false, regionVerified: false 
+            };
+
+            let l5Pairs = [
+                ['\\ge', '<'],
+                ['<', '\\ge'],
+                ['>', '\\le'],
+                ['\\le', '>']
+            ];
+            let chosenL5 = l5Pairs[Math.floor(Math.random() * l5Pairs.length)];
+
+            gameState.l5 = {
+                currentQ: 1,
+                q1: generateL5Question('y', chosenL5[0]),
+                q2: generateL5Question('x', chosenL5[1])
+            };
+        }
+
+        function generateNonCollinearPoints(a, b, c) {
+            let ptsRight = [];
+            let ptsLeft = [];
+            let usedX = new Set();
+            let usedY = new Set();
+            let attempts = 0;
+
+            while ((ptsRight.length < 3 || ptsLeft.length < 3) && attempts < 3000) {
+                attempts++;
+                let px = Math.floor(Math.random() * 13) - 6;
+                let py = Math.floor(Math.random() * 13) - 6;
+
+                if (usedX.has(px) || usedY.has(py)) continue;
+                let val = a * px + b * py + c;
+                if (val === 0) continue;
+
+                if (val > 0 && ptsRight.length < 3) {
+                    usedX.add(px); usedY.add(py);
+                    ptsRight.push({ x: px, y: py, val: val, side: 'right', correct: false });
+                } else if (val < 0 && ptsLeft.length < 3) {
+                    usedX.add(px); usedY.add(py);
+                    ptsLeft.push({ x: px, y: py, val: val, side: 'left', correct: false });
+                }
+            }
+
+            let allPts = [...ptsRight, ...ptsLeft];
+
+            do {
+                for (let i = allPts.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [allPts[i], allPts[j]] = [allPts[j], allPts[i]];
+                }
+            } while (allPts[0].side === allPts[1].side && allPts[1].side === allPts[2].side);
+
+            return allPts;
+        }
+
+        function switchLevel(lvl) {
+            if (lvl > maxUnlockedLevel && lvl !== 0 && lvl !== 6) return;
+            currentLevel = lvl;
+
+            document.querySelectorAll('.step-btn').forEach((btn, idx) => {
+                btn.classList.remove('active');
+                if (idx === lvl) btn.classList.add('active');
+            });
+
+            const panelRight = document.getElementById('panel-right');
+            const panelLeft = document.getElementById('panel-left');
+
+            if (lvl === 6) {
+                panelRight.style.display = 'none';
+                panelLeft.style.flex = '1';
+                renderLevel();
+                setTimeout(() => { triggerConfetti(); }, 100);
+            } else {
+                panelRight.style.display = 'flex';
+                panelLeft.style.flex = '1.25';
+                renderLevel();
+                drawCanvas();
+            }
+        }
+
+        function unlockNextLevel() {
+            if (currentLevel + 1 > maxUnlockedLevel) {
+                maxUnlockedLevel = currentLevel + 1;
+                let nextBtn = document.getElementById(`btn-lvl-${maxUnlockedLevel}`);
+                if (nextBtn) nextBtn.classList.remove('disabled');
+            }
+            switchLevel(currentLevel + 1);
+        }
+
+        function renderLevel() {
+            const container = document.getElementById('panel-left');
+            container.innerHTML = '';
+
+            if (currentLevel === 0) {
+                container.innerHTML = `
+                    <h2>📘 重點彙整：二元一次不等式的圖解</h2>
+                    <div class="card">
+                        <h3>1. 直線與半平面</h3>
+                        <p>二元一次方程式 ${m('ax + by + c = 0')} 的圖形為一條直線 ${m('L')}。此直線將坐標平面分割為兩個<b>半平面</b>（左側半平面與右側半平面）。</p>
+                    </div>
+                    <div class="card">
+                        <h3>2. 判別法則（當 ${m('a > 0')} 時）</h3>
+                        <ul>
+                            <li>${m('ax + by + c > 0')}：表直線 ${m('L')} 的<b>右側半平面</b>。</li>
+                            <li>${m('ax + by + c < 0')}：表直線 ${m('L')} 的<b>左側半平面</b>。</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>3. 實線與虛線表示法</h3>
+                        <ul>
+                            <li>含有等號（${m('\\ge')} 或 ${m('\\le')}）：包含邊界直線，畫<b>實線</b>，邊界點標示<b>實心圓</b>。</li>
+                            <li>不含等號（${m('>')} 或 ${m('<')}）：不含邊界直線，畫<b>虛線</b>，邊界點標示<b>空心圓</b>。</li>
+                        </ul>
+                    </div>
+                    <button class="btn-action" onclick="switchLevel(1)">進入第 1 關卡 🚀</button>
+                `;
+            } else if (currentLevel === 1) {
+                let { a, b, c, lineVerified } = gameState.l1;
+                let eqStr = formatEq(a, b, c) + ' = 0';
+                container.innerHTML = `
+                    <h2>第 1 關：繪製二元一次方程式直線</h2>
+                    <p>請於表格中填入二元一次方程式對應的交點座標，系統會同步於右圖描繪點座標。兩點驗證無誤後點擊按鈕畫出直線。</p>
+                    <div class="card">
+                        <div class="math-expr">${m('L: ' + eqStr)}</div>
+                    </div>
+
+                    <table class="math-table">
+                        <tr>
+                            <th>變數 \\ 點座標</th>
+                            <th>對應點 ${m('P_1')}</th>
+                            <th>對應點 ${m('P_2')}</th>
+                        </tr>
+                        <tr>
+                            <td><b>${m('x')} 座標</b></td>
+                            <td>0</td>
+                            <td><input type="number" id="l1-x2" oninput="onL1InputChanged()" placeholder="填入 x"></td>
+                        </tr>
+                        <tr>
+                            <td><b>${m('y')} 座標</b></td>
+                            <td><input type="number" id="l1-y1" oninput="onL1InputChanged()" placeholder="填入 y"></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td><b>點座標 ${m('(x, y)')}</b></td>
+                            <td id="l1-p1-label">(0, ?)</td>
+                            <td id="l1-p2-label">(?, 0)</td>
+                        </tr>
+                    </table>
+
+                    <button class="btn-action" onclick="checkL1()">驗證點座標並繪製直線</button>
+                    <div class="hint-box" id="l1-hint"></div>
+                    <div id="l1-success-next" style="display: ${lineVerified ? 'block' : 'none'}; margin-top: 15px;">
+                        <div class="card" style="border-left-color: #16a34a; background-color: #f0fdf4;">
+                            <h3 style="color: #15803d; margin-top:0;">🎉 驗證成功！</h3>
+                            <p>點座標計算正確，已成功畫出直線！請點擊下方按鈕前往下一關。</p>
+                            <button class="btn-action" style="background-color: #2563eb;" onclick="switchLevel(2)">進入第 2 關 ➡️</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentLevel === 2) {
+                let { a, b, c, points, currentPointIdx, verifiedAllPoints, summaryVerified } = gameState.l2;
+                let eqLeftStr = formatEq(a, b, c);
+
+                let rowsHtml = points.map((p, i) => {
+                    if (i < currentPointIdx) {
+                        let signLabel = p.val > 0 ? '大於 0' : '小於 0';
+                        return `
+                            <tr style="background-color: #f8fafc;">
+                                <td><b>${m(`(${p.x}, ${p.y})`)}</b></td>
+                                <td>${p.val}</td>
+                                <td>${signLabel}</td>
+                                <td><span class="status-badge status-pass">✓ 已驗證</span></td>
+                            </tr>
+                        `;
+                    } else if (i === currentPointIdx) {
+                        return `
+                            <tr style="background-color: #eff6ff; border: 2px solid #2563eb;">
+                                <td><b>${m(`(${p.x}, ${p.y})`)}</b> <span style="font-size:0.85rem; color:#2563eb; display:block;">(第 ${i+1} 點)</span></td>
+                                <td><input type="number" id="l2-val" style="width:100px" placeholder="計算值"></td>
+                                <td>
+                                    <select id="l2-sign" style="width:120px">
+                                        <option value="">選擇</option>
+                                        <option value="gt">大於 0</option>
+                                        <option value="lt">小於 0</option>
+                                    </select>
+                                </td>
+                                <td><button class="btn-action btn-small" onclick="checkL2SinglePoint()">驗證此點</button></td>
+                            </tr>
+                        `;
+                    } else {
+                        return `
+                            <tr style="opacity: 0.4;">
+                                <td><b>${m(`(${p.x}, ${p.y})`)}</b></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td><span style="color:#64748b; font-size:0.95rem;">🔒 待前點驗證</span></td>
+                            </tr>
+                        `;
+                    }
+                }).join('');
+
+                container.innerHTML = `
+                    <h2>第 2 關：兩側點座標逐點依序代入驗證</h2>
+                    <p>請依序將點座標代入方程式左式 ${m(eqLeftStr)} 計算。<b>驗證正確的點才會顯示於右圖（右側點藍色、左側點紅色）</b>：</p>
+                    <div class="card">
+                        <div class="math-expr">${m('L: ' + eqLeftStr + ' = 0')}</div>
+                    </div>
+
+                    <table class="math-table">
+                        <tr>
+                            <th>點座標 ${m('(x, y)')}</th>
+                            <th>代入左式計算結果</th>
+                            <th>判斷正負</th>
+                            <th>驗證狀態</th>
+                        </tr>
+                        ${rowsHtml}
+                    </table>
+
+                    <div class="hint-box" id="l2-hint"></div>
+
+                    <div id="l2-summary-section" style="display: ${verifiedAllPoints ? 'block' : 'none'}; margin-top: 20px;" class="card">
+                        <h3>階段 2：歸納兩側點之規律</h3>
+                        <div class="input-group">
+                            <label>1. 直線<b>右側</b>點（藍點）代入方程式左式結果為：</label>
+                            <select id="l2-q1" style="width:140px" ${summaryVerified ? 'disabled' : ''}>
+                                <option value="">請選擇</option>
+                                <option value="gt" ${summaryVerified ? 'selected' : ''}>大於 0</option>
+                                <option value="lt">小於 0</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>2. 直線<b>左側</b>點（紅點）代入方程式左式結果為：</label>
+                            <select id="l2-q2" style="width:140px" ${summaryVerified ? 'disabled' : ''}>
+                                <option value="">請選擇</option>
+                                <option value="gt">大於 0</option>
+                                <option value="lt" ${summaryVerified ? 'selected' : ''}>小於 0</option>
+                            </select>
+                        </div>
+                        <button class="btn-action" ${summaryVerified ? 'disabled' : ''} onclick="checkL2Summary()">提交規律解答</button>
+                    </div>
+
+                    <!-- 第 2 關完成後的藍色按鈕區塊 -->
+                    <div id="l2-finish-area" style="display: ${summaryVerified ? 'block' : 'none'}; margin-top: 15px;">
+                        <div class="card" style="border-left-color: #16a34a; background-color: #f0fdf4;">
+                            <h3 style="color: #15803d; margin-top:0;">🎉 歸納正確！</h3>
+                            <p>完全正確！當 ${m('a > 0')} 時，直線右側點代入大於 0，左側點代入小於 0！請點擊下方按鈕進入下一關。</p>
+                            <button class="btn-action" style="background-color: #2563eb;" onclick="switchLevel(3)">進入第 3 關 ➡️</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentLevel === 3) {
+                let qNum = gameState.l3.currentQ;
+                let q = qNum === 1 ? gameState.l3.q1 : gameState.l3.q2;
+                let ineqStr = formatEq(q.a, q.b, q.c) + ' ' + q.op + ' 0';
+                let eqStr = formatEq(q.a, q.b, q.c) + ' = 0';
+
+                let stepBDisabled = !q.pointsVerified ? 'disabled' : '';
+                let stepCDisabled = !q.lineVerified ? 'disabled' : '';
+
+                container.innerHTML = `
+                    <h2>第 3 關：二元一次不等式漸進式圖解 (題目 ${qNum}/2)</h2>
+                    <div class="card">
+                        <div class="math-expr">${m(ineqStr)}</div>
+                    </div>
+
+                    <!-- 步驟 a -->
+                    <div class="step-block">
+                        <h3>步驟 a：驗證邊界點座標（${m(eqStr)}）</h3>
+                        <div class="input-group">
+                            <span>點 1：${m('(0, ')}</span>
+                            <input type="number" id="l3-y1" style="width:80px">
+                            <span>${m(')')}</span>
+                            <span style="margin-left:10px">點 2：${m('(')}</span>
+                            <input type="number" id="l3-x2" style="width:80px">
+                            <span>${m(', 0)')}</span>
+                        </div>
+                        <div class="input-group">
+                            <span>點標示：</span>
+                            <select id="l3-circle-type" style="width:140px">
+                                <option value="">請選擇</option>
+                                <option value="solid">實心圓</option>
+                                <option value="hollow">空心圓</option>
+                            </select>
+                        </div>
+                        <button class="btn-action btn-small" onclick="checkL3StepA()">驗證點座標並繪點</button>
+                        <div id="l3-stepa-status" style="margin-top:6px;">${q.pointsVerified ? '<span class="status-badge status-pass">✓ 點座標繪製完成</span>' : ''}</div>
+                    </div>
+
+                    <!-- 步驟 b -->
+                    <div class="step-block ${!q.pointsVerified ? 'locked' : ''}">
+                        <h3>步驟 b：驗證邊界線型（實線/虛線）</h3>
+                        ${!q.pointsVerified ? '<div class="lock-msg">🔒 請先完成步驟 a 的驗證</div>' : ''}
+                        <div class="input-group">
+                            <select id="l3-line-type" style="width:200px" ${stepBDisabled}>
+                                <option value="">請選擇</option>
+                                <option value="solid">實線 (含邊界)</option>
+                                <option value="dashed">虛線 (不含邊界)</option>
+                            </select>
+                        </div>
+                        <button class="btn-action btn-small" ${stepBDisabled} onclick="checkL3StepB()">驗證線型並畫線</button>
+                        <div id="l3-stepb-status" style="margin-top:6px;">${q.lineVerified ? '<span class="status-badge status-pass">✓ 直線繪製完成</span>' : ''}</div>
+                    </div>
+
+                    <!-- 步驟 c -->
+                    <div class="step-block ${!q.lineVerified ? 'locked' : ''}">
+                        <h3>步驟 c：驗證解半平面</h3>
+                        ${!q.lineVerified ? '<div class="lock-msg">🔒 請先完成步驟 b 的驗證</div>' : ''}
+                        <div class="input-group">
+                            <select id="l3-region" style="width:200px" ${stepCDisabled}>
+                                <option value="">請選擇</option>
+                                <option value="right">右側半平面</option>
+                                <option value="left">左側半平面</option>
+                            </select>
+                        </div>
+                        <button class="btn-action btn-small" ${stepCDisabled} onclick="checkL3StepC()">驗證半平面並上色</button>
+                        <div id="l3-stepc-status" style="margin-top:6px;">${q.regionVerified ? '<span class="status-badge status-pass">✓ 半平面繪製完成</span>' : ''}</div>
+                    </div>
+
+                    <div class="hint-box" id="l3-hint"></div>
+
+                    <div id="l3-next-area" style="display: ${(q.pointsVerified && q.lineVerified && q.regionVerified) ? 'block' : 'none'}; margin-top: 15px;">
+                        <button class="btn-action" style="background-color: #2563eb;" onclick="nextL3Question()">
+                            ${qNum === 1 ? '完成本題！進入第 2 題 ➡️' : '完成第 3 關！進入第 4 關 🚀'}
+                        </button>
+                    </div>
+                `;
+            } else if (currentLevel === 4) {
+                let { a, b, c, op, transformedVerified, target, pointsVerified, lineVerified, regionVerified } = gameState.l4;
+                let origStr = `-2x + 3y - 6 ${op} 0`;
+
+                let cleanTargetOp = normalizeOp(target.op);
+
+                let stepBDisabled = !pointsVerified ? 'disabled' : '';
+                let stepCDisabled = !lineVerified ? 'disabled' : '';
+
+                container.innerHTML = `
+                    <h2>第 4 關：${m('x')} 項係數為負時的變號與圖解驗證</h2>
+                    <p>當不等式中 ${m('x')} 的係數為負數（${m('a < 0')}）時：</p>
+                    <div class="card">
+                        <div class="math-expr">${m(origStr)}</div>
+                    </div>
+
+                    <!-- 階段 1 -->
+                    <div class="step-block">
+                        <h3>階段 1：全式同乘以 ${m('-1')} 進行變號轉換</h3>
+                        <p>請填入同乘以 ${m('-1')} 轉換後的各項係數與不等號：</p>
+                        <div class="input-group">
+                            <input type="number" id="l4-new-a" style="width:70px" placeholder="a'" value="${transformedVerified ? 2 : ''}" ${transformedVerified ? 'disabled' : ''}>
+                            <span>${m('x +')}</span>
+                            <input type="number" id="l4-new-b" style="width:70px" placeholder="b'" value="${transformedVerified ? -3 : ''}" ${transformedVerified ? 'disabled' : ''}>
+                            <span>${m('y +')}</span>
+                            <input type="number" id="l4-new-c" style="width:70px" placeholder="c'" value="${transformedVerified ? 6 : ''}" ${transformedVerified ? 'disabled' : ''}>
+                            <select id="l4-new-op" style="width:90px" ${transformedVerified ? 'disabled' : ''}>
+                                <option value="">符號</option>
+                                <option value="<" ${transformedVerified && cleanTargetOp==='<' ? 'selected' : ''}>&lt;</option>
+                                <option value=">" ${transformedVerified && cleanTargetOp==='>' ? 'selected' : ''}>&gt;</option>
+                                <option value="\\le" ${transformedVerified && cleanTargetOp==='le' ? 'selected' : ''}>&le;</option>
+                                <option value="\\ge" ${transformedVerified && cleanTargetOp==='ge' ? 'selected' : ''}>&ge;</option>
+                            </select>
+                            <span>${m('0')}</span>
+                        </div>
+                        <button class="btn-action btn-small" ${transformedVerified ? 'disabled' : ''} onclick="checkL4Transform()">驗證變號結果</button>
+                        <div style="margin-top:6px;">${transformedVerified ? '<span class="status-badge status-pass">✓ 階段 1 變號轉換驗證成功</span>' : ''}</div>
+                    </div>
+
+                    <div class="hint-box" id="l4-hint"></div>
+
+                    <!-- 階段 2 -->
+                    <div id="l4-phase2-area" style="display: ${transformedVerified ? 'block' : 'none'}; margin-top: 15px;">
+                        <div class="card" style="border-left-color: #16a34a; background-color: #f0fdf4;">
+                            <h3 style="color: #15803d; margin-top:0;">階段 2：對新不等式 ${m(`2x - 3y + 6 ${target.op} 0`)} 進行圖解驗證</h3>
+                        </div>
+
+                        <!-- 步驟 a -->
+                        <div class="step-block">
+                            <h3>步驟 a：驗證邊界點座標（${m('2x - 3y + 6 = 0')}）</h3>
+                            <div class="input-group">
+                                <span>點 1：${m('(0, ')}</span>
+                                <input type="number" id="l4-y1" style="width:80px">
+                                <span>${m(')')}</span>
+                                <span style="margin-left:10px">點 2：${m('(')}</span>
+                                <input type="number" id="l4-x2" style="width:80px">
+                                <span>${m(', 0)')}</span>
+                            </div>
+                            <div class="input-group">
+                                <span>點標示：</span>
+                                <select id="l4-circle-type" style="width:140px">
+                                    <option value="">請選擇</option>
+                                    <option value="solid">實心圓</option>
+                                    <option value="hollow">空心圓</option>
+                                </select>
+                            </div>
+                            <button class="btn-action btn-small" onclick="checkL4StepA()">驗證點座標並繪點</button>
+                            <div id="l4-stepa-status" style="margin-top:6px;">${pointsVerified ? '<span class="status-badge status-pass">✓ 點座標繪製完成</span>' : ''}</div>
+                        </div>
+
+                        <!-- 步驟 b -->
+                        <div class="step-block ${!pointsVerified ? 'locked' : ''}">
+                            <h3>步驟 b：驗證邊界線型（實線/虛線）</h3>
+                            ${!pointsVerified ? '<div class="lock-msg">🔒 請先完成步驟 a 的驗證</div>' : ''}
+                            <div class="input-group">
+                                <select id="l4-line-type" style="width:200px" ${stepBDisabled}>
+                                    <option value="">請選擇</option>
+                                    <option value="solid">實線 (含邊界)</option>
+                                    <option value="dashed">虛線 (不含邊界)</option>
+                                </select>
+                            </div>
+                            <button class="btn-action btn-small" ${stepBDisabled} onclick="checkL4StepB()">驗證線型並畫線</button>
+                            <div id="l4-stepb-status" style="margin-top:6px;">${lineVerified ? '<span class="status-badge status-pass">✓ 直線繪製完成</span>' : ''}</div>
+                        </div>
+
+                        <!-- 步驟 c -->
+                        <div class="step-block ${!lineVerified ? 'locked' : ''}">
+                            <h3>步驟 c：驗證解半平面</h3>
+                            ${!lineVerified ? '<div class="lock-msg">🔒 請先完成步驟 b 的驗證</div>' : ''}
+                            <div class="input-group">
+                                <select id="l4-region" style="width:200px" ${stepCDisabled}>
+                                    <option value="">請選擇</option>
+                                    <option value="right">右側半平面</option>
+                                    <option value="left">左側半平面</option>
+                                </select>
+                            </div>
+                            <button class="btn-action btn-small" ${stepCDisabled} onclick="checkL4StepC()">驗證半平面並上色</button>
+                            <div id="l4-stepc-status" style="margin-top:6px;">${regionVerified ? '<span class="status-badge status-pass">✓ 半平面繪製完成</span>' : ''}</div>
+                        </div>
+
+                        <div id="l4-finish-area" style="display: ${(pointsVerified && lineVerified && regionVerified) ? 'block' : 'none'}; margin-top: 15px;">
+                            <button class="btn-action" style="background-color: #2563eb;" onclick="unlockNextLevel()">完成第 4 關！進入第 5 關 🚀</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentLevel === 5) {
+                let qNum = gameState.l5.currentQ;
+                let q = qNum === 1 ? gameState.l5.q1 : gameState.l5.q2;
+                let ineqStr = q.type === 'y' ? `y ${q.op} ${q.k}` : `x ${q.op} ${q.k}`;
+                let lineEqStr = q.type === 'y' ? `y = ${q.k}` : `x = ${q.k}`;
+
+                let stepBDisabled = !q.pointsVerified ? 'disabled' : '';
+                let stepCDisabled = !q.lineVerified ? 'disabled' : '';
+
+                let pointsInputHtml = '';
+                if (q.type === 'y') {
+                    pointsInputHtml = `
+                        <span>點 1：${m('(0, ')}</span>
+                        <input type="number" id="l5-y1" style="width:80px">
+                        <span>${m(')')}</span>
+                        <span style="margin-left:10px">點 2：${m('(3, ')}</span>
+                        <input type="number" id="l5-y2" style="width:80px">
+                        <span>${m(')')}</span>
+                    `;
+                } else {
+                    pointsInputHtml = `
+                        <span>點 1：${m('(')}</span>
+                        <input type="number" id="l5-x1" style="width:80px">
+                        <span>${m(', 0)')}</span>
+                        <span style="margin-left:10px">點 2：${m('(')}</span>
+                        <input type="number" id="l5-x2" style="width:80px">
+                        <span>${m(', 3)')}</span>
+                    `;
+                }
+
+                let regionOptionsHtml = q.type === 'y' ? `
+                    <option value="">請選擇</option>
+                    <option value="upper">上方半平面</option>
+                    <option value="lower">下方半平面</option>
+                ` : `
+                    <option value="">請選擇</option>
+                    <option value="right">右側半平面</option>
+                    <option value="left">左側半平面</option>
+                `;
+
+                container.innerHTML = `
+                    <h2>第 5 關：特殊邊界線的不等式圖解 (題目 ${qNum}/2)</h2>
+                    <p>請依序進行漸進式驗證。<b>必須成功完成前一步驟，才可以操作後續步驟：</b></p>
+                    <div class="card">
+                        <div class="math-expr">${m(ineqStr)}</div>
+                    </div>
+
+                    <!-- 步驟 a -->
+                    <div class="step-block">
+                        <h3>步驟 a：驗證邊界點座標（${m(lineEqStr)}）</h3>
+                        <div class="input-group">
+                            ${pointsInputHtml}
+                        </div>
+                        <div class="input-group">
+                            <span>點標示：</span>
+                            <select id="l5-circle-type" style="width:140px">
+                                <option value="">請選擇</option>
+                                <option value="solid">實心圓</option>
+                                <option value="hollow">空心圓</option>
+                            </select>
+                        </div>
+                        <button class="btn-action btn-small" onclick="checkL5StepA()">驗證點座標並繪點</button>
+                        <div id="l5-stepa-status" style="margin-top:6px;">${q.pointsVerified ? '<span class="status-badge status-pass">✓ 點座標繪製完成</span>' : ''}</div>
+                    </div>
+
+                    <!-- 步驟 b -->
+                    <div class="step-block ${!q.pointsVerified ? 'locked' : ''}">
+                        <h3>步驟 b：驗證邊界線型（實線/虛線）</h3>
+                        ${!q.pointsVerified ? '<div class="lock-msg">🔒 請先完成步驟 a 的驗證</div>' : ''}
+                        <div class="input-group">
+                            <select id="l5-line-type" style="width:200px" ${stepBDisabled}>
+                                <option value="">請選擇</option>
+                                <option value="solid">實線 (含邊界)</option>
+                                <option value="dashed">虛線 (不含邊界)</option>
+                            </select>
+                        </div>
+                        <button class="btn-action btn-small" ${stepBDisabled} onclick="checkL5StepB()">驗證線型並畫線</button>
+                        <div id="l5-stepb-status" style="margin-top:6px;">${q.lineVerified ? '<span class="status-badge status-pass">✓ 直線繪製完成</span>' : ''}</div>
+                    </div>
+
+                    <!-- 步驟 c -->
+                    <div class="step-block ${!q.lineVerified ? 'locked' : ''}">
+                        <h3>步驟 c：驗證解半平面</h3>
+                        ${!q.lineVerified ? '<div class="lock-msg">🔒 請先完成步驟 b 的驗證</div>' : ''}
+                        <div class="input-group">
+                            <select id="l5-region" style="width:200px" ${stepCDisabled}>
+                                ${regionOptionsHtml}
+                            </select>
+                        </div>
+                        <button class="btn-action btn-small" ${stepCDisabled} onclick="checkL5StepC()">驗證半平面並上色</button>
+                        <div id="l5-stepc-status" style="margin-top:6px;">${q.regionVerified ? '<span class="status-badge status-pass">✓ 半平面繪製完成</span>' : ''}</div>
+                    </div>
+
+                    <div class="hint-box" id="l5-hint"></div>
+
+                    <div id="l5-next-area" style="display: ${(q.pointsVerified && q.lineVerified && q.regionVerified) ? 'block' : 'none'}; margin-top: 15px;">
+                        <button class="btn-action" style="background-color: #2563eb;" onclick="nextL5Question()">
+                            ${qNum === 1 ? '完成本題！進入第 2 題 ➡️' : '完成第 5 關！挑戰成功 🏆'}
+                        </button>
+                    </div>
+                `;
+            } else if (currentLevel === 6) {
+                container.innerHTML = `
+                    <div class="victory-screen">
+                        <h2>🎉 恭喜完全通關！ 🎉</h2>
+                        <p style="font-size: 1.5rem; color: #334155;">你已經精通二元一次不等式的圖解概念與各種變形題型！</p>
+                        <button class="btn-action" onclick="restartGame()" style="margin-top:30px; font-size: 1.3rem; padding: 12px 28px;">重新挑戰 (刷新隨機題目) 🔄</button>
+                    </div>
+                `;
+            }
+        }
+
+        function onL1InputChanged() {
+            let y1Val = parseFloat(document.getElementById('l1-y1').value);
+            let x2Val = parseFloat(document.getElementById('l1-x2').value);
+
+            let p1Label = document.getElementById('l1-p1-label');
+            let p2Label = document.getElementById('l1-p2-label');
+
+            if (!isNaN(y1Val)) {
+                gameState.l1.p1 = [0, y1Val];
+                p1Label.innerHTML = `(0, ${y1Val})`;
+            } else {
+                gameState.l1.p1 = [0, null];
+                p1Label.innerHTML = '(0, ?)';
+            }
+
+            if (!isNaN(x2Val)) {
+                gameState.l1.p2 = [x2Val, 0];
+                p2Label.innerHTML = `(${x2Val}, 0)`;
+            } else {
+                gameState.l1.p2 = [null, 0];
+                p2Label.innerHTML = '(?, 0)';
+            }
+
+            drawCanvas();
+        }
+
+        function checkL1() {
+            let { a, b, c, p1, p2 } = gameState.l1;
+            let hint = document.getElementById('l1-hint');
+
+            let correctY1 = -c / b;
+            let correctX2 = -c / a;
+
+            if (p1[1] === null || p2[0] === null) {
+                showHint(hint, "提示：請先在表格中完整填入 " + m('y') + " 與 " + m('x') + " 的數值！");
+                return;
+            }
+
+            if (Math.abs(p1[1] - correctY1) < 0.01 && Math.abs(p2[0] - correctX2) < 0.01) {
+                gameState.l1.lineVerified = true;
+                drawCanvas();
+                hint.style.display = 'none';
+
+                if (maxUnlockedLevel < 2) maxUnlockedLevel = 2;
+                document.getElementById('btn-lvl-2').classList.remove('disabled');
+                document.getElementById('l1-success-next').style.display = 'block';
+            } else {
+                gameState.l1.lineVerified = false;
+                showHint(hint, "提示：把 " + m('x=0') + " 代入方程式得 " + m(`${b}y + (${c}) = 0`) + "；把 " + m('y=0') + " 代入得 " + m(`${a}x + (${c}) = 0`) + "。請檢查計算！");
+            }
+        }
+
+        function checkL2SinglePoint() {
+            let idx = gameState.l2.currentPointIdx;
+            if (idx >= 6) return;
+
+            let p = gameState.l2.points[idx];
+            let userVal = parseFloat(document.getElementById('l2-val').value);
+            let userSign = document.getElementById('l2-sign').value;
+            let hint = document.getElementById('l2-hint');
+
+            let correctVal = gameState.l2.a * p.x + gameState.l2.b * p.y + gameState.l2.c;
+            let correctSign = correctVal > 0 ? 'gt' : 'lt';
+
+            if (!isNaN(userVal) && Math.abs(userVal - correctVal) < 0.01 && userSign === correctSign) {
+                p.correct = true;
+                gameState.l2.currentPointIdx++;
+
+                if (gameState.l2.currentPointIdx === 6) {
+                    gameState.l2.verifiedAllPoints = true;
+                }
+
+                hint.style.display = 'none';
+                renderLevel();
+                drawCanvas();
+
+                if (gameState.l2.verifiedAllPoints) {
+                    showHint(hint, "🎉 6 個點均已成功完成逐點驗證，且已顯示於右圖！請接續回答下方階段 2 的規律總結。");
+                }
+            } else {
+                showHint(hint, `提示：點 (${p.x}, ${p.y}) 計算有誤。請先計算 ${m(`${gameState.l2.a}(${p.x}) + ${gameState.l2.b}(${p.y}) + (${gameState.l2.c})`)} 之結果，並判斷是大於 0 還是小於 0！`);
+            }
+        }
+
+        function checkL2Summary() {
+            let q1 = document.getElementById('l2-q1').value;
+            let q2 = document.getElementById('l2-q2').value;
+
+            if (q1 === 'gt' && q2 === 'lt') {
+                gameState.l2.summaryVerified = true;
+                if (maxUnlockedLevel < 3) maxUnlockedLevel = 3;
+                document.getElementById('btn-lvl-3').classList.remove('disabled');
+                renderLevel();
+                drawCanvas();
+            } else {
+                alert("提示：請觀察右圖中，位於直線右側（藍點）算出來的值是大於 0 還是小於 0 呢？");
+            }
+        }
+
+        function checkL3StepA() {
+            let q = gameState.l3.currentQ === 1 ? gameState.l3.q1 : gameState.l3.q2;
+            let y1 = parseFloat(document.getElementById('l3-y1').value);
+            let x2 = parseFloat(document.getElementById('l3-x2').value);
+            let circleType = document.getElementById('l3-circle-type').value;
+            let hint = document.getElementById('l3-hint');
+
+            let coordsCorrect = (!isNaN(y1) && !isNaN(x2) && Math.abs(y1 - q.p1[1]) < 0.01 && Math.abs(x2 - q.p2[0]) < 0.01);
+            let expCircle = q.isSolid ? 'solid' : 'hollow';
+
+            if (coordsCorrect && circleType === expCircle) {
+                q.pointsVerified = true;
+                renderLevel();
+                drawCanvas();
+                hint.style.display = 'none';
+                checkL3CompleteStatus();
+            } else if (coordsCorrect && circleType !== expCircle) {
+                showHint(hint, "步驟 a 提示：點座標計算正確！但請觀察不等號是否包含「等號」：包含等號（" + m('\\ge, \\le') + "）應選擇<b>實心圓</b>，不含等號（" + m('>, <') + "）應選擇<b>空心圓</b>！");
+            } else {
+                showHint(hint, "步驟 a 提示：將 " + m('x=0') + " 代入得 " + m('y') + " 座標；將 " + m('y=0') + " 代入得 " + m('x') + " 座標。並請選擇正確的點標示圖形！");
+            }
+        }
+
+        function checkL3StepB() {
+            let q = gameState.l3.currentQ === 1 ? gameState.l3.q1 : gameState.l3.q2;
+            if (!q.pointsVerified) return;
+
+            let lineType = document.getElementById('l3-line-type').value;
+            let hint = document.getElementById('l3-hint');
+            let expLine = q.isSolid ? 'solid' : 'dashed';
+
+            if (lineType === expLine) {
+                q.lineVerified = true;
+                renderLevel();
+                drawCanvas();
+                hint.style.display = 'none';
+                checkL3CompleteStatus();
+            } else {
+                showHint(hint, "步驟 b 提示：請重新觀察不等號「" + m(q.op) + "」。包含等號代表直線上的點也是解，應使用實線；不含等號代表直線上的點不是解，應使用虛線！");
+            }
+        }
+
+        function checkL3StepC() {
+            let q = gameState.l3.currentQ === 1 ? gameState.l3.q1 : gameState.l3.q2;
+            if (!q.lineVerified) return;
+
+            let region = document.getElementById('l3-region').value;
+            let hint = document.getElementById('l3-hint');
+
+            if (region === q.region) {
+                q.regionVerified = true;
+                renderLevel();
+                drawCanvas();
+                hint.style.display = 'none';
+                checkL3CompleteStatus();
+            } else {
+                showHint(hint, "步驟 c 提示：當 " + m('a > 0') + " 時，『" + m('>') + "』或『" + m('\\ge') + "』表右側半平面，『" + m('<') + "』或『" + m('\\le') + "』表左側半平面！");
+            }
+        }
+
+        function checkL3CompleteStatus() {
+            let q = gameState.l3.currentQ === 1 ? gameState.l3.q1 : gameState.l3.q2;
+            if (q.pointsVerified && q.lineVerified && q.regionVerified) {
+                document.getElementById('l3-next-area').style.display = 'block';
+            }
+        }
+
+        function nextL3Question() {
+            if (gameState.l3.currentQ === 1) {
+                gameState.l3.currentQ = 2;
+                renderLevel();
+                drawCanvas();
+            } else {
+                unlockNextLevel();
+            }
+        }
+
+        function checkL4Transform() {
+            let newA = parseFloat(document.getElementById('l4-new-a').value);
+            let newB = parseFloat(document.getElementById('l4-new-b').value);
+            let newC = parseFloat(document.getElementById('l4-new-c').value);
+            let newOp = document.getElementById('l4-new-op').value;
+            let hint = document.getElementById('l4-hint');
+
+            let targetOp = gameState.l4.target.op;
+
+            let cleanNewOp = normalizeOp(newOp);
+            let cleanTargetOp = normalizeOp(targetOp);
+
+            if (newA === 2 && newB === -3 && newC === 6 && cleanNewOp === cleanTargetOp) {
+                gameState.l4.transformedVerified = true;
+                hint.style.display = 'none';
+                renderLevel();
+                drawCanvas();
+            } else {
+                showHint(hint, "變號提示：全式同乘以 -1 時，各項係數正負號改變（-2x 變 2x, 3y 變 -3y, -6 變 6），且不等號方向必須顛倒（例如 > 變 <，≥ 變 ≤）！");
+            }
+        }
+
+        function checkL4StepA() {
+            let y1 = parseFloat(document.getElementById('l4-y1').value);
+            let x2 = parseFloat(document.getElementById('l4-x2').value);
+            let circleType = document.getElementById('l4-circle-type').value;
+            let hint = document.getElementById('l4-hint');
+            let target = gameState.l4.target;
+
+            let coordsCorrect = (!isNaN(y1) && !isNaN(x2) && Math.abs(y1 - target.p1[1]) < 0.01 && Math.abs(x2 - target.p2[0]) < 0.01);
+            let expCircle = target.isSolid ? 'solid' : 'hollow';
+
+            if (coordsCorrect && circleType === expCircle) {
+                gameState.l4.pointsVerified = true;
+                renderLevel();
+                drawCanvas();
+                hint.style.display = 'none';
+                checkL4CompleteStatus();
+            } else if (coordsCorrect && circleType !== expCircle) {
+                showHint(hint, "步驟 a 提示：點座標計算正確！但請觀察轉換後的不等式「" + m(target.op) + "」是否有包含等號：包含等號應選擇<b>實心圓</b>，不含等號應選擇<b>空心圓</b>！");
+            } else {
+                showHint(hint, "步驟 a 提示：對新不等式 " + m('2x - 3y + 6 = 0') + "，代入 " + m('x=0') + " 得 " + m('y=2') + "；代入 " + m('y=0') + " 得 " + m('x=-3') + "。並請選擇正確的點標示圖形！");
+            }
+        }
+
+        function checkL4StepB() {
+            if (!gameState.l4.pointsVerified) return;
+
+            let lineType = document.getElementById('l4-line-type').value;
+            let hint = document.getElementById('l4-hint');
+            let target = gameState.l4.target;
+            let expectedLine = target.isSolid ? 'solid' : 'dashed';
+
+            if (lineType === expectedLine) {
+                gameState.l4.lineVerified = true;
+                renderLevel();
+                drawCanvas();
+                hint.style.display = 'none';
+                checkL4CompleteStatus();
+            } else {
+                showHint(hint, "步驟 b 提示：請回到階段 1 檢查轉換後的不等式是否有包含「等號」？包含等號表示邊界上的點符合解的條件，應使用實線；若無等號則邊界點不含於解中，請思考應使用哪種線型！");
+            }
+        }
+
+        function checkL4StepC() {
+            if (!gameState.l4.lineVerified) return;
+
+            let region = document.getElementById('l4-region').value;
+            let hint = document.getElementById('l4-hint');
+            let target = gameState.l4.target;
+
+            if (region === target.region) {
+                gameState.l4.regionVerified = true;
+                renderLevel();
+                drawCanvas();
+                hint.style.display = 'none';
+                checkL4CompleteStatus();
+            } else {
+                showHint(hint, "步驟 c 提示：變號後 " + m('a=2 > 0') + "，請觀察轉換後的不等號是「大於/大於等於」還是「小於/小於等於」來決定右側或左側半平面！");
+            }
+        }
+
+        function checkL4CompleteStatus() {
+            if (gameState.l4.pointsVerified && gameState.l4.lineVerified && gameState.l4.regionVerified) {
+                document.getElementById('l4-finish-area').style.display = 'block';
+            }
+        }
+
+        function checkL5StepA() {
+            let q = gameState.l5.currentQ === 1 ? gameState.l5.q1 : gameState.l5.q2;
+            let circleType = document.getElementById('l5-circle-type').value;
+            let hint = document.getElementById('l5-hint');
+            let coordsCorrect = false;
+
+            if (q.type === 'y') {
+                let y1 = parseFloat(document.getElementById('l5-y1').value);
+                let y2 = parseFloat(document.getElementById('l5-y2').value);
+                if (!isNaN(y1) && !isNaN(y2) && Math.abs(y1 - q.k) < 0.01 && Math.abs(y2 - q.k) < 0.01) {
+                    coordsCorrect = true;
+                }
+            } else {
+                let x1 = parseFloat(document.getElementById('l5-x1').value);
+                let x2 = parseFloat(document.getElementById('l5-x2').value);
+                if (!isNaN(x1) && !isNaN(x2) && Math.abs(x1 - q.k) < 0.01 && Math.abs(x2 - q.k) < 0.01) {
+                    coordsCorrect = true;
+                }
+            }
+
+            let expCircle = q.isSolid ? 'solid' : 'hollow';
+
+            if (coordsCorrect && circleType === expCircle) {
+                q.pointsVerified = true;
+                renderLevel();
+                drawCanvas();
+                hint.style.display = 'none';
+                checkL5CompleteStatus();
+            } else if (coordsCorrect && circleType !== expCircle) {
+                showHint(hint, "步驟 a 提示：邊界點座標正確！但請觀察不等號「" + m(q.op) + "」是否包含等號：包含等號應選擇<b>實心圓</b>，不含等號應選擇<b>空心圓</b>！");
+            } else {
+                showHint(hint, q.type === 'y' ? `步驟 a 提示：對水平線 ${m(`y = ${q.k}`)}，任意 x 對應的 y 座標皆為 ${q.k}。並選擇正確點標示圖形！` : `步驟 a 提示：對垂直線 ${m(`x = ${q.k}`)}，任意 y 對應的 x 座標皆為 ${q.k}。並選擇正確點標示圖形！`);
+            }
+        }
+
+        function checkL5StepB() {
+            let q = gameState.l5.currentQ === 1 ? gameState.l5.q1 : gameState.l5.q2;
+            if (!q.pointsVerified) return;
+
+            let lineType = document.getElementById('l5-line-type').value;
+            let hint = document.getElementById('l5-hint');
+            let expLine = q.isSolid ? 'solid' : 'dashed';
+
+            if (lineType === expLine) {
+                q.lineVerified = true;
+                renderLevel();
+                drawCanvas();
+                hint.style.display = 'none';
+                checkL5CompleteStatus();
+            } else {
+                showHint(hint, "步驟 b 提示：觀察不等號「" + m(q.op) + "」是否包含等號。包含等號畫實線，不含等號畫虛線！");
+            }
+        }
+
+        function checkL5StepC() {
+            let q = gameState.l5.currentQ === 1 ? gameState.l5.q1 : gameState.l5.q2;
+            if (!q.lineVerified) return;
+
+            let region = document.getElementById('l5-region').value;
+            let hint = document.getElementById('l5-hint');
+
+            if (region === q.region) {
+                q.regionVerified = true;
+                renderLevel();
+                drawCanvas();
+                hint.style.display = 'none';
+                checkL5CompleteStatus();
+            } else {
+                let msg = "";
+                if (q.type === 'y') {
+                    msg = q.region === 'upper' ? "『" + m('>') + "』或『" + m('\\ge') + "』表上方半平面！" : "『" + m('<') + "』或『" + m('\\le') + "』表下方半平面！";
+                } else {
+                    msg = q.region === 'right' ? "『" + m('>') + "』或『" + m('\\ge') + "』表右側半平面！" : "『" + m('<') + "』或『" + m('\\le') + "』表左側半平面！";
+                }
+                showHint(hint, "步驟 c 提示：" + msg);
+            }
+        }
+
+        function checkL5CompleteStatus() {
+            let q = gameState.l5.currentQ === 1 ? gameState.l5.q1 : gameState.l5.q2;
+            if (q.pointsVerified && q.lineVerified && q.regionVerified) {
+                document.getElementById('l5-next-area').style.display = 'block';
+            }
+        }
+
+        function nextL5Question() {
+            if (gameState.l5.currentQ === 1) {
+                gameState.l5.currentQ = 2;
+                renderLevel();
+                drawCanvas();
+            } else {
+                switchLevel(6);
+            }
+        }
+
+        function showHint(elem, msgHtml) {
+            elem.innerHTML = msgHtml;
+            elem.style.display = 'block';
+        }
+
+        function restartGame() {
+            currentLevel = 0;
+            maxUnlockedLevel = 1;
+            initGameData();
+            switchLevel(0);
+        }
+
+        function drawCanvas() {
+            if (currentLevel === 6) return;
+
+            const canvas = document.getElementById('gridCanvas');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            const gridSize = 16;
+            const step = w / gridSize;
+            const originX = w / 2;
+            const originY = h / 2;
+
+            function toX(x) { return originX + x * step; }
+            function toY(y) { return originY - y * step; }
+
+            // 繪製網格線
+            ctx.strokeStyle = '#f1f5f9';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= gridSize; i++) {
+                ctx.beginPath(); ctx.moveTo(i * step, 0); ctx.lineTo(i * step, h); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i * step); ctx.lineTo(w, i * step); ctx.stroke();
+            }
+
+            // 繪製 x, y 坐標主軸
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(0, originY); ctx.lineTo(w, originY);
+            ctx.moveTo(originX, 0); ctx.lineTo(originX, h);
+            ctx.stroke();
+
+            // 繪製 x 軸正向箭頭 (向右)
+            ctx.fillStyle = '#334155';
+            ctx.beginPath();
+            ctx.moveTo(w, originY);
+            ctx.lineTo(w - 12, originY - 6);
+            ctx.lineTo(w - 12, originY + 6);
+            ctx.closePath();
+            ctx.fill();
+
+            // 繪製 y 軸正向箭頭 (向上)
+            ctx.beginPath();
+            ctx.moveTo(originX, 0);
+            ctx.lineTo(originX - 6, 12);
+            ctx.lineTo(originX + 6, 12);
+            ctx.closePath();
+            ctx.fill();
+
+            // 繪製刻度與數字
+            ctx.fillStyle = '#334155';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+
+            for (let i = -7; i <= 7; i++) {
+                if (i === 0) continue;
+                ctx.beginPath();
+                ctx.moveTo(toX(i), originY - 4); ctx.lineTo(toX(i), originY + 4); ctx.stroke();
+                ctx.fillText(i, toX(i), originY + 7);
+
+                ctx.beginPath();
+                ctx.moveTo(originX - 4, toY(i)); ctx.lineTo(originX + 4, toY(i)); ctx.stroke();
+                ctx.fillText(i, originX - 16, toY(i) - 6);
+            }
+
+            // 標示軸名稱 x 與 y
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('x', w - 18, originY + 12);
+            ctx.fillText('y', originX + 16, 10);
+
+            if (currentLevel === 1) {
+                let { a, b, c, p1, p2, lineVerified } = gameState.l1;
+                if (p1[1] !== null) drawPoint(ctx, toX(p1[0]), toY(p1[1]), '#e11d48', `P1(0, ${p1[1]})`, false);
+                if (p2[0] !== null) drawPoint(ctx, toX(p2[0]), toY(p2[1]), '#e11d48', `P2(${p2[0]}, 0)`, false);
+                if (lineVerified) drawLine(ctx, toX, toY, a, b, c, false, '#2563eb');
+
+            } else if (currentLevel === 2) {
+                let { a, b, c, points } = gameState.l2;
+                drawLine(ctx, toX, toY, a, b, c, false, '#64748b');
+
+                points.forEach(p => {
+                    if (p.correct) {
+                        let color = p.side === 'right' ? '#2563eb' : '#dc2626';
+                        drawPoint(ctx, toX(p.x), toY(p.y), color, `(${p.x},${p.y})`, false);
+                    }
+                });
+
+            } else if (currentLevel === 3) {
+                let q = gameState.l3.currentQ === 1 ? gameState.l3.q1 : gameState.l3.q2;
+                let isHollow = !q.isSolid;
+
+                if (q.regionVerified) {
+                    drawHalfPlane(ctx, toX, toY, q.a, q.b, q.c, q.region);
+                }
+                if (q.lineVerified) {
+                    drawLine(ctx, toX, toY, q.a, q.b, q.c, !q.isSolid, '#16a34a');
+                }
+                if (q.pointsVerified) {
+                    drawPoint(ctx, toX(q.p1[0]), toY(q.p1[1]), '#16a34a', `(0,${q.p1[1]})`, isHollow);
+                    drawPoint(ctx, toX(q.p2[0]), toY(q.p2[1]), '#16a34a', `(${q.p2[0]},0)`, isHollow);
+                }
+
+            } else if (currentLevel === 4) {
+                let { transformedVerified, target, pointsVerified, lineVerified, regionVerified } = gameState.l4;
+
+                if (transformedVerified) {
+                    let isHollow = !target.isSolid;
+                    if (regionVerified) {
+                        drawHalfPlane(ctx, toX, toY, target.a, target.b, target.c, target.region);
+                    }
+                    if (lineVerified) {
+                        drawLine(ctx, toX, toY, target.a, target.b, target.c, !target.isSolid, '#16a34a');
+                    }
+                    if (pointsVerified) {
+                        drawPoint(ctx, toX(target.p1[0]), toY(target.p1[1]), '#16a34a', `(0,${target.p1[1]})`, isHollow);
+                        drawPoint(ctx, toX(target.p2[0]), toY(target.p2[1]), '#16a34a', `(${target.p2[0]},0)`, isHollow);
+                    }
+                }
+
+            } else if (currentLevel === 5) {
+                let q = gameState.l5.currentQ === 1 ? gameState.l5.q1 : gameState.l5.q2;
+                let isHollow = !q.isSolid;
+
+                if (q.type === 'y') {
+                    if (q.regionVerified) {
+                        ctx.fillStyle = 'rgba(22, 163, 74, 0.2)';
+                        if (q.region === 'upper') {
+                            ctx.fillRect(0, 0, w, toY(q.k));
+                        } else {
+                            ctx.fillRect(0, toY(q.k), w, h - toY(q.k));
+                        }
+                    }
+                    if (q.lineVerified) {
+                        ctx.strokeStyle = '#16a34a';
+                        ctx.lineWidth = 3.5;
+                        if (!q.isSolid) ctx.setLineDash([8, 6]);
+                        else ctx.setLineDash([]);
+
+                        ctx.beginPath();
+                        ctx.moveTo(0, toY(q.k));
+                        ctx.lineTo(w, toY(q.k));
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+                    if (q.pointsVerified) {
+                        drawPoint(ctx, toX(0), toY(q.k), '#16a34a', `(0, ${q.k})`, isHollow);
+                        drawPoint(ctx, toX(3), toY(q.k), '#16a34a', `(3, ${q.k})`, isHollow);
+                    }
+                } else {
+                    if (q.regionVerified) {
+                        ctx.fillStyle = 'rgba(22, 163, 74, 0.2)';
+                        if (q.region === 'right') {
+                            ctx.fillRect(toX(q.k), 0, w - toX(q.k), h);
+                        } else {
+                            ctx.fillRect(0, 0, toX(q.k), h);
+                        }
+                    }
+                    if (q.lineVerified) {
+                        ctx.strokeStyle = '#16a34a';
+                        ctx.lineWidth = 3.5;
+                        if (!q.isSolid) ctx.setLineDash([8, 6]);
+                        else ctx.setLineDash([]);
+
+                        ctx.beginPath();
+                        ctx.moveTo(toX(q.k), 0);
+                        ctx.lineTo(toX(q.k), h);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+                    if (q.pointsVerified) {
+                        drawPoint(ctx, toX(q.k), toY(0), '#16a34a', `(${q.k}, 0)`, isHollow);
+                        drawPoint(ctx, toX(q.k), toY(3), '#16a34a', `(${q.k}, 3)`, isHollow);
+                    }
+                }
+            }
+        }
+
+        function drawPoint(ctx, cx, cy, color, label, isHollow) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+
+            if (isHollow) {
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = color;
+                ctx.stroke();
+            } else {
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+
+            ctx.font = 'bold 14px sans-serif';
+            ctx.fillStyle = '#0f172a';
+            ctx.fillText(label, cx + 10, cy - 12);
+        }
+
+        function drawLine(ctx, toX, toY, a, b, c, isDashed, color) {
+            ctx.strokeStyle = color || '#2563eb';
+            ctx.lineWidth = 3.5;
+            if (isDashed) ctx.setLineDash([8, 6]);
+            else ctx.setLineDash([]);
+
+            let x1 = -10, y1 = (-a * x1 - c) / b;
+            let x2 = 10, y2 = (-a * x2 - c) / b;
+
+            ctx.beginPath();
+            ctx.moveTo(toX(x1), toY(y1));
+            ctx.lineTo(toX(x2), toY(y2));
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawHalfPlane(ctx, toX, toY, a, b, c, region) {
+            ctx.fillStyle = 'rgba(22, 163, 74, 0.2)';
+
+            let edges = [
+                [{x: -8, y: -8}, {x: 8, y: -8}],
+                [{x: 8, y: -8}, {x: 8, y: 8}],
+                [{x: 8, y: 8}, {x: -8, y: 8}],
+                [{x: -8, y: 8}, {x: -8, y: -8}]
+            ];
+
+            function testPoint(x, y) {
+                let val = a * x + b * y + c;
+                if (region === 'right' || region === 'upper') return val >= -0.0001;
+                if (region === 'left' || region === 'lower') return val <= 0.0001;
+                return false;
+            }
+
+            let pts = [];
+            edges.forEach(edge => {
+                let p1 = edge[0], p2 = edge[1];
+                if (testPoint(p1.x, p1.y)) pts.push(p1);
+
+                let v1 = a * p1.x + b * p1.y + c;
+                let v2 = a * p2.x + b * p2.y + c;
+                if ((v1 > 0 && v2 < 0) || (v1 < 0 && v2 > 0)) {
+                    let t = v1 / (v1 - v2);
+                    pts.push({ x: p1.x + t * (p2.x - p1.x), y: p1.y + t * (p2.y - p1.y) });
+                }
+            });
+
+            if (pts.length < 3) return;
+
+            let unique = [];
+            pts.forEach(p => {
+                if (!unique.some(u => Math.abs(u.x - p.x) < 0.001 && Math.abs(u.y - p.y) < 0.001)) {
+                    unique.push(p);
+                }
+            });
+
+            let cx = unique.reduce((sum, p) => sum + p.x, 0) / unique.length;
+            let cy = unique.reduce((sum, p) => sum + p.y, 0) / unique.length;
+            unique.sort((p1, p2) => Math.atan2(p1.y - cy, p1.x - cx) - Math.atan2(p2.y - cy, p2.x - cx));
+
+            ctx.beginPath();
+            ctx.moveTo(toX(unique[0].x), toY(unique[0].y));
+            for (let i = 1; i < unique.length; i++) {
+                ctx.lineTo(toX(unique[i].x), toY(unique[i].y));
+            }
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function formatEq(a, b, c) {
+            let str = `${a === 1 ? '' : a}x`;
+            if (b > 0) str += ` + ${b === 1 ? '' : b}y`;
+            else str += ` - ${Math.abs(b) === 1 ? '' : Math.abs(b)}y`;
+
+            if (c > 0) str += ` + ${c}`;
+            else if (c < 0) str += ` - ${Math.abs(c)}`;
+
+            return str;
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+                setTimeout(() => {
+                    confetti({ particleCount: 100, spread: 100, origin: { y: 0.5 } });
+                }, 300);
+            }
+        }
+    </script>
+</body>
+</html>
