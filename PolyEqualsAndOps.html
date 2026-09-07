@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>多項式相等與加減運算 - 互動學具</title>
+    <!-- KaTeX 數學公式渲染器 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <!-- 灑花特效 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google 字型 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;800&family=STIX+Two+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #2b5c8f;
+            --primary-light: #ebf3fa;
+            --accent-color: #ff7a59;
+            --accent-hover: #ff6238;
+            --success-color: #2e7d32;
+            --success-bg: #e8f5e9;
+            --warning-color: #d97706;
+            --warning-bg: #fef3c7;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --font-math: 'STIX Two Text', 'Times New Roman', serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #app-container {
+            width: 100vw;
+            max-width: 1024px;
+            height: 100vh;
+            max-height: 768px;
+            background: var(--card-bg);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-area h1 {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .level-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.8);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: #ffffff;
+            color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .tab-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        main {
+            flex: 1;
+            padding: 20px 32px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .summary-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            flex: 1;
+        }
+
+        .summary-card h2 {
+            color: var(--primary-color);
+            font-size: 24px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .summary-item {
+            background: white;
+            padding: 18px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .summary-item h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #2d3748;
+        }
+
+        .summary-item p {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            font-size: 22px;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(255,122,89,0.35);
+            transition: all 0.2s ease;
+            align-self: center;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.96);
+        }
+
+        .katex {
+            font-size: 1.2em !important;
+            font-family: var(--font-math) !important;
+        }
+
+        .question-box {
+            background: var(--primary-light);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 20px;
+            color: var(--primary-color);
+            font-weight: 600;
+            position: relative;
+        }
+
+        .progress-tag {
+            position: absolute;
+            right: 16px;
+            top: 16px;
+            background: var(--primary-color);
+            color: white;
+            font-size: 14px;
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+
+        .interactive-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2.5px solid #cbd5e0;
+            border-radius: var(--radius-md);
+            padding: 18px;
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary-color);
+            background: #f7fafc;
+        }
+
+        .option-btn.selected {
+            border-color: var(--primary-color);
+            background: var(--primary-light);
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .prereq-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #ffffff;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            border: 2px solid #e2e8f0;
+        }
+
+        .prereq-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border: 2px solid #cbd5e0;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 18px;
+        }
+
+        .prereq-option:hover {
+            background: #f8fafc;
+            border-color: var(--primary-color);
+        }
+
+        .prereq-option.selected {
+            border-color: var(--primary-color);
+            background: var(--primary-light);
+            font-weight: 600;
+        }
+
+        .prereq-checkbox {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .drag-match-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: var(--radius-md);
+            border: 2px solid #e2e8f0;
+        }
+
+        .drag-pool, .drop-targets {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pool-title, .target-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .drag-card {
+            background: #ebf3fa;
+            border: 2px dashed var(--primary-color);
+            border-radius: var(--radius-md);
+            padding: 10px 20px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            cursor: grab;
+            transition: all 0.2s;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
+        }
+
+        .drag-card:active {
+            cursor: grabbing;
+        }
+
+        .drag-card.selected-card, .drag-card.selected {
+            border-style: solid;
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(43,92,143,0.3);
+        }
+
+        .drop-slot {
+            border: 2px dashed #cbd5e0;
+            background: #f8fafc;
+            border-radius: var(--radius-md);
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 60px;
+            transition: all 0.2s;
+        }
+
+        .drop-slot.drag-over {
+            border-color: var(--accent-color);
+            background: #fff5f2;
+        }
+
+        .drop-slot-label {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .drop-slot-box {
+            width: 140px;
+            height: 46px;
+            border: 2px dashed #a0aec0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .drop-slot-box.filled {
+            border-style: solid;
+            border-color: var(--primary-color);
+            background: var(--primary-light);
+        }
+
+        .step-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            margin-bottom: 12px;
+        }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 22px;
+            background: white;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            border: 2px solid #e2e8f0;
+        }
+
+        .math-input {
+            width: 75px;
+            height: 48px;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+            font-family: var(--font-math);
+            outline: none;
+        }
+
+        .math-input:focus {
+            border-color: var(--primary-color);
+            background-color: #f0f7ff;
+        }
+
+        /* 步驟指引 (Stepper) */
+        .stepper {
+            display: flex;
+            justify-content: space-around;
+            background: var(--primary-light);
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .step-item.active {
+            color: var(--primary-color);
+        }
+
+        .step-item.completed {
+            color: var(--success-color);
+        }
+
+        .step-badge {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .step-item.active .step-badge {
+            background: var(--primary-color);
+        }
+
+        .step-item.completed .step-badge {
+            background: var(--success-color);
+        }
+
+        /* 直式計算區域 */
+        .vertical-math-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .vertical-grid {
+            display: grid;
+            grid-template-columns: 40px repeat(3, 150px);
+            gap: 12px;
+            align-items: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .grid-cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 54px;
+            border-radius: 8px;
+        }
+
+        .op-cell {
+            font-size: 28px;
+            color: var(--primary-color);
+        }
+
+        .term-cell {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+        }
+
+        .vertical-grid .drop-slot {
+            background: #ffffff;
+            border: 2px dashed var(--primary-color);
+            border-radius: 8px;
+            height: 54px;
+            min-height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .vertical-grid .drop-slot.drag-over {
+            background: var(--primary-light);
+            border-style: solid;
+            transform: scale(1.02);
+        }
+
+        .vertical-grid .drop-slot.filled {
+            border-style: solid;
+            background: #f0fdf4;
+            border-color: var(--success-color);
+        }
+
+        .calc-line {
+            grid-column: 1 / span 4;
+            height: 3px;
+            background-color: var(--text-main);
+            margin: 2px 0;
+        }
+
+        /* 完整多項式結果輸入儲存格 */
+        .result-term-cell {
+            background: #f8fafc;
+            border: 1.5px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 4px;
+        }
+
+        .result-term-cell .result-input {
+            width: 65px;
+            height: 44px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .result-term-cell .result-input:focus {
+            border-color: var(--primary-color);
+            background: var(--primary-light);
+        }
+
+        .result-term-cell .result-input.disabled {
+            background: #e2e8f0;
+            cursor: not-allowed;
+        }
+
+        .term-var-label {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .pool-section {
+            background: #f8fafc;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 12px;
+            transition: opacity 0.3s;
+        }
+
+        .cards-pool {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .hint-box {
+            background: var(--warning-bg);
+            border-left: 5px solid var(--warning-color);
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: #78350f;
+            font-size: 17px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+            animation: shake 0.3s ease;
+        }
+
+        .hint-box.active {
+            display: flex;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .footer-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-check {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            font-size: 20px;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-check:hover {
+            background: #1e4269;
+        }
+
+        .victory-box {
+            text-align: center;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .victory-title {
+            font-size: 36px;
+            color: var(--primary-color);
+            font-weight: 800;
+        }
+
+        .victory-subtitle {
+            font-size: 20px;
+            color: var(--text-muted);
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .trophy-icon {
+            font-size: 80px;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-15px); }
+        }
+
+        #confetti-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 99;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <canvas id="confetti-canvas"></canvas>
+
+    <header>
+        <div class="logo-area">
+            <span style="font-size: 26px;">📐</span>
+            <h1>多項式運算闖關學具</h1>
+        </div>
+        <div class="level-tabs">
+            <button class="tab-btn active" onclick="switchLevel(0)">重點複習</button>
+            <button class="tab-btn disabled" id="tab-1" onclick="switchLevel(1)">關卡 1</button>
+            <button class="tab-btn disabled" id="tab-2" onclick="switchLevel(2)">關卡 2</button>
+            <button class="tab-btn disabled" id="tab-3" onclick="switchLevel(3)">關卡 3</button>
+            <button class="tab-btn disabled" id="tab-4" onclick="switchLevel(4)">關卡 4</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- 0. 重點彙整 -->
+        <div id="screen-0" class="screen active">
+            <div class="summary-card">
+                <h2>💡 單元 1-1.2 核心重點彙整</h2>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <h3>1. 多項式的相等</h3>
+                        <p>若兩多項式 <span class="math-tex" data-tex="f(x) = g(x)"></span>，代表它們的<b>最高次數相同</b>，且所有<b>同類項的係數完全相等</b>。</p>
+                    </div>
+                    <div class="summary-item">
+                        <h3>2. 同類項與缺項</h3>
+                        <p><b>文字相同且次數相同</b>的項才能進行加減。若遇到<b>缺項</b>（係數為 0），直式對齊時請<b>留空或填 0</b>，計算時仍需計算該項。</p>
+                    </div>
+                    <div class="summary-item">
+                        <h3>3. 直式加減運算</h3>
+                        <p>進行直式加減時，務必將<b>同類項上下對齊</b>。加法直接係數相加，減法時須注意<b>減式的每一項都要變號</b>。</p>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="startAdventure()">🚀 開始進入關卡挑戰</button>
+        </div>
+
+        <!-- 1. 第一關：同類項辨識 -->
+        <div id="screen-1" class="screen">
+            <div class="question-box">
+                【關卡 1：同類項辨識挑戰】<br>
+                <span id="l1-question-text"></span>
+                <span id="l1-progress" class="progress-tag">第 1 / 5 題</span>
+            </div>
+
+            <div class="interactive-area">
+                <div id="l1-options" class="options-grid"></div>
+            </div>
+
+            <div id="l1-hint" class="hint-box">
+                <span>💡 提示：</span><span id="l1-hint-text"></span>
+            </div>
+
+            <div class="footer-controls">
+                <span style="color: var(--text-muted); font-size: 16px;">選擇正確選項後點擊檢查</span>
+                <button class="btn-check" onclick="checkL1()">送出答案</button>
+            </div>
+        </div>
+
+        <!-- 2. 第二關：多項式相等 (共2題) -->
+        <div id="screen-2" class="screen">
+            <div class="question-box">
+                【關卡 2：多項式相等與未知數求解】<br>
+                已知兩多項式相等：<span id="l2-main-eq"></span>
+                <span id="l2-progress" class="progress-tag">第 1 / 2 題</span>
+            </div>
+
+            <div class="interactive-area" style="justify-content: flex-start;">
+                <!-- 階段 1：必要條件認知 (僅在第1題出現) -->
+                <div id="l2-stage-1" class="step-card">
+                    <div class="step-title">階段 1：必要條件認知</div>
+                    <p style="margin-bottom: 12px; font-size: 17px; color: #4a5568;">
+                        若要宣告兩多項式 <span class="math-tex" data-tex="f(x)"></span> 與 <span class="math-tex" data-tex="g(x)"></span> 完全相等（<span class="math-tex" data-tex="f(x) = g(x)"></span>），必須滿足哪些條件？（請勾選所有正確選項）
+                    </p>
+                    <div class="prereq-container" id="l2-prereq-container"></div>
+                </div>
+
+                <!-- 階段 2：對應同類項配對 -->
+                <div id="l2-stage-2" class="step-card" style="display: none;">
+                    <div class="step-title" id="l2-stage-2-title">階段 2：拖拉或點擊卡片配對對應同類項</div>
+                    <p style="margin-bottom: 12px; font-size: 16px; color: #4a5568;">
+                        請將左側 <span class="math-tex" data-tex="f(x)"></span> 的各單項，<b>拖拉</b>或<b>點擊選擇後放入</b>右側 <span class="math-tex" data-tex="g(x)"></span> 中次數相同的對應放置區：
+                    </p>
+                    <div class="drag-match-container">
+                        <div class="drag-pool">
+                            <div class="pool-title">左式 <span class="math-tex" data-tex="f(x)"></span> 的單項：</div>
+                            <div id="drag-cards-area" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                        </div>
+                        <div class="drop-targets">
+                            <div class="target-title">右式 <span class="math-tex" data-tex="g(x)"></span> 的對應同類項：</div>
+                            <div id="drop-slots-area" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 階段 3：求解未知數 -->
+                <div id="l2-stage-3" class="step-card" style="display: none;">
+                    <div class="step-title" id="l2-stage-3-title">階段 3：根據同類項係數相等求解未知數</div>
+                    <div class="input-row" style="margin-bottom: 12px;">
+                        <div class="input-group">
+                            <span><span class="math-tex" data-tex="a ="></span></span>
+                            <input type="number" class="math-input" id="l2-in-a">
+                        </div>
+                        <div class="input-group">
+                            <span><span class="math-tex" data-tex="b ="></span></span>
+                            <input type="number" class="math-input" id="l2-in-b">
+                        </div>
+                        <div class="input-group">
+                            <span><span class="math-tex" data-tex="c ="></span></span>
+                            <input type="number" class="math-input" id="l2-in-c">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group" style="background: #fff5f2; border-color: var(--accent-color);">
+                            <span style="font-weight: bold; color: var(--accent-color);">計算目標式 <span id="l2-target-expr" class="math-tex" data-tex="a - b + c"></span> 的值：</span>
+                            <input type="number" class="math-input" id="l2-in-target" style="width: 90px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="l2-hint" class="hint-box">
+                <span>💡 提示：</span><span id="l2-hint-text"></span>
+            </div>
+
+            <div class="footer-controls">
+                <span id="l2-footer-msg" style="color: var(--text-muted); font-size: 16px;">請勾選正確的相等條件</span>
+                <button class="btn-check" id="l2-action-btn" onclick="handleL2Action()">確認條件</button>
+            </div>
+        </div>
+
+        <!-- 3. 第三關：多項式直式加法闖關 -->
+        <div id="screen-3" class="screen">
+            <div class="question-box">
+                【關卡 3：多項式直式加法闖關】<br>
+                計算：<span id="l3-problem-text"></span>
+                <span id="l3-progress" class="progress-tag">第 1 / 2 題</span>
+            </div>
+
+            <div class="stepper" style="margin-bottom: 12px;">
+                <div class="step-item active" id="l3-step-1">
+                    <div class="step-badge">1</div>
+                    <span>階段一：對齊同類項</span>
+                </div>
+                <div class="step-item" id="l3-step-2">
+                    <div class="step-badge">2</div>
+                    <span>階段二：直式加法運算</span>
+                </div>
+            </div>
+
+            <div class="interactive-area" style="justify-content: flex-start; gap: 12px;">
+                <div class="vertical-math-container">
+                    <div class="vertical-grid">
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell term-cell" id="l3-f-deg2"></div>
+                        <div class="grid-cell term-cell" id="l3-f-deg1"></div>
+                        <div class="grid-cell term-cell" id="l3-f-deg0"></div>
+
+                        <div class="grid-cell op-cell">+</div>
+                        <div class="grid-cell drop-slot" id="l3-slot-deg2" onclick="handleL3SlotClick(2)">
+                            <span style="color:#a0aec0; font-size:14px;">對齊 x² 項</span>
+                        </div>
+                        <div class="grid-cell drop-slot" id="l3-slot-deg1" onclick="handleL3SlotClick(1)">
+                            <span style="color:#a0aec0; font-size:14px;">對齊 x 項</span>
+                        </div>
+                        <div class="grid-cell drop-slot" id="l3-slot-deg0" onclick="handleL3SlotClick(0)">
+                            <span style="color:#a0aec0; font-size:14px;">對齊常數項</span>
+                        </div>
+
+                        <div class="calc-line"></div>
+
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell result-term-cell">
+                            <input type="number" class="math-input result-input disabled" id="l3-in-deg2" disabled>
+                            <span class="math-tex term-var-label" data-tex="x^2"></span>
+                        </div>
+                        <div class="grid-cell result-term-cell">
+                            <input type="number" class="math-input result-input disabled" id="l3-in-deg1" disabled>
+                            <span class="math-tex term-var-label" data-tex="x"></span>
+                        </div>
+                        <div class="grid-cell result-term-cell">
+                            <input type="number" class="math-input result-input disabled" id="l3-in-deg0" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pool-section" id="l3-pool-section">
+                    <div class="pool-title">加式 <span class="math-tex" data-tex="g(x)"></span> 的拆解單項（請對齊同類項）：</div>
+                    <div class="cards-pool" id="l3-cards-pool"></div>
+                </div>
+            </div>
+
+            <div id="l3-hint" class="hint-box">
+                <span>💡 提示：</span><span id="l3-hint-text"></span>
+            </div>
+
+            <div class="footer-controls">
+                <span id="l3-footer-msg" style="color: var(--text-muted); font-size: 16px;">請將下方 g(x) 的單項拖拉（或點選）放置到對應位置</span>
+                <button class="btn-check" id="l3-action-btn" onclick="handleL3Action()">驗證同類項對齊</button>
+            </div>
+        </div>
+
+        <!-- 4. 第四關：多項式直式減法闖關 -->
+        <div id="screen-4" class="screen">
+            <div class="question-box">
+                【關卡 4：多項式直式減法闖關】<br>
+                計算：<span id="l4-problem-text"></span>
+                <span id="l4-progress" class="progress-tag">第 1 / 2 題</span>
+            </div>
+
+            <div class="stepper" style="margin-bottom: 12px;">
+                <div class="step-item active" id="l4-step-1">
+                    <div class="step-badge">1</div>
+                    <span>階段一：對齊同類項</span>
+                </div>
+                <div class="step-item" id="l4-step-2">
+                    <div class="step-badge">2</div>
+                    <span>階段二：直式減法運算</span>
+                </div>
+            </div>
+
+            <div class="interactive-area" style="justify-content: flex-start; gap: 12px;">
+                <div class="vertical-math-container">
+                    <div class="vertical-grid">
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell term-cell" id="l4-f-deg2"></div>
+                        <div class="grid-cell term-cell" id="l4-f-deg1"></div>
+                        <div class="grid-cell term-cell" id="l4-f-deg0"></div>
+
+                        <div class="grid-cell op-cell">−</div>
+                        <div class="grid-cell drop-slot" id="l4-slot-deg2" onclick="handleL4SlotClick(2)">
+                            <span style="color:#a0aec0; font-size:14px;">對齊 x² 項</span>
+                        </div>
+                        <div class="grid-cell drop-slot" id="l4-slot-deg1" onclick="handleL4SlotClick(1)">
+                            <span style="color:#a0aec0; font-size:14px;">對齊 x 項</span>
+                        </div>
+                        <div class="grid-cell drop-slot" id="l4-slot-deg0" onclick="handleL4SlotClick(0)">
+                            <span style="color:#a0aec0; font-size:14px;">對齊常數項</span>
+                        </div>
+
+                        <div class="calc-line"></div>
+
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell result-term-cell">
+                            <input type="number" class="math-input result-input disabled" id="l4-in-deg2" disabled>
+                            <span class="math-tex term-var-label" data-tex="x^2"></span>
+                        </div>
+                        <div class="grid-cell result-term-cell">
+                            <input type="number" class="math-input result-input disabled" id="l4-in-deg1" disabled>
+                            <span class="math-tex term-var-label" data-tex="x"></span>
+                        </div>
+                        <div class="grid-cell result-term-cell">
+                            <input type="number" class="math-input result-input disabled" id="l4-in-deg0" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pool-section" id="l4-pool-section">
+                    <div class="pool-title">減式 <span class="math-tex" data-tex="g(x)"></span> 的拆解單項（請對齊同類項）：</div>
+                    <div class="cards-pool" id="l4-cards-pool"></div>
+                </div>
+            </div>
+
+            <div id="l4-hint" class="hint-box">
+                <span>💡 提示：</span><span id="l4-hint-text"></span>
+            </div>
+
+            <div class="footer-controls">
+                <span id="l4-footer-msg" style="color: var(--text-muted); font-size: 16px;">請將下方 g(x) 的單項拖拉（或點選）放置到對應位置</span>
+                <button class="btn-check" id="l4-action-btn" onclick="handleL4Action()">驗證同類項對齊</button>
+            </div>
+        </div>
+
+        <!-- 5. 勝利過關畫面 -->
+        <div id="screen-5" class="screen">
+            <div class="victory-box">
+                <div class="trophy-icon">🏆</div>
+                <div class="victory-title">恭喜完成所有關卡挑戰！</div>
+                <div class="victory-subtitle">
+                    你已經成功掌握了<b>多項式的相等判斷</b>與<b>直式加減運算法則（含缺項運算）</b>！<br>
+                    具備了優秀的同類項觀察力與多項式直式計算能力，表現非常棒！
+                </div>
+                <button class="btn-primary" onclick="restartGame()" style="margin-top: 20px;">🔄 重新挑戰 (隨機生成新題目)</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    let currentLevel = 0;
+    let unlockedLevel = 1;
+
+    // 關卡 1 狀態
+    let l1CurrentIdx = 0;
+    let selectedL1Option = null;
+
+    // 關卡 2 狀態 (多項式相等，共2題)
+    let l2CurrentIdx = 0;
+    let l2Stage = 1;
+    let selectedCardId = null;
+    let placedMatches = {};
+
+    // 關卡 3 狀態 (直式加法，共2題)
+    let l3CurrentIdx = 0;
+    let l3Stage = 1;
+    let l3PlacedCards = { 2: null, 1: null, 0: null };
+    let l3SelectedCard = null;
+
+    // 關卡 4 狀態 (直式減法，共2題)
+    let l4CurrentIdx = 0;
+    let l4Stage = 1;
+    let l4PlacedCards = { 2: null, 1: null, 0: null };
+    let l4SelectedCard = null;
+
+    // 全域題目數據
+    let qData = {
+        l1: [],
+        l2: [],
+        l3: [],
+        l4: []
+    };
+
+    function randInt(min, max, excludeZero = true) {
+        let val = Math.floor(Math.random() * (max - min + 1)) + min;
+        if (excludeZero && val === 0) return randInt(min, max, true);
+        return val;
+    }
+
+    // 格式化未知數偏移表示式，如 (a + 3), (b - 2) 等
+    function formatOffsetExpr(varName, offset) {
+        if (offset === 0) return varName;
+        if (offset > 0) return `(${varName} + ${offset})`;
+        return `(${varName} - ${Math.abs(offset)})`;
+    }
+
+    // 格式化單項式呈現
+    function formatTerm(coef, deg, isFirst = false) {
+        if (coef === 0) return "";
+        let sign = coef > 0 ? (isFirst ? "" : "+ ") : "- ";
+        let absCoef = Math.abs(coef);
+        let coefStr = (absCoef === 1 && deg > 0) ? "" : absCoef;
+        
+        let varStr = "";
+        if (deg === 2) varStr = "x^2";
+        else if (deg === 1) varStr = "x";
+
+        return `${sign}${coefStr}${varStr}`;
+    }
+
+    // 生成完整多項式 LaTeX
+    function formatPoly(deg2, deg1, deg0) {
+        let t2 = formatTerm(deg2, 2, true);
+        let t1 = formatTerm(deg1, 1, !t2);
+        let t0 = formatTerm(deg0, 0, !t2 && !t1);
+        let res = `${t2} ${t1} ${t0}`.trim();
+        return res || "0";
+    }
+
+    // KaTeX 渲染器
+    function renderMath() {
+        document.querySelectorAll('.math-tex').forEach(el => {
+            let rawTex = el.getAttribute('data-tex');
+            if (rawTex === null || rawTex === undefined) {
+                rawTex = el.textContent.trim();
+                el.setAttribute('data-tex', rawTex);
+            }
+            try {
+                katex.render(rawTex, el, { throwOnError: false });
+            } catch (e) {
+                console.error(e);
+            }
+        });
+    }
+
+    function generateQuestions() {
+        // --- 關卡 1 ---
+        qData.l1 = [];
+        for (let i = 0; i < 5; i++) {
+            let pow = (i % 3) + 1;
+            let baseCoef = randInt(-6, 6, true);
+            let targetExpr = `${baseCoef}x${pow > 1 ? '^' + pow : ''}`;
+
+            let correctOpt = `${randInt(-8, 8, true)}x${pow > 1 ? '^' + pow : ''}`;
+            let wrong1 = `${baseCoef}x${pow === 1 ? '^2' : ''}`;
+            let wrong2 = `${randInt(-5, 5, true)}y${pow > 1 ? '^' + pow : ''}`;
+            let wrong3 = `${randInt(-6, 6, true)}`;
+
+            let options = [
+                { text: correctOpt, correct: true },
+                { text: wrong1, correct: false },
+                { text: wrong2, correct: false },
+                { text: wrong3, correct: false }
+            ].sort(() => Math.random() - 0.5);
+
+            qData.l1.push({ targetExpr, pow, options });
+        }
+        l1CurrentIdx = 0;
+
+        // --- 關卡 2 (共 2 題) ---
+        qData.l2 = [];
+
+        // 第 1 題：基本未知係數 a, b, c (包含「相等必要條件」選擇)
+        let v1_1 = randInt(-5, 5, true);
+        let v2_1 = randInt(-5, 5, true);
+        let v3_1 = randInt(-5, 5, true);
+
+        let rawStage1Options = [
+            { id: 'c1', text: '兩多項式的<b>最高次數必須相同</b>', correct: true },
+            { id: 'c2', text: '所有<b>對應同類項的係數必須完全相等</b>', correct: true },
+            { id: 'w1', text: '項數較多的多項式數值一定比較大', correct: false },
+            { id: 'w2', text: '所有單項式的係數必須全部為正數', correct: false }
+        ];
+
+        qData.l2.push({
+            v1: v1_1, v2: v2_1, v3: v3_1,
+            f_text: `f(x) = a x^2 ${v2_1 >= 0 ? '+ ' + v2_1 : '- ' + Math.abs(v2_1)} x + c`,
+            g_text: `g(x) = ${v1_1} x^2 + b x ${v3_1 >= 0 ? '+ ' + v3_1 : '- ' + Math.abs(v3_1)}`,
+            stage1Options: rawStage1Options.sort(() => Math.random() - 0.5),
+            ansA: v1_1,
+            ansB: v2_1,
+            ansC: v3_1,
+            ansTarget: v1_1 - v2_1 + v3_1,
+            f_cards: [
+                { key: 'deg2', tex: 'a x^2' },
+                { key: 'deg1', tex: `${v2_1 >= 0 ? v2_1 : '- ' + Math.abs(v2_1)} x` },
+                { key: 'deg0', tex: 'c' }
+            ].sort(() => Math.random() - 0.5),
+            g_slots: [
+                { key: 'deg2', labelTex: `${v1_1} x^2`, degreeName: 'x^2 項' },
+                { key: 'deg1', labelTex: `b x`, degreeName: 'x 項' },
+                { key: 'deg0', labelTex: `${v3_1 >= 0 ? v3_1 : '- ' + Math.abs(v3_1)}`, degreeName: '常數項' }
+            ]
+        });
+
+        // 第 2 題：未知係數含有隨機組合平移式，例如 (a + offsetA), (b + offsetB), (c + offsetC)
+        let v1_2 = randInt(-6, 6, true);
+        let v2_2 = randInt(-6, 6, true);
+        let v3_2 = randInt(-6, 6, true);
+
+        let offA = randInt(-5, 5, true);
+        let offB = randInt(-5, 5, true);
+        let offC = randInt(-5, 5, true);
+
+        let exprA = formatOffsetExpr('a', offA);
+        let exprB = formatOffsetExpr('b', offB);
+        let exprC = formatOffsetExpr('c', offC);
+
+        let ansA_2 = v1_2 - offA;
+        let ansB_2 = v2_2 - offB;
+        let ansC_2 = v3_2 - offC;
+
+        qData.l2.push({
+            v1: v1_2, v2: v2_2, v3: v3_2,
+            f_text: `f(x) = ${exprA} x^2 ${v2_2 >= 0 ? '+ ' + v2_2 : '- ' + Math.abs(v2_2)} x + ${exprC}`,
+            g_text: `g(x) = ${v1_2} x^2 + ${exprB} x ${v3_2 >= 0 ? '+ ' + v3_2 : '- ' + Math.abs(v3_2)}`,
+            ansA: ansA_2,
+            ansB: ansB_2,
+            ansC: ansC_2,
+            ansTarget: ansA_2 - ansB_2 + ansC_2,
+            f_cards: [
+                { key: 'deg2', tex: `${exprA} x^2` },
+                { key: 'deg1', tex: `${v2_2 >= 0 ? v2_2 : '- ' + Math.abs(v2_2)} x` },
+                { key: 'deg0', tex: `${exprC}` }
+            ].sort(() => Math.random() - 0.5),
+            g_slots: [
+                { key: 'deg2', labelTex: `${v1_2} x^2`, degreeName: 'x^2 項' },
+                { key: 'deg1', labelTex: `${exprB} x`, degreeName: 'x 項' },
+                { key: 'deg0', labelTex: `${v3_2 >= 0 ? v3_2 : '- ' + Math.abs(v3_2)}`, degreeName: '常數項' }
+            ],
+            hintDetails: `• <span class="math-tex" data-tex="${exprA} = ${v1_2} \\Rightarrow a = ${ansA_2}"></span><br>` +
+                        `• <span class="math-tex" data-tex="${exprB} = ${v2_2} \\Rightarrow b = ${ansB_2}"></span><br>` +
+                        `• <span class="math-tex" data-tex="${exprC} = ${v3_2} \\Rightarrow c = ${ansC_2}"></span><br>`
+        });
+
+        l2CurrentIdx = 0;
+        l2Stage = 1;
+        placedMatches = {};
+        selectedCardId = null;
+
+        // --- 關卡 3 (直式加法 - 2題) ---
+        qData.l3 = [];
+        let f3_1 = { deg2: randInt(-5, 5), deg1: randInt(-6, 6), deg0: randInt(-8, 8) };
+        let g3_1 = { deg2: randInt(-5, 5), deg1: randInt(-6, 6), deg0: randInt(-8, 8) };
+        qData.l3.push({
+            isMissing: false,
+            f: f3_1,
+            g: g3_1,
+            ans: { deg2: f3_1.deg2 + g3_1.deg2, deg1: f3_1.deg1 + g3_1.deg1, deg0: f3_1.deg0 + g3_1.deg0 },
+            cards: [
+                { id: 'l3-q1-c2', degree: 2, coef: g3_1.deg2, tex: formatTerm(g3_1.deg2, 2, false) },
+                { id: 'l3-q1-c1', degree: 1, coef: g3_1.deg1, tex: formatTerm(g3_1.deg1, 1, false) },
+                { id: 'l3-q1-c0', degree: 0, coef: g3_1.deg0, tex: formatTerm(g3_1.deg0, 0, false) }
+            ].sort(() => Math.random() - 0.5)
+        });
+
+        let f3_2 = { deg2: randInt(-5, 5), deg1: randInt(-6, 6), deg0: randInt(-8, 8) };
+        let g3_2 = { deg2: randInt(-5, 5), deg1: 0, deg0: randInt(-8, 8) };
+        qData.l3.push({
+            isMissing: true,
+            missingDeg: 1,
+            f: f3_2,
+            g: g3_2,
+            ans: { deg2: f3_2.deg2 + g3_2.deg2, deg1: f3_2.deg1 + 0, deg0: f3_2.deg0 + g3_2.deg0 },
+            cards: [
+                { id: 'l3-q2-c2', degree: 2, coef: g3_2.deg2, tex: formatTerm(g3_2.deg2, 2, false) },
+                { id: 'l3-q2-c0', degree: 0, coef: g3_2.deg0, tex: formatTerm(g3_2.deg0, 0, false) }
+            ].sort(() => Math.random() - 0.5)
+        });
+
+        l3CurrentIdx = 0;
+        l3Stage = 1;
+        l3PlacedCards = { 2: null, 1: null, 0: null };
+        l3SelectedCard = null;
+
+        // --- 關卡 4 (直式減法 - 2題) ---
+        qData.l4 = [];
+        let f4_1 = { deg2: randInt(-5, 5), deg1: randInt(-6, 6), deg0: randInt(-8, 8) };
+        let g4_1 = { deg2: randInt(-5, 5), deg1: randInt(-6, 6), deg0: randInt(-8, 8) };
+        qData.l4.push({
+            isMissing: false,
+            f: f4_1,
+            g: g4_1,
+            ans: { deg2: f4_1.deg2 - g4_1.deg2, deg1: f4_1.deg1 - g4_1.deg1, deg0: f4_1.deg0 - g4_1.deg0 },
+            cards: [
+                { id: 'l4-q1-c2', degree: 2, coef: g4_1.deg2, tex: formatTerm(g4_1.deg2, 2, false) },
+                { id: 'l4-q1-c1', degree: 1, coef: g4_1.deg1, tex: formatTerm(g4_1.deg1, 1, false) },
+                { id: 'l4-q1-c0', degree: 0, coef: g4_1.deg0, tex: formatTerm(g4_1.deg0, 0, false) }
+            ].sort(() => Math.random() - 0.5)
+        });
+
+        let f4_2 = { deg2: randInt(-5, 5), deg1: 0, deg0: randInt(-8, 8) };
+        let g4_2 = { deg2: randInt(-5, 5), deg1: randInt(-6, 6), deg0: randInt(-8, 8) };
+        qData.l4.push({
+            isMissing: true,
+            missingDeg: 1,
+            f: f4_2,
+            g: g4_2,
+            ans: { deg2: f4_2.deg2 - g4_2.deg2, deg1: 0 - g4_2.deg1, deg0: f4_2.deg0 - g4_2.deg0 },
+            cards: [
+                { id: 'l4-q2-c2', degree: 2, coef: g4_2.deg2, tex: formatTerm(g4_2.deg2, 2, false) },
+                { id: 'l4-q2-c1', degree: 1, coef: g4_2.deg1, tex: formatTerm(g4_2.deg1, 1, false) },
+                { id: 'l4-q2-c0', degree: 0, coef: g4_2.deg0, tex: formatTerm(g4_2.deg0, 0, false) }
+            ].sort(() => Math.random() - 0.5)
+        });
+
+        l4CurrentIdx = 0;
+        l4Stage = 1;
+        l4PlacedCards = { 2: null, 1: null, 0: null };
+        l4SelectedCard = null;
+
+        renderAllLevelsUI();
+    }
+
+    function renderAllLevelsUI() {
+        // --- 關卡 1 ---
+        let curL1 = qData.l1[l1CurrentIdx];
+        document.getElementById('l1-progress').innerText = `第 ${l1CurrentIdx + 1} / 5 題`;
+        document.getElementById('l1-question-text').innerHTML =
+            `下列何者與多項式單項 <span class="math-tex" data-tex="${curL1.targetExpr}"></span> 是<b>同類項</b>？`;
+
+        let l1OptsContainer = document.getElementById('l1-options');
+        l1OptsContainer.innerHTML = '';
+        curL1.options.forEach((opt, idx) => {
+            let btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `<span class="math-tex" data-tex="${opt.text}"></span>`;
+            btn.onclick = () => selectL1Option(idx, btn);
+            l1OptsContainer.appendChild(btn);
+        });
+        selectedL1Option = null;
+
+        // --- 關卡 2 ---
+        renderL2();
+
+        // --- 關卡 3 ---
+        renderL3();
+
+        // --- 關卡 4 ---
+        renderL4();
+
+        hideAllHints();
+        renderMath();
+    }
+
+    function renderL2() {
+        let d2 = qData.l2[l2CurrentIdx];
+        document.getElementById('l2-progress').innerText = `第 ${l2CurrentIdx + 1} / 2 題`;
+        document.getElementById('l2-main-eq').innerHTML = `<span class="math-tex" data-tex="${d2.f_text} = ${d2.g_text}"></span>`;
+        
+        placedMatches = {};
+        selectedCardId = null;
+
+        // 第一題才包含階段 1（必要條件認知）；第二題直接進入階段 2
+        if (l2CurrentIdx === 0) {
+            l2Stage = 1;
+            document.getElementById('l2-stage-1').style.display = 'block';
+            document.getElementById('l2-stage-2').style.display = 'none';
+            document.getElementById('l2-stage-3').style.display = 'none';
+
+            document.getElementById('l2-stage-2-title').innerText = '階段 2：拖拉或點擊卡片配對對應同類項';
+            document.getElementById('l2-stage-3-title').innerText = '階段 3：根據同類項係數相等求解未知數';
+
+            let prereqContainer = document.getElementById('l2-prereq-container');
+            prereqContainer.innerHTML = '';
+            d2.stage1Options.forEach(opt => {
+                let label = document.createElement('label');
+                label.className = 'prereq-option';
+                label.onclick = (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        let cb = label.querySelector('input');
+                        cb.checked = !cb.checked;
+                    }
+                    label.classList.toggle('selected', label.querySelector('input').checked);
+                };
+
+                label.innerHTML = `
+                    <input type="checkbox" class="prereq-checkbox" data-correct="${opt.correct}" value="${opt.id}">
+                    <span>${opt.text}</span>
+                `;
+                prereqContainer.appendChild(label);
+            });
+
+            document.getElementById('l2-action-btn').innerText = '驗證相等條件';
+            document.getElementById('l2-footer-msg').innerText = '請勾選多項式相等的必要條件';
+        } else {
+            l2Stage = 2;
+            document.getElementById('l2-stage-1').style.display = 'none';
+            document.getElementById('l2-stage-2').style.display = 'block';
+            document.getElementById('l2-stage-3').style.display = 'none';
+
+            document.getElementById('l2-stage-2-title').innerText = '階段 1：拖拉或點擊卡片配對對應同類項';
+            document.getElementById('l2-stage-3-title').innerText = '階段 2：根據同類項係數相等求解未知數';
+
+            document.getElementById('l2-action-btn').innerText = '核對同類項配對';
+            document.getElementById('l2-footer-msg').innerText = '請完成所有項目的同類項拖拉配對';
+        }
+
+        renderL2Stage2DOM();
+
+        document.getElementById('l2-in-a').value = '';
+        document.getElementById('l2-in-b').value = '';
+        document.getElementById('l2-in-c').value = '';
+        document.getElementById('l2-in-target').value = '';
+
+        hideAllHints();
+        renderMath();
+    }
+
+    function renderL2Stage2DOM() {
+        let d2 = qData.l2[l2CurrentIdx];
+        let cardsArea = document.getElementById('drag-cards-area');
+        let slotsArea = document.getElementById('drop-slots-area');
+
+        cardsArea.innerHTML = '';
+        slotsArea.innerHTML = '';
+
+        d2.f_cards.forEach(card => {
+            let cardDiv = document.createElement('div');
+            cardDiv.className = 'drag-card';
+            cardDiv.id = `drag-${card.key}`;
+            cardDiv.setAttribute('draggable', 'true');
+            cardDiv.setAttribute('data-key', card.key);
+            cardDiv.innerHTML = `<span class="math-tex" data-tex="${card.tex}"></span>`;
+
+            cardDiv.ondragstart = (e) => {
+                e.dataTransfer.setData('text/plain', card.key);
+                selectCard(card.key);
+            };
+
+            cardDiv.onclick = () => selectCard(card.key);
+            cardsArea.appendChild(cardDiv);
+        });
+
+        d2.g_slots.forEach(slot => {
+            let slotDiv = document.createElement('div');
+            slotDiv.className = 'drop-slot';
+            slotDiv.innerHTML = `
+                <div class="drop-slot-label">
+                    <span class="math-tex" data-tex="${slot.labelTex} ="></span>
+                </div>
+                <div class="drop-slot-box" id="slot-box-${slot.key}" onclick="handleSlotClick('${slot.key}')">
+                    <span style="color:#a0aec0; font-size:14px;">點擊或拖入</span>
+                </div>
+            `;
+
+            slotDiv.ondragover = (e) => {
+                e.preventDefault();
+                slotDiv.classList.add('drag-over');
+            };
+
+            slotDiv.ondragleave = () => {
+                slotDiv.classList.remove('drag-over');
+            };
+
+            slotDiv.ondrop = (e) => {
+                e.preventDefault();
+                slotDiv.classList.remove('drag-over');
+                let cardKey = e.dataTransfer.getData('text/plain');
+                if (cardKey) {
+                    placeCardInSlot(cardKey, slot.key);
+                }
+            };
+
+            slotsArea.appendChild(slotDiv);
+        });
+
+        renderMath();
+    }
+
+    function selectCard(cardKey) {
+        selectedCardId = cardKey;
+        document.querySelectorAll('#drag-cards-area .drag-card').forEach(el => {
+            if (el.getAttribute('data-key') === cardKey) {
+                el.classList.add('selected-card');
+            } else {
+                el.classList.remove('selected-card');
+            }
+        });
+    }
+
+    function handleSlotClick(slotKey) {
+        if (selectedCardId) {
+            placeCardInSlot(selectedCardId, slotKey);
+        }
+    }
+
+    function placeCardInSlot(cardKey, slotKey) {
+        Object.keys(placedMatches).forEach(k => {
+            if (placedMatches[k] === cardKey) {
+                delete placedMatches[k];
+                let prevBox = document.getElementById(`slot-box-${k}`);
+                if (prevBox) {
+                    prevBox.classList.remove('filled');
+                    prevBox.innerHTML = `<span style="color:#a0aec0; font-size:14px;">點擊或拖入</span>`;
+                }
+            }
+        });
+
+        placedMatches[slotKey] = cardKey;
+
+        let cardObj = qData.l2[l2CurrentIdx].f_cards.find(c => c.key === cardKey);
+        let box = document.getElementById(`slot-box-${slotKey}`);
+        box.classList.add('filled');
+        box.innerHTML = `<span class="math-tex" data-tex="${cardObj.tex}"></span>`;
+
+        selectedCardId = null;
+        document.querySelectorAll('#drag-cards-area .drag-card').forEach(el => el.classList.remove('selected-card'));
+        renderMath();
+    }
+
+    function handleL2Action() {
+        let d2 = qData.l2[l2CurrentIdx];
+
+        if (l2Stage === 1) {
+            let checkboxes = document.querySelectorAll('#l2-prereq-container .prereq-checkbox');
+            let allCorrectChecked = true;
+            let anyWrongChecked = false;
+
+            checkboxes.forEach(cb => {
+                let isCorrect = cb.getAttribute('data-correct') === 'true';
+                if (isCorrect && !cb.checked) allCorrectChecked = false;
+                if (!isCorrect && cb.checked) anyWrongChecked = true;
+            });
+
+            if (allCorrectChecked && !anyWrongChecked) {
+                hideAllHints();
+                l2Stage = 2;
+                document.getElementById('l2-stage-1').style.display = 'none';
+                document.getElementById('l2-stage-2').style.display = 'block';
+                document.getElementById('l2-action-btn').innerText = '核對同類項配對';
+                document.getElementById('l2-footer-msg').innerText = '請完成所有項目的同類項拖拉配對';
+                renderMath();
+            } else {
+                showHint(2, '概念導正：多項式相等必須同時滿足「<b>最高次數相同</b>」且「<b>所有對應同類項係數完全相等</b>」！請再檢查勾選項目。');
+            }
+        } else if (l2Stage === 2) {
+            if (Object.keys(placedMatches).length < 3) {
+                showHint(2, '請將左側的三個單項全部配對到右側對應的同類項放置區喔！');
+                return;
+            }
+
+            let isCorrect = placedMatches['deg2'] === 'deg2' &&
+                            placedMatches['deg1'] === 'deg1' &&
+                            placedMatches['deg0'] === 'deg0';
+
+            if (isCorrect) {
+                hideAllHints();
+                l2Stage = 3;
+                document.getElementById('l2-stage-2').style.display = 'none';
+                document.getElementById('l2-stage-3').style.display = 'block';
+                document.getElementById('l2-action-btn').innerText = '驗證最終求解';
+                document.getElementById('l2-footer-msg').innerText = '請根據同類項對應關係求出未知數';
+                renderMath();
+            } else {
+                showHint(2, '配對檢查：請確保 <span class="math-tex" data-tex="x^2"></span> 項與 <span class="math-tex" data-tex="x^2"></span> 項配對、<span class="math-tex" data-tex="x"></span> 項與 <span class="math-tex" data-tex="x"></span> 項配對、常數項與常數項配對！');
+            }
+        } else if (l2Stage === 3) {
+            let ua = parseInt(document.getElementById('l2-in-a').value);
+            let ub = parseInt(document.getElementById('l2-in-b').value);
+            let uc = parseInt(document.getElementById('l2-in-c').value);
+            let utarget = parseInt(document.getElementById('l2-in-target').value);
+
+            if (isNaN(ua) || isNaN(ub) || isNaN(uc) || isNaN(utarget)) {
+                showHint(2, '請完整填寫所有未知數與目標計算結果！');
+                return;
+            }
+
+            if (ua === d2.ansA && ub === d2.ansB && uc === d2.ansC && utarget === d2.ansTarget) {
+                hideAllHints();
+                if (l2CurrentIdx < 1) {
+                    l2CurrentIdx++;
+                    renderL2();
+                } else {
+                    unlockNext(2);
+                }
+            } else {
+                if (l2CurrentIdx === 0) {
+                    showHint(2, `計算提示：<br>對應關係為：<br>• <span class="math-tex" data-tex="a x^2 = ${d2.ansA} x^2 \\Rightarrow a = ${d2.ansA}"></span><br>• <span class="math-tex" data-tex="${d2.ansB} x = b x \\Rightarrow b = ${d2.ansB}"></span><br>• <span class="math-tex" data-tex="c = ${d2.ansC}"></span><br>請將以上數值代入 <span class="math-tex" data-tex="a - b + c"></span> 仔細算看看！`);
+                } else {
+                    showHint(2, `計算提示：<br>對應關係為：<br>${d2.hintDetails}請將以上數值代入 <span class="math-tex" data-tex="a - b + c"></span> 仔細算看看！`);
+                }
+            }
+        }
+    }
+
+    // --- 關卡 3 渲染與邏輯 ---
+    function renderL3() {
+        let d3 = qData.l3[l3CurrentIdx];
+        document.getElementById('l3-progress').innerText = `第 ${l3CurrentIdx + 1} / 2 題`;
+
+        let fTex = formatPoly(d3.f.deg2, d3.f.deg1, d3.f.deg0);
+        let gTex = formatPoly(d3.g.deg2, d3.g.deg1, d3.g.deg0);
+        document.getElementById('l3-problem-text').innerHTML =
+            `<span class="math-tex" data-tex="(${fTex}) + (${gTex})"></span>`;
+
+        document.getElementById('l3-f-deg2').innerHTML = `<span class="math-tex" data-tex="${formatTerm(d3.f.deg2, 2, true)}"></span>`;
+        document.getElementById('l3-f-deg1').innerHTML = d3.f.deg1 === 0 ? `<span style="color:#a0aec0; font-size:16px;">(缺項)</span>` : `<span class="math-tex" data-tex="${formatTerm(d3.f.deg1, 1, false)}"></span>`;
+        document.getElementById('l3-f-deg0').innerHTML = `<span class="math-tex" data-tex="${formatTerm(d3.f.deg0, 0, false)}"></span>`;
+
+        [2, 1, 0].forEach(deg => {
+            let slot = document.getElementById(`l3-slot-deg${deg}`);
+            slot.classList.remove('filled');
+            let labels = { 2: '對齊 x² 項', 1: '對齊 x 項', 0: '對齊常數項' };
+            slot.innerHTML = `<span style="color:#a0aec0; font-size:14px;">${labels[deg]}</span>`;
+        });
+
+        [2, 1, 0].forEach(deg => {
+            let input = document.getElementById(`l3-in-deg${deg}`);
+            input.value = '';
+            input.disabled = true;
+            input.classList.add('disabled');
+        });
+
+        let pool = document.getElementById('l3-cards-pool');
+        pool.innerHTML = '';
+        d3.cards.forEach(card => {
+            let div = document.createElement('div');
+            div.className = 'drag-card';
+            div.id = card.id;
+            div.setAttribute('draggable', 'true');
+            div.innerHTML = `<span class="math-tex" data-tex="${card.tex}"></span>`;
+
+            div.ondragstart = (e) => {
+                e.dataTransfer.setData('text/plain', JSON.stringify(card));
+                selectL3Card(card);
+            };
+            div.onclick = () => selectL3Card(card);
+            pool.appendChild(div);
+        });
+
+        [2, 1, 0].forEach(deg => {
+            let slot = document.getElementById(`l3-slot-deg${deg}`);
+            slot.ondragover = (e) => { e.preventDefault(); slot.classList.add('drag-over'); };
+            slot.ondragleave = () => slot.classList.remove('drag-over');
+            slot.ondrop = (e) => {
+                e.preventDefault();
+                slot.classList.remove('drag-over');
+                let cardData = JSON.parse(e.dataTransfer.getData('text/plain'));
+                placeL3Card(cardData, deg);
+            };
+        });
+
+        l3Stage = 1;
+        l3PlacedCards = { 2: null, 1: null, 0: null };
+        l3SelectedCard = null;
+        updateL3UI();
+        renderMath();
+    }
+
+    function selectL3Card(card) {
+        if (l3Stage !== 1) return;
+        l3SelectedCard = card;
+        document.querySelectorAll('#l3-cards-pool .drag-card').forEach(c => {
+            if (c.id === card.id) c.classList.add('selected');
+            else c.classList.remove('selected');
+        });
+    }
+
+    function handleL3SlotClick(deg) {
+        if (l3Stage !== 1) return;
+        if (l3SelectedCard) placeL3Card(l3SelectedCard, deg);
+    }
+
+    function placeL3Card(card, slotDegree) {
+        Object.keys(l3PlacedCards).forEach(d => {
+            if (l3PlacedCards[d] && l3PlacedCards[d].id === card.id) {
+                l3PlacedCards[d] = null;
+                let prevSlot = document.getElementById(`l3-slot-deg${d}`);
+                prevSlot.classList.remove('filled');
+                let labels = { 2: '對齊 x² 項', 1: '對齊 x 項', 0: '對齊常數項' };
+                prevSlot.innerHTML = `<span style="color:#a0aec0; font-size:14px;">${labels[d]}</span>`;
+            }
+        });
+
+        l3PlacedCards[slotDegree] = card;
+        let slot = document.getElementById(`l3-slot-deg${slotDegree}`);
+        slot.classList.add('filled');
+        slot.innerHTML = `<span class="math-tex" data-tex="${card.tex}"></span>`;
+
+        l3SelectedCard = null;
+        document.querySelectorAll('#l3-cards-pool .drag-card').forEach(c => c.classList.remove('selected'));
+        renderMath();
+    }
+
+    function updateL3UI() {
+        let step1 = document.getElementById('l3-step-1');
+        let step2 = document.getElementById('l3-step-2');
+        let btn = document.getElementById('l3-action-btn');
+        let msg = document.getElementById('l3-footer-msg');
+
+        if (l3Stage === 1) {
+            step1.className = 'step-item active';
+            step2.className = 'step-item';
+            btn.innerText = '驗證同類項對齊';
+            msg.innerText = '請將下方 g(x) 的單項拖拉（或點選）放置到對應位置';
+            document.getElementById('l3-pool-section').style.opacity = '1';
+        } else {
+            step1.className = 'step-item completed';
+            step2.className = 'step-item active';
+            btn.innerText = '驗證加法結果';
+            msg.innerText = '同類項對齊無誤！請進行同類項加法運算並填入各單項係數';
+            document.getElementById('l3-pool-section').style.opacity = '0.4';
+            [2, 1, 0].forEach(deg => {
+                let input = document.getElementById(`l3-in-deg${deg}`);
+                input.disabled = false;
+                input.classList.remove('disabled');
+            });
+        }
+    }
+
+    function handleL3Action() {
+        let d3 = qData.l3[l3CurrentIdx];
+        if (l3Stage === 1) {
+            if (d3.isMissing) {
+                if (!l3PlacedCards[2] || !l3PlacedCards[0] || l3PlacedCards[1] !== null) {
+                    showHint(3, "⚠️ <span class=\"math-tex\" data-tex=\"g(x)\"></span> 缺少 <span class=\"math-tex\" data-tex=\"x\"></span> 項（缺項），請將 <span class=\"math-tex\" data-tex=\"x^2\"></span> 項與常數項放入對應位置，<b><span class=\"math-tex\" data-tex=\"x\"></span> 項放置區請保持留空</b>！");
+                    return;
+                }
+                let isCorrect = (l3PlacedCards[2].degree === 2) && (l3PlacedCards[0].degree === 0);
+                if (isCorrect) {
+                    hideAllHints();
+                    l3Stage = 2;
+                    updateL3UI();
+                    renderMath();
+                } else {
+                    showHint(3, "❌ 對齊有誤！請確認 <span class=\"math-tex\" data-tex=\"x^2\"></span> 項對齊 <span class=\"math-tex\" data-tex=\"x^2\"></span>，常數項對齊常數項。");
+                }
+            } else {
+                if (!l3PlacedCards[2] || !l3PlacedCards[1] || !l3PlacedCards[0]) {
+                    showHint(3, "⚠️ 請先將三個單項全部放置到直式對應欄位中！");
+                    return;
+                }
+                let isCorrect = (l3PlacedCards[2].degree === 2) &&
+                                (l3PlacedCards[1].degree === 1) &&
+                                (l3PlacedCards[0].degree === 0);
+                if (isCorrect) {
+                    hideAllHints();
+                    l3Stage = 2;
+                    updateL3UI();
+                    renderMath();
+                } else {
+                    showHint(3, "❌ 對齊有誤喔！請注意：<span class=\"math-tex\" data-tex=\"x^2\"></span> 項要與 <span class=\"math-tex\" data-tex=\"x^2\"></span> 項對齊、<span class=\"math-tex\" data-tex=\"x\"></span> 項與 <span class=\"math-tex\" data-tex=\"x\"></span> 項對齊、常數項與常數項對齊。");
+                }
+            }
+        } else if (l3Stage === 2) {
+            let u2 = parseInt(document.getElementById('l3-in-deg2').value);
+            let u1 = parseInt(document.getElementById('l3-in-deg1').value);
+            let u0 = parseInt(document.getElementById('l3-in-deg0').value);
+
+            if (isNaN(u2) || isNaN(u1) || isNaN(u0)) {
+                showHint(3, "⚠️ 請完整填入計算結果的單項係數（若係數為 0 請填 0）！");
+                return;
+            }
+
+            let ans = d3.ans;
+            if (u2 === ans.deg2 && u1 === ans.deg1 && u0 === ans.deg0) {
+                hideAllHints();
+                if (l3CurrentIdx < 1) {
+                    l3CurrentIdx++;
+                    renderL3();
+                } else {
+                    unlockNext(3);
+                }
+            } else {
+                let f = d3.f;
+                let g = d3.g;
+                showHint(3, `❌ 計算有誤！請再檢查各項加法：<br>` +
+                    `• <span class="math-tex" data-tex="x^2"></span> 項：<span class="math-tex" data-tex="(${f.deg2}) + (${g.deg2}) = ${ans.deg2}"></span><br>` +
+                    `• <span class="math-tex" data-tex="x"></span> 項：<span class="math-tex" data-tex="(${f.deg1}) + (${g.deg1}) = ${ans.deg1}"></span><br>` +
+                    `• 常數項：<span class="math-tex" data-tex="(${f.deg0}) + (${g.deg0}) = ${ans.deg0}"></span>`);
+            }
+        }
+    }
+
+    // --- 關卡 4 渲染與邏輯 ---
+    function renderL4() {
+        let d4 = qData.l4[l4CurrentIdx];
+        document.getElementById('l4-progress').innerText = `第 ${l4CurrentIdx + 1} / 2 題`;
+
+        let fTex = formatPoly(d4.f.deg2, d4.f.deg1, d4.f.deg0);
+        let gTex = formatPoly(d4.g.deg2, d4.g.deg1, d4.g.deg0);
+        document.getElementById('l4-problem-text').innerHTML =
+            `<span class="math-tex" data-tex="(${fTex}) - (${gTex})"></span>`;
+
+        document.getElementById('l4-f-deg2').innerHTML = `<span class="math-tex" data-tex="${formatTerm(d4.f.deg2, 2, true)}"></span>`;
+        document.getElementById('l4-f-deg1').innerHTML = d4.f.deg1 === 0 ? `<span style="color:#a0aec0; font-size:16px;">(缺項)</span>` : `<span class="math-tex" data-tex="${formatTerm(d4.f.deg1, 1, false)}"></span>`;
+        document.getElementById('l4-f-deg0').innerHTML = `<span class="math-tex" data-tex="${formatTerm(d4.f.deg0, 0, false)}"></span>`;
+
+        [2, 1, 0].forEach(deg => {
+            let slot = document.getElementById(`l4-slot-deg${deg}`);
+            slot.classList.remove('filled');
+            let labels = { 2: '對齊 x² 項', 1: '對齊 x 項', 0: '對齊常數項' };
+            slot.innerHTML = `<span style="color:#a0aec0; font-size:14px;">${labels[deg]}</span>`;
+        });
+
+        [2, 1, 0].forEach(deg => {
+            let input = document.getElementById(`l4-in-deg${deg}`);
+            input.value = '';
+            input.disabled = true;
+            input.classList.add('disabled');
+        });
+
+        let pool = document.getElementById('l4-cards-pool');
+        pool.innerHTML = '';
+        d4.cards.forEach(card => {
+            let div = document.createElement('div');
+            div.className = 'drag-card';
+            div.id = card.id;
+            div.setAttribute('draggable', 'true');
+            div.innerHTML = `<span class="math-tex" data-tex="${card.tex}"></span>`;
+
+            div.ondragstart = (e) => {
+                e.dataTransfer.setData('text/plain', JSON.stringify(card));
+                selectL4Card(card);
+            };
+            div.onclick = () => selectL4Card(card);
+            pool.appendChild(div);
+        });
+
+        [2, 1, 0].forEach(deg => {
+            let slot = document.getElementById(`l4-slot-deg${deg}`);
+            slot.ondragover = (e) => { e.preventDefault(); slot.classList.add('drag-over'); };
+            slot.ondragleave = () => slot.classList.remove('drag-over');
+            slot.ondrop = (e) => {
+                e.preventDefault();
+                slot.classList.remove('drag-over');
+                let cardData = JSON.parse(e.dataTransfer.getData('text/plain'));
+                placeL4Card(cardData, deg);
+            };
+        });
+
+        l4Stage = 1;
+        l4PlacedCards = { 2: null, 1: null, 0: null };
+        l4SelectedCard = null;
+        updateL4UI();
+        renderMath();
+    }
+
+    function selectL4Card(card) {
+        if (l4Stage !== 1) return;
+        l4SelectedCard = card;
+        document.querySelectorAll('#l4-cards-pool .drag-card').forEach(c => {
+            if (c.id === card.id) c.classList.add('selected');
+            else c.classList.remove('selected');
+        });
+    }
+
+    function handleL4SlotClick(deg) {
+        if (l4Stage !== 1) return;
+        if (l4SelectedCard) placeL4Card(l4SelectedCard, deg);
+    }
+
+    function placeL4Card(card, slotDegree) {
+        Object.keys(l4PlacedCards).forEach(d => {
+            if (l4PlacedCards[d] && l4PlacedCards[d].id === card.id) {
+                l4PlacedCards[d] = null;
+                let prevSlot = document.getElementById(`l4-slot-deg${d}`);
+                prevSlot.classList.remove('filled');
+                let labels = { 2: '對齊 x² 項', 1: '對齊 x 項', 0: '對齊常數項' };
+                prevSlot.innerHTML = `<span style="color:#a0aec0; font-size:14px;">${labels[d]}</span>`;
+            }
+        });
+
+        l4PlacedCards[slotDegree] = card;
+        let slot = document.getElementById(`l4-slot-deg${slotDegree}`);
+        slot.classList.add('filled');
+        slot.innerHTML = `<span class="math-tex" data-tex="${card.tex}"></span>`;
+
+        l4SelectedCard = null;
+        document.querySelectorAll('#l4-cards-pool .drag-card').forEach(c => c.classList.remove('selected'));
+        renderMath();
+    }
+
+    function updateL4UI() {
+        let step1 = document.getElementById('l4-step-1');
+        let step2 = document.getElementById('l4-step-2');
+        let btn = document.getElementById('l4-action-btn');
+        let msg = document.getElementById('l4-footer-msg');
+
+        if (l4Stage === 1) {
+            step1.className = 'step-item active';
+            step2.className = 'step-item';
+            btn.innerText = '驗證同類項對齊';
+            msg.innerText = '請將下方 g(x) 的單項拖拉（或點選）放置到對應位置';
+            document.getElementById('l4-pool-section').style.opacity = '1';
+        } else {
+            step1.className = 'step-item completed';
+            step2.className = 'step-item active';
+            btn.innerText = '驗證減法結果';
+            msg.innerText = '同類項對齊無誤！請進行同類項減法運算並填入各單項係數（注意減法變號與缺項）';
+            document.getElementById('l4-pool-section').style.opacity = '0.4';
+            [2, 1, 0].forEach(deg => {
+                let input = document.getElementById(`l4-in-deg${deg}`);
+                input.disabled = false;
+                input.classList.remove('disabled');
+            });
+        }
+    }
+
+    function handleL4Action() {
+        let d4 = qData.l4[l4CurrentIdx];
+        if (l4Stage === 1) {
+            if (!l4PlacedCards[2] || !l4PlacedCards[1] || !l4PlacedCards[0]) {
+                showHint(4, "⚠️ 請先將三個單項全部放置到直式對應欄位中！");
+                return;
+            }
+            let isCorrect = (l4PlacedCards[2].degree === 2) &&
+                            (l4PlacedCards[1].degree === 1) &&
+                            (l4PlacedCards[0].degree === 0);
+            if (isCorrect) {
+                hideAllHints();
+                l4Stage = 2;
+                updateL4UI();
+                renderMath();
+            } else {
+                showHint(4, '❌ 對齊有誤喔！請注意：<span class="math-tex" data-tex="x^2"></span> 項與 <span class="math-tex" data-tex="x^2"></span> 項對齊、<span class="math-tex" data-tex="x"></span> 項與 <span class="math-tex" data-tex="x"></span> 項對齊、常數項與常數項對齊。');
+            }
+        } else if (l4Stage === 2) {
+            let u2 = parseInt(document.getElementById('l4-in-deg2').value);
+            let u1 = parseInt(document.getElementById('l4-in-deg1').value);
+            let u0 = parseInt(document.getElementById('l4-in-deg0').value);
+
+            if (isNaN(u2) || isNaN(u1) || isNaN(u0)) {
+                showHint(4, "⚠️ 請完整填入計算結果的單項係數（若係數為 0 請填 0）！");
+                return;
+            }
+
+            let ans = d4.ans;
+            if (u2 === ans.deg2 && u1 === ans.deg1 && u0 === ans.deg0) {
+                hideAllHints();
+                if (l4CurrentIdx < 1) {
+                    l4CurrentIdx++;
+                    renderL4();
+                } else {
+                    unlockNext(4);
+                }
+            } else {
+                let f = d4.f;
+                let g = d4.g;
+                let extraMsg = d4.isMissing ? `<br><b>特別提醒：</b><span class="math-tex" data-tex="f(x)"></span> 的 <span class="math-tex" data-tex="x"></span> 項為缺項 (0)，計算為 <span class="math-tex" data-tex="0 - (${g.deg1}) = ${ans.deg1}"></span>！` : "";
+                showHint(4, `❌ 減法計算有誤喔！減法時請注意「上式 減 下式」的正負號變化：<br>` +
+                    `• <span class="math-tex" data-tex="x^2"></span> 項：<span class="math-tex" data-tex="(${f.deg2}) - (${g.deg2}) = ${ans.deg2}"></span><br>` +
+                    `• <span class="math-tex" data-tex="x"></span> 項：<span class="math-tex" data-tex="(${f.deg1}) - (${g.deg1}) = ${ans.deg1}"></span><br>` +
+                    `• 常數項：<span class="math-tex" data-tex="(${f.deg0}) - (${g.deg0}) = ${ans.deg0}"></span>${extraMsg}`);
+            }
+        }
+    }
+
+    function switchLevel(lvl) {
+        if (lvl > unlockedLevel) return;
+        currentLevel = lvl;
+
+        document.querySelectorAll('.screen').forEach((s, idx) => {
+            s.classList.toggle('active', idx === lvl);
+        });
+
+        document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+            btn.classList.toggle('active', idx === lvl);
+            if (idx > 0) {
+                if (idx <= unlockedLevel) {
+                    btn.classList.remove('disabled');
+                } else {
+                    btn.classList.add('disabled');
+                }
+            }
+        });
+
+        hideAllHints();
+        renderMath();
+    }
+
+    function startAdventure() {
+        unlockedLevel = 1;
+        switchLevel(1);
+    }
+
+    function hideAllHints() {
+        document.querySelectorAll('.hint-box').forEach(h => h.classList.remove('active'));
+    }
+
+    function showHint(lvl, text) {
+        let hintBox = document.getElementById(`l${lvl}-hint`);
+        let hintText = document.getElementById(`l${lvl}-hint-text`);
+        hintText.innerHTML = text;
+        hintBox.classList.add('active');
+        renderMath();
+    }
+
+    function unlockNext(currentLvl) {
+        if (currentLvl === unlockedLevel && unlockedLevel < 5) {
+            unlockedLevel++;
+        }
+        setTimeout(() => {
+            if (currentLvl < 4) {
+                switchLevel(currentLvl + 1);
+            } else {
+                switchLevel(5);
+                triggerConfetti();
+            }
+        }, 600);
+    }
+
+    function selectL1Option(idx, btn) {
+        document.querySelectorAll('#l1-options .option-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedL1Option = idx;
+    }
+
+    function checkL1() {
+        if (selectedL1Option === null) {
+            showHint(1, "請點選一個你認為正確的選項喔！");
+            return;
+        }
+
+        let curQ = qData.l1[l1CurrentIdx];
+        let isCorrect = curQ.options[selectedL1Option].correct;
+
+        if (isCorrect) {
+            hideAllHints();
+            if (l1CurrentIdx < 4) {
+                l1CurrentIdx++;
+                renderAllLevelsUI();
+            } else {
+                unlockNext(1);
+            }
+        } else {
+            showHint(1, `觀念引導：同類項必須滿足<b>「文字相同」</b>且<b>「次方相同」</b>！<br>請觀察題目中的文字變數是幾次方？選項中哪一個次數完全相同？`);
+        }
+    }
+
+    function restartGame() {
+        generateQuestions();
+        unlockedLevel = 1;
+        switchLevel(1);
+    }
+
+    function triggerConfetti() {
+        var count = 200;
+        var defaults = { origin: { y: 0.7 } };
+
+        function fire(particleRatio, opts) {
+            confetti(Object.assign({}, defaults, opts, {
+                particleCount: Math.floor(count * particleRatio)
+            }));
+        }
+
+        fire(0.25, { spread: 26, startVelocity: 55 });
+        fire(0.2, { spread: 60 });
+        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+        fire(0.1, { spread: 120, startVelocity: 45 });
+    }
+
+    window.onload = function() {
+        generateQuestions();
+    };
+</script>
+</body>
+</html>
