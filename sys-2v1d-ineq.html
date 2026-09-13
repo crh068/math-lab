@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>二元一次聯立不等式 關卡式互動學具</title>
+  <style>
+    * { box-sizing: border-box; font-family: "Microsoft JhengHei", Arial, sans-serif; }
+    body { margin: 0; padding: 15px; background-color: #f0f4f8; color: #2d3748; }
+    .container { max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 20px; }
+    .card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 20px; }
+    .panel { flex: 1; min-width: 360px; }
+    .canvas-panel { flex: 1.2; min-width: 360px; display: flex; flex-direction: column; align-items: center; }
+    
+    h1 { font-size: 1.5rem; margin-top: 0; color: #1a365d; text-align: center; }
+    .level-tabs { display: flex; gap: 8px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap; }
+    .tab-btn { padding: 8px 14px; border: 2px solid #3182ce; background: #fff; color: #3182ce; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+    .tab-btn.active { background: #3182ce; color: #fff; }
+    .tab-btn:disabled { border-color: #cbd5e0; color: #a0aec0; background: #edf2f7; cursor: not-allowed; }
+    .random-btn { padding: 8px 14px; border: 2px solid #38a169; background: #38a169; color: #fff; border-radius: 6px; cursor: pointer; font-weight: bold; margin-left: 10px; }
+    .random-btn:hover { background: #2f855a; }
+
+    /* 動態 SVG 大括號題目區 */
+    .system-card { background: #ebf8ff; border: 1.5px solid #3182ce; border-radius: 8px; padding: 12px 18px; margin-bottom: 15px; }
+    .system-title { font-weight: bold; color: #2b6cb0; margin-bottom: 6px; font-size: 0.95rem; }
+    .system-math { display: flex; align-items: stretch; gap: 6px; margin-top: 4px; }
+    .brace-svg { width: 16px; height: auto; flex-shrink: 0; }
+    .system-eqs { display: flex; flex-direction: column; justify-content: center; gap: 6px; font-family: "Times New Roman", Times, serif; font-size: 1.3rem; font-weight: bold; }
+
+    /* 不等式分頁卡片 */
+    .ineq-tabs { display: flex; gap: 6px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
+    .ineq-tab-btn { padding: 6px 12px; border: 1px solid #cbd5e0; background: #edf2f7; border-radius: 6px 6px 0 0; cursor: pointer; font-size: 0.9rem; font-weight: bold; }
+    .ineq-tab-btn.active { background: #fff; border-color: #3182ce; border-bottom: 2px solid #fff; color: #3182ce; margin-bottom: -8px; }
+    .ineq-tab-btn.done { border-left: 4px solid #38a169; }
+
+    .sub-step-box { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+    .sub-step-title { font-weight: bold; font-size: 0.95rem; color: #2d3748; margin-bottom: 6px; display: flex; justify-content: space-between; }
+    
+    .control-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 0.9rem; flex-wrap: wrap; }
+    input[type="text"] { width: 70px; padding: 4px; border: 1px solid #cbd5e0; border-radius: 4px; text-align: center; }
+    select { padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: #fff; }
+    
+    .verify-btn { padding: 6px 12px; border-radius: 4px; border: none; background: #319795; color: white; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
+    .verify-btn:hover { background: #2c7a7b; }
+    .verify-btn:disabled { background: #cbd5e0; cursor: not-allowed; }
+    
+    .status-msg { font-size: 0.85rem; font-weight: bold; margin-top: 4px; }
+    .status-msg.ok { color: #38a169; }
+    .status-msg.error { color: #e53e3e; }
+
+    canvas { background: #fff; border: 1px solid #cbd5e0; border-radius: 8px; cursor: pointer; }
+    .hint-box { margin-top: 10px; padding: 10px; background: #feebc8; border: 1px solid #fbd38d; border-radius: 6px; color: #742a2a; font-size: 0.95rem; width: 100%; text-align: center; font-weight: bold; }
+    .legend { display: flex; gap: 15px; margin-top: 10px; font-size: 0.85rem; flex-wrap: wrap; justify-content: center; }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .color-box { width: 14px; height: 14px; border-radius: 3px; }
+
+    .final-card { background: #f0fff4; border: 1.5px solid #38a169; border-radius: 8px; padding: 12px; margin-top: 15px; }
+    .final-card.disabled { opacity: 0.5; pointer-events: none; }
+
+    /* 通關 Modal 彈窗與灑花 Canvas */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 999; }
+    .modal-card { background: #fff; padding: 30px 40px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1001; max-width: 420px; width: 90%; }
+    .modal-card h2 { color: #2b6cb0; margin-top: 0; font-size: 1.8rem; }
+    .modal-card p { font-size: 1.1rem; color: #4a5568; margin: 15px 0 25px; }
+    .restart-btn { background: #38a169; color: #fff; border: none; padding: 12px 28px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+    .restart-btn:hover { background: #2f855a; }
+    #confetti-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1000; }
+  </style>
+</head>
+<body>
+
+  <h1>二元一次聯立不等式 關卡式互動學具</h1>
+
+  <div class="level-tabs">
+    <button class="tab-btn active" id="btn-lvl-0" onclick="switchLevel(0)">第 1 關 (2個不等式)</button>
+    <button class="tab-btn" id="btn-lvl-1" onclick="switchLevel(1)" disabled>🔒 第 2 關 (3個不等式)</button>
+    <button class="tab-btn" id="btn-lvl-2" onclick="switchLevel(2)" disabled>🔒 第 3 關 (4個不等式)</button>
+    <button class="random-btn" onclick="generateRandomSystem()">🎲 本關重新出題</button>
+  </div>
+
+  <div class="container">
+    <div class="card panel">
+      
+      <!-- 動態 SVG 大括號題目區 -->
+      <div class="system-card">
+        <div class="system-title">目標二元一次聯立不等式：</div>
+        <div class="system-math">
+          <svg class="brace-svg" viewBox="0 0 20 100" preserveAspectRatio="none">
+            <path d="M 18,2 C 10,2 10,25 10,45 C 10,48 2,50 2,50 C 2,50 10,52 10,98 18,98"
+                  fill="none" stroke="#2b6cb0" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <div class="system-eqs" id="system-display"></div>
+        </div>
+      </div>
+
+      <!-- 不等式逐一切換頁籤 -->
+      <div class="ineq-tabs" id="ineq-tab-bar"></div>
+
+      <!-- 當前不等式的 4 步驟驗證面板 -->
+      <div id="active-ineq-panel"></div>
+
+      <!-- 重疊區域互動驗證區 -->
+      <div id="final-verify-box" class="final-card disabled">
+        <div style="font-weight:bold; color:#276749; margin-bottom:6px;">最終步驟：點擊畫布選擇重疊解區域</div>
+        <div style="font-size:0.85rem; color:#4a5568; margin-bottom:8px;" id="region-select-status">
+          請在右側網格畫布上<b>直接點擊</b>您認為是聯立解的區域（點擊後會顯示黃色區塊標示）：
+        </div>
+        <div class="control-row">
+          <button class="verify-btn" style="background:#2b6cb0; padding:8px 16px; font-size:0.95rem;" onclick="verifySelectedRegion()">驗證選擇區域</button>
+        </div>
+        <div id="final-msg" class="status-msg" style="margin-top: 6px;"></div>
+      </div>
+
+    </div>
+
+    <div class="card canvas-panel">
+      <canvas id="gridCanvas" width="500" height="500"></canvas>
+      <div class="hint-box" id="hint-text">請選擇不等式並依序進行驗證。</div>
+      <div class="legend" id="legend-box"></div>
+    </div>
+  </div>
+
+  <!-- 通關 Modal 彈窗與灑花畫布 -->
+  <div id="victory-modal" class="modal-overlay" style="display:none;">
+    <canvas id="confetti-canvas"></canvas>
+    <div class="modal-card">
+      <h2>🎉 全關卡通關成功！ 🎉</h2>
+      <p>恭喜您順利完成所有關卡的二元一次聯立不等式挑戰！</p>
+      <button class="restart-btn" onclick="restartAllGame()">重新開始遊戲</button>
+    </div>
+  </div>
+
+  <script>
+    const colors = ['#d92d20', '#0066cc', '#008a20', '#8a00c2'];
+    const levelCounts = [2, 3, 4];
+
+    let currentLevelIdx = 0;
+    let maxUnlockedLevel = 0;
+    let activeIneqIdx = 0;
+    let systemData = [];
+    let userState = [];
+    
+    let selectedRegionPoint = null; 
+    let selectedRegionPattern = null; 
+    let showFinalRegion = false;
+
+    const canvas = document.getElementById('gridCanvas');
+    const ctx = canvas.getContext('2d');
+    const scale = 25; 
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    function parseVal(valStr) {
+      if (valStr === "" || valStr === null || valStr === undefined) return null;
+      valStr = String(valStr).trim();
+      if (valStr === "") return null;
+
+      if (valStr.includes('/')) {
+        const parts = valStr.split('/');
+        if (parts.length === 2) {
+          const num = parseFloat(parts[0]);
+          const den = parseFloat(parts[1]);
+          if (!isNaN(num) && !isNaN(den) && den !== 0) {
+            return num / den;
+          }
+        }
+        return null;
+      }
+      const num = parseFloat(valStr);
+      return isNaN(num) ? null : num;
+    }
+
+    function formatEquation(a, b, c) {
+      if (a === 0) return `y = ${c / b}`;
+      if (b === 0) return `x = ${c / a}`;
+      let termA = a === 1 ? 'x' : (a === -1 ? '-x' : `${a}x`);
+      let termB = '';
+      if (b > 0) termB = b === 1 ? ' + y' : ` + ${b}y`;
+      else if (b < 0) termB = b === -1 ? ' - y' : ` - ${Math.abs(b)}y`;
+      return `${termA}${termB} = ${c}`;
+    }
+
+    function formatInequality(a, b, c, op) {
+      const eqStr = formatEquation(a, b, c);
+      const parts = eqStr.split(' = ');
+      const opMap = { '<=': '≤', '>=': '≥', '<': '<', '>': '>' };
+      return `${parts[0]} ${opMap[op]} ${parts[1]}`;
+    }
+
+    function gcd(x, y) {
+      x = Math.abs(x); y = Math.abs(y);
+      while (y) { let t = y; y = x % y; x = t; }
+      return x;
+    }
+
+    function getRandomInequality(forceHorizontal = false) {
+      const ops = ['<=', '>=', '<', '>'];
+      const op = ops[Math.floor(Math.random() * ops.length)];
+      let a, b, c;
+
+      if (forceHorizontal) {
+        a = 0; b = 1; 
+        c = Math.floor(Math.random() * 9) - 4; // y 軸截距為整數 c
+        if (c === 0) c = 1;
+      } else {
+        let x0, y0;
+        do {
+          x0 = Math.floor(Math.random() * 11) - 5;
+          y0 = Math.floor(Math.random() * 11) - 5;
+        } while (x0 === 0 || y0 === 0);
+
+        a = y0;
+        b = x0;
+        c = x0 * y0;
+
+        let g = gcd(gcd(a, b), c);
+        if (g > 1) { a /= g; b /= g; c /= g; }
+        if (a < 0 || (a === 0 && b < 0)) { a = -a; b = -b; c = -c; }
+      }
+
+      return { a, b, c, op, expr: formatInequality(a, b, c, op), eqExpr: formatEquation(a, b, c) };
+    }
+
+    function isDuplicateOrParallel(L1, L2) {
+      const det = L1.a * L2.b - L2.a * L1.b;
+      return det === 0;
+    }
+
+    /* 精確驗證：確保無兩線平行，且無任意三條邊界直線交於同一點 */
+    function hasConcurrentLines(system) {
+      const n = system.length;
+
+      // 1. 檢查任意兩線是否平行或重合
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          if (isDuplicateOrParallel(system[i], system[j])) return true;
+        }
+      }
+      if (n < 3) return false;
+
+      // 2. 利用 3x3 行列式進行精確整數運算，排除任意三線共點的情形
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          for (let k = j + 1; k < n; k++) {
+            const L1 = system[i], L2 = system[j], L3 = system[k];
+            const det3 = L1.a * (L2.b * L3.c - L3.b * L2.c) 
+                       - L1.b * (L2.a * L3.c - L3.a * L2.c) 
+                       + L1.c * (L2.a * L3.b - L3.a * L2.b);
+            if (det3 === 0) return true; // 三線共點
+          }
+        }
+      }
+      return false;
+    }
+
+    function isValidSystem(system, levelIdx) {
+      // 0. 防三線共點與平行/重合
+      if (hasConcurrentLines(system)) return false;
+
+      // 1. 同時包含大於類（> 或 ≥）與小於類（< 或 ≤）
+      const hasGreater = system.some(eq => eq.op === '>' || eq.op === '>=');
+      const hasLess = system.some(eq => eq.op === '<' || eq.op === '<=');
+      if (!hasGreater || !hasLess) return false;
+
+      // 2. 同時包含「等於（≤ 或 ≥）」與「不等於/嚴格不等式（< 或 >）」
+      const hasEqual = system.some(eq => eq.op === '<=' || eq.op === '>=');
+      const hasStrict = system.some(eq => eq.op === '<' || eq.op === '>');
+      if (!hasEqual || !hasStrict) return false;
+
+      // 3. 第 3 關必須包含水平線（a = 0）
+      if (levelIdx === 2) {
+        const hasHorizontal = system.some(eq => eq.a === 0);
+        if (!hasHorizontal) return false;
+      }
+
+      // 4. 題目的每一個不等式邊界，在畫布範圍 [-10, 10] 內需要和其他邊界至少有一個交點
+      const n = system.length;
+      for (let i = 0; i < n; i++) {
+        let hasIntersectionInCanvas = false;
+        for (let j = 0; j < n; j++) {
+          if (i === j) continue;
+          const L1 = system[i];
+          const L2 = system[j];
+          const det = L1.a * L2.b - L2.a * L1.b;
+          if (det === 0) continue; 
+
+          const x = (L1.c * L2.b - L2.c * L1.b) / det;
+          const y = (L1.a * L2.c - L2.a * L1.c) / det;
+
+          if (x >= -10 && x <= 10 && y >= -10 && y <= 10) {
+            hasIntersectionInCanvas = true;
+            break;
+          }
+        }
+        if (!hasIntersectionInCanvas) return false;
+      }
+
+      // 5. 聯立不等式的最終重疊解區域應該要顯著出現在畫布範圍內 [-10, 10]
+      let feasiblePointCount = 0;
+      const step = 0.5;
+      for (let x = -9.5; x <= 9.5; x += step) {
+        for (let y = -9.5; y <= 9.5; y += step) {
+          let ok = true;
+          for (let ineq of system) {
+            let val = ineq.a * x + ineq.b * y;
+            if (ineq.op === "<=" && val > ineq.c + 1e-4) ok = false;
+            if (ineq.op === ">=" && val < ineq.c - 1e-4) ok = false;
+            if (ineq.op === "<" && val >= ineq.c) ok = false;
+            if (ineq.op === ">" && val <= ineq.c) ok = false;
+            if (!ok) break;
+          }
+          if (ok) {
+            feasiblePointCount++;
+            if (feasiblePointCount >= 5) break; 
+          }
+        }
+        if (feasiblePointCount >= 5) break;
+      }
+
+      if (feasiblePointCount < 5) return false; 
+
+      return true;
+    }
+
+    function generateRandomSystem() {
+      const count = levelCounts[currentLevelIdx];
+      let valid = false;
+      let attempts = 0;
+
+      while (!valid && attempts < 3000) {
+        attempts++;
+        systemData = [];
+
+        for (let i = 0; i < count; i++) {
+          let forceHoriz = (currentLevelIdx === 2 && i === 0);
+          systemData.push(getRandomInequality(forceHoriz));
+        }
+
+        if (isValidSystem(systemData, currentLevelIdx)) {
+          valid = true;
+        }
+      }
+
+      activeIneqIdx = 0;
+      showFinalRegion = false;
+      selectedRegionPoint = null;
+      selectedRegionPattern = null;
+      document.getElementById('final-msg').innerText = '';
+      document.getElementById('region-select-status').innerHTML = '請在右側網格畫布上<b>直接點擊</b>您認為是聯立解的區域（點擊後會顯示黃色區塊標示）：';
+
+      userState = systemData.map(() => ({
+        p1Raw: ['', ''],
+        p2Raw: ['', ''],
+        p1: [null, null],
+        p2: [null, null],
+        lineType: '',
+        pointType: '',
+        userDir: '',
+        step1Ok: false,
+        step2Ok: false,
+        step3Ok: false,
+        step4Ok: false,
+        msg1: "", msg2: "", msg3: "", msg4: ""
+      }));
+
+      renderSystemDisplay();
+      renderIneqTabs();
+      renderActivePanel();
+      renderLegend();
+      checkAllFinished();
+      draw();
+    }
+
+    function updateLevelButtons() {
+      for (let i = 0; i < 3; i++) {
+        const btn = document.getElementById(`btn-lvl-${i}`);
+        if (i <= maxUnlockedLevel) {
+          btn.disabled = false;
+          btn.innerText = i === 0 ? "第 1 關 (2個不等式)" : (i === 1 ? "第 2 關 (3個不等式)" : "第 3 關 (4個不等式)");
+        } else {
+          btn.disabled = true;
+          btn.innerText = `🔒 第 ${i + 1} 關`;
+        }
+        btn.classList.toggle('active', i === currentLevelIdx);
+      }
+    }
+
+    function switchLevel(idx) {
+      if (idx > maxUnlockedLevel) return;
+      currentLevelIdx = idx;
+      updateLevelButtons();
+      generateRandomSystem();
+    }
+
+    function renderSystemDisplay() {
+      const container = document.getElementById('system-display');
+      let html = '';
+      systemData.forEach((ineq, i) => {
+        const color = colors[i % colors.length];
+        html += `<div style="color:${color}">${ineq.expr}</div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function renderIneqTabs() {
+      const container = document.getElementById('ineq-tab-bar');
+      let html = '';
+      systemData.forEach((ineq, i) => {
+        const isDone = userState[i].step4Ok;
+        const color = colors[i % colors.length];
+        html += `
+          <button class="ineq-tab-btn ${i === activeIneqIdx ? 'active' : ''} ${isDone ? 'done' : ''}" 
+                  onclick="setActiveIneq(${i})">
+            <span style="color:${color}">●</span> 不等式 ${i + 1} ${isDone ? '✓' : ''}
+          </button>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function setActiveIneq(idx) {
+      activeIneqIdx = idx;
+      renderIneqTabs();
+      renderActivePanel();
+      draw();
+    }
+
+    function renderActivePanel() {
+      const container = document.getElementById('active-ineq-panel');
+      const ineq = systemData[activeIneqIdx];
+      const st = userState[activeIneqIdx];
+      const color = colors[activeIneqIdx % colors.length];
+
+      const isHorizontal = (ineq.a === 0);
+
+      const p1x = st.p1Raw[0];
+      const p1y = st.p1Raw[1];
+      const p2x = st.p2Raw[0];
+      const p2y = st.p2Raw[1];
+
+      let html = `<div style="font-weight:bold; margin-bottom:10px; color:${color}; font-size:1.1rem;">
+                    正在驗證：${ineq.expr} （邊界方程式：${ineq.eqExpr}）
+                  </div>`;
+
+      // 步驟 1：輸入座標
+      html += `
+        <div class="sub-step-box">
+          <div class="sub-step-title">步驟 1：邊界直線 2 點座標驗證 <span>${st.step1Ok ? '✓ 完成' : '待驗證'}</span></div>
+          <div style="font-size:0.8rem; color:#718096; margin-bottom:4px;">提示：邊界直線與兩軸交點均為整數座標，可輸入整數、小數或分數。</div>
+          <div class="control-row">
+            點 A: (<input type="text" id="p1x-in" placeholder="x" value="${p1x}">, 
+                   <input type="text" id="p1y-in" placeholder="y" value="${p1y}">)
+            點 B: (<input type="text" id="p2x-in" placeholder="x" value="${p2x}">, 
+                   <input type="text" id="p2y-in" placeholder="y" value="${p2y}">)
+            <button class="verify-btn" onclick="verifyStep1()">按一下驗證兩點</button>
+          </div>
+          <div class="status-msg ${st.step1Ok ? 'ok' : 'error'}">${st.msg1}</div>
+        </div>`;
+
+      // 步驟 2：端點型態預設選單「請選擇」
+      html += `
+        <div class="sub-step-box" style="opacity: ${st.step1Ok ? '1' : '0.5'}">
+          <div class="sub-step-title">步驟 2：端點型態 (實心/空心圓) <span>${st.step2Ok ? '✓ 完成' : '待驗證'}</span></div>
+          <div class="control-row">
+            選擇端點：
+            <select id="sel-point-type" ${!st.step1Ok ? 'disabled' : ''} onchange="userState[${activeIneqIdx}].pointType=this.value; resetFromStep(2);">
+              <option value="" ${st.pointType === '' ? 'selected' : ''}>請選擇</option>
+              <option value="solid" ${st.pointType === 'solid' ? 'selected' : ''}>實心圓 (含等號)</option>
+              <option value="hollow" ${st.pointType === 'hollow' ? 'selected' : ''}>空心圓 (不含等號)</option>
+            </select>
+            <button class="verify-btn" ${!st.step1Ok ? 'disabled' : ''} onclick="verifyStep2()">驗證端點型態</button>
+          </div>
+          <div class="status-msg ${st.step2Ok ? 'ok' : 'error'}">${st.msg2}</div>
+        </div>`;
+
+      // 步驟 3：邊界線型預設選單「請選擇」
+      html += `
+        <div class="sub-step-box" style="opacity: ${st.step2Ok ? '1' : '0.5'}">
+          <div class="sub-step-title">步驟 3：邊界線型 (實線/虛線) <span>${st.step3Ok ? '✓ 完成' : '待驗證'}</span></div>
+          <div class="control-row">
+            選擇線型：
+            <select id="sel-line-type" ${!st.step2Ok ? 'disabled' : ''} onchange="userState[${activeIneqIdx}].lineType=this.value; resetFromStep(3);">
+              <option value="" ${st.lineType === '' ? 'selected' : ''}>請選擇</option>
+              <option value="solid" ${st.lineType === 'solid' ? 'selected' : ''}>實線 (≤, ≥)</option>
+              <option value="dashed" ${st.lineType === 'dashed' ? 'selected' : ''}>虛線 (<, >)</option>
+            </select>
+            <button class="verify-btn" ${!st.step2Ok ? 'disabled' : ''} onclick="verifyStep3()">驗證實虛線</button>
+          </div>
+          <div class="status-msg ${st.step3Ok ? 'ok' : 'error'}">${st.msg3}</div>
+        </div>`;
+
+      // 步驟 4：解半平面預設選單「請選擇」
+      const opt1Val = isHorizontal ? 'above' : 'right';
+      const opt1Txt = isHorizontal ? '上方半平面' : '右側半平面';
+      const opt2Val = isHorizontal ? 'below' : 'left';
+      const opt2Txt = isHorizontal ? '下方半平面' : '左側半平面';
+
+      html += `
+        <div class="sub-step-box" style="opacity: ${st.step3Ok ? '1' : '0.5'}">
+          <div class="sub-step-title">步驟 4：解半平面箭頭記號 <span>${st.step4Ok ? '✓ 完成' : '待驗證'}</span></div>
+          <div class="control-row">
+            選擇解半平面方向：
+            <select id="sel-dir" ${!st.step3Ok ? 'disabled' : ''} onchange="userState[${activeIneqIdx}].userDir=this.value; resetFromStep(4);">
+              <option value="" ${st.userDir === '' ? 'selected' : ''}>請選擇</option>
+              <option value="${opt1Val}" ${st.userDir === opt1Val ? 'selected' : ''}>${opt1Txt}</option>
+              <option value="${opt2Val}" ${st.userDir === opt2Val ? 'selected' : ''}>${opt2Txt}</option>
+            </select>
+            <button class="verify-btn" ${!st.step3Ok ? 'disabled' : ''} onclick="verifyStep4()">驗證半平面</button>
+          </div>
+          <div class="status-msg ${st.step4Ok ? 'ok' : 'error'}">${st.msg4}</div>
+        </div>`;
+
+      container.innerHTML = html;
+      updateHintText();
+    }
+
+    function updateHintText() {
+      const st = userState[activeIneqIdx];
+      const hint = document.getElementById('hint-text');
+      if (!st.step1Ok) hint.innerText = `不等式 ${activeIneqIdx + 1}：輸入兩點座標（可填整數、小數或分數），點擊按鈕驗證。`;
+      else if (!st.step2Ok) hint.innerText = `不等式 ${activeIneqIdx + 1}：兩點通過！請選擇端點型態。`;
+      else if (!st.step3Ok) hint.innerText = `不等式 ${activeIneqIdx + 1}：端點已標示！請選擇實/虛線。`;
+      else if (!st.step4Ok) hint.innerText = `不等式 ${activeIneqIdx + 1}：直線已繪出！請選擇正確解半平面方向。`;
+      else if (!userState.every(s => s.step4Ok)) hint.innerText = `不等式 ${activeIneqIdx + 1} 驗證完成！請切換其他不等式頁籤。`;
+      else hint.innerText = `所有不等式已驗證！請在右側畫布上直接點擊選擇區域，劃定後點擊「驗證選擇區域」。`;
+    }
+
+    function resetFromStep(step) {
+      const st = userState[activeIneqIdx];
+      if (step <= 1) { st.step1Ok = false; st.msg1 = ""; }
+      if (step <= 2) { st.step2Ok = false; st.msg2 = ""; }
+      if (step <= 3) { st.step3Ok = false; st.msg3 = ""; }
+      if (step <= 4) { st.step4Ok = false; st.msg4 = ""; }
+      showFinalRegion = false;
+      selectedRegionPoint = null;
+      selectedRegionPattern = null;
+      renderIneqTabs();
+      renderActivePanel();
+      checkAllFinished();
+      draw();
+    }
+
+    function verifyStep1() {
+      const ineq = systemData[activeIneqIdx];
+      const st = userState[activeIneqIdx];
+
+      const raw1x = document.getElementById('p1x-in').value;
+      const raw1y = document.getElementById('p1y-in').value;
+      const raw2x = document.getElementById('p2x-in').value;
+      const raw2y = document.getElementById('p2y-in').value;
+
+      st.p1Raw = [raw1x, raw1y];
+      st.p2Raw = [raw2x, raw2y];
+
+      const v1x = parseVal(raw1x);
+      const v1y = parseVal(raw1y);
+      const v2x = parseVal(raw2x);
+      const v2y = parseVal(raw2y);
+
+      st.p1 = [v1x, v1y];
+      st.p2 = [v2x, v2y];
+
+      if (v1x === null || v1y === null || v2x === null || v2y === null) {
+        st.step1Ok = false;
+        st.msg1 = "✕ 請填寫完整的點 A 與點 B 座標（包含數字、小數或分數）！";
+        renderActivePanel(); draw(); return;
+      }
+
+      if (Math.abs(v1x - v2x) < 1e-5 && Math.abs(v1y - v2y) < 1e-5) {
+        st.step1Ok = false;
+        st.msg1 = "✕ 錯誤：點 A 與點 B 不能重合！";
+        renderActivePanel(); draw(); return;
+      }
+
+      const check1 = ineq.a * v1x + ineq.b * v1y;
+      const check2 = ineq.a * v2x + ineq.b * v2y;
+      const isAOk = Math.abs(check1 - ineq.c) < 1e-4;
+      const isBOk = Math.abs(check2 - ineq.c) < 1e-4;
+
+      if (isAOk && isBOk) {
+        st.step1Ok = true;
+        st.msg1 = "✓ 正確！點 A 與點 B 皆落在邊界直線上。";
+      } else if (!isAOk && !isBOk) {
+        st.step1Ok = false;
+        st.msg1 = "✕ 錯誤：A點 與 B點 皆未落在邊界直線上。";
+      } else if (!isAOk && isBOk) {
+        st.step1Ok = false;
+        st.msg1 = "✕ 錯誤：A點未落在邊界直線上（B點正確）。";
+      } else {
+        st.step1Ok = false;
+        st.msg1 = "✕ 錯誤：B點未落在邊界直線上（A點正確）。";
+      }
+
+      renderActivePanel(); draw();
+    }
+
+    function verifyStep2() {
+      const ineq = systemData[activeIneqIdx];
+      const st = userState[activeIneqIdx];
+
+      if (!st.pointType) {
+        st.step2Ok = false;
+        st.msg2 = "✕ 請先選擇端點型態！";
+        renderActivePanel(); draw(); return;
+      }
+
+      const targetPoint = ineq.op.includes('=') ? 'solid' : 'hollow';
+
+      if (st.pointType === targetPoint) {
+        st.step2Ok = true;
+        st.msg2 = "✓ 正確！端點型態符合。";
+      } else {
+        st.step2Ok = false;
+        st.msg2 = "✕ 錯誤：請檢查不等式是否包含等號。";
+      }
+      renderActivePanel(); draw();
+    }
+
+    function verifyStep3() {
+      const ineq = systemData[activeIneqIdx];
+      const st = userState[activeIneqIdx];
+
+      if (!st.lineType) {
+        st.step3Ok = false;
+        st.msg3 = "✕ 請先選擇邊界線型！";
+        renderActivePanel(); draw(); return;
+      }
+
+      const targetLine = ineq.op.includes('=') ? 'solid' : 'dashed';
+
+      if (st.lineType === targetLine) {
+        st.step3Ok = true;
+        st.msg3 = "✓ 正確！直線已成功繪製。";
+      } else {
+        st.step3Ok = false;
+        st.msg3 = "✕ 錯誤：請檢查不等式是否包含等號。";
+      }
+      renderActivePanel(); draw();
+    }
+
+    function getCorrectDirection(ineq) {
+      const isHorizontal = (ineq.a === 0);
+      const isGreater = (ineq.op === '>' || ineq.op === '>=');
+      if (isHorizontal) {
+        if (ineq.b > 0) return isGreater ? 'above' : 'below';
+        else return isGreater ? 'below' : 'above';
+      } else {
+        if (ineq.a > 0) return isGreater ? 'right' : 'left';
+        else return isGreater ? 'left' : 'right';
+      }
+    }
+
+    function verifyStep4() {
+      const ineq = systemData[activeIneqIdx];
+      const st = userState[activeIneqIdx];
+
+      if (!st.userDir) {
+        st.step4Ok = false;
+        st.msg4 = "✕ 請先選擇解半平面方向！";
+        renderActivePanel(); draw(); return;
+      }
+
+      const targetDir = getCorrectDirection(ineq);
+
+      if (st.userDir === targetDir) {
+        st.step4Ok = true;
+        st.msg4 = "✓ 正確！已於邊界畫出箭頭標示解區域方向。";
+      } else {
+        st.step4Ok = false;
+        st.msg4 = "✕ 錯誤：半平面方向選擇錯誤。";
+      }
+      renderIneqTabs();
+      renderActivePanel();
+      checkAllFinished();
+      draw();
+    }
+
+    function checkAllFinished() {
+      const allDone = userState.every(st => st.step4Ok);
+      const finalBox = document.getElementById('final-verify-box');
+      if (allDone) finalBox.classList.remove('disabled');
+      else finalBox.classList.add('disabled');
+    }
+
+    canvas.addEventListener('click', function(e) {
+      const allDone = userState.every(st => st.step4Ok);
+      if (!allDone) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const clickPx = e.clientX - rect.left;
+      const clickPy = e.clientY - rect.top;
+
+      const mathX = (clickPx - centerX) / scale;
+      const mathY = (centerY - clickPy) / scale;
+
+      selectedRegionPoint = [mathX, mathY];
+      selectedRegionPattern = systemData.map(ineq => Math.sign(ineq.a * mathX + ineq.b * mathY - ineq.c));
+      showFinalRegion = false;
+
+      document.getElementById('region-select-status').innerHTML = 
+        `已在畫布上記號選擇區域（選取點約在：x=${mathX.toFixed(1)}, y=${mathY.toFixed(1)}），請點擊下方按鈕進行驗證。`;
+      document.getElementById('final-msg').innerText = "";
+
+      draw();
+    });
+
+    function verifySelectedRegion() {
+      const msgBox = document.getElementById('final-msg');
+
+      if (!selectedRegionPoint) {
+        msgBox.className = "status-msg error";
+        msgBox.innerText = "✕ 請先在右側畫布上點選您認為正確的重疊解區域！";
+        return;
+      }
+
+      const [x, y] = selectedRegionPoint;
+      let failedIndex = -1;
+
+      for (let i = 0; i < systemData.length; i++) {
+        const ineq = systemData[i];
+        const val = ineq.a * x + ineq.b * y;
+        let pass = false;
+        if (ineq.op === '<=' && val <= ineq.c + 1e-4) pass = true;
+        if (ineq.op === '>=' && val >= ineq.c - 1e-4) pass = true;
+        if (ineq.op === '<' && val < ineq.c) pass = true;
+        if (ineq.op === '>' && val > ineq.c) pass = true;
+
+        if (!pass) {
+          failedIndex = i + 1;
+          break;
+        }
+      }
+
+      if (failedIndex === -1) {
+        showFinalRegion = true;
+        msgBox.className = "status-msg ok";
+
+        if (currentLevelIdx < 2) {
+          if (currentLevelIdx === maxUnlockedLevel) {
+            maxUnlockedLevel++;
+          }
+          msgBox.innerText = `🎉 恭喜！選擇的區域完全正確，已成功解鎖第 ${currentLevelIdx + 2} 關！`;
+          updateLevelButtons();
+        } else {
+          msgBox.innerText = `🎉 恭喜！選擇區域完全正確，通關第 3 關！`;
+          setTimeout(showVictoryModal, 600);
+        }
+      } else {
+        showFinalRegion = false;
+        msgBox.className = "status-msg error";
+        msgBox.innerText = `✕ 驗證失敗：您選擇的區域不滿足不等式 ${failedIndex}，請根據箭頭指向重新選區！`;
+      }
+      draw();
+    }
+
+    let confettiAnimationId = null;
+    let confettiParticles = [];
+
+    function showVictoryModal() {
+      document.getElementById('victory-modal').style.display = 'flex';
+      startConfetti();
+    }
+
+    function restartAllGame() {
+      stopConfetti();
+      document.getElementById('victory-modal').style.display = 'none';
+      maxUnlockedLevel = 0;
+      currentLevelIdx = 0;
+      updateLevelButtons();
+      generateRandomSystem();
+    }
+
+    function startConfetti() {
+      const c = document.getElementById('confetti-canvas');
+      c.width = window.innerWidth;
+      c.height = window.innerHeight;
+      const ctxC = c.getContext('2d');
+
+      confettiParticles = [];
+      const particleColors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#ffeb3b', '#ff9800'];
+
+      for (let i = 0; i < 120; i++) {
+        confettiParticles.push({
+          x: Math.random() * c.width,
+          y: Math.random() * c.height - c.height,
+          r: Math.random() * 6 + 4,
+          d: Math.random() * 120 + 10,
+          color: particleColors[Math.floor(Math.random() * particleColors.length)],
+          tilt: Math.floor(Math.random() * 10) - 10,
+          tiltAngleIncremental: Math.random() * 0.07 + 0.05,
+          tiltAngle: 0
+        });
+      }
+
+      function drawConfetti() {
+        ctxC.clearRect(0, 0, c.width, c.height);
+        confettiParticles.forEach((p, index) => {
+          p.tiltAngle += p.tiltAngleIncremental;
+          p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+          p.x += Math.sin(p.d);
+          p.tilt = Math.sin(p.tiltAngle) * 15;
+
+          ctxC.beginPath();
+          ctxC.lineWidth = p.r;
+          ctxC.strokeStyle = p.color;
+          ctxC.moveTo(p.x + p.tilt + p.r / 2, p.y);
+          ctxC.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+          ctxC.stroke();
+
+          if (p.y > c.height) {
+            confettiParticles[index] = {
+              x: Math.random() * c.width,
+              y: -20,
+              r: p.r,
+              d: p.d,
+              color: p.color,
+              tilt: p.tilt,
+              tiltAngleIncremental: p.tiltAngleIncremental,
+              tiltAngle: p.tiltAngle
+            };
+          }
+        });
+        confettiAnimationId = requestAnimationFrame(drawConfetti);
+      }
+      drawConfetti();
+    }
+
+    function stopConfetti() {
+      if (confettiAnimationId) {
+        cancelAnimationFrame(confettiAnimationId);
+        confettiAnimationId = null;
+      }
+    }
+
+    function renderLegend() {
+      const container = document.getElementById('legend-box');
+      let html = '';
+      systemData.forEach((ineq, idx) => {
+        const color = colors[idx % colors.length];
+        html += `<div class="legend-item"><div class="color-box" style="background:${color}"></div> L${idx+1}: ${ineq.expr}</div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function toCanvasX(x) { return centerX + x * scale; }
+    function toCanvasY(y) { return centerY - y * scale; }
+
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "#edf2f7";
+      ctx.lineWidth = 1;
+
+      for (let x = -10; x <= 10; x++) {
+        ctx.beginPath();
+        ctx.moveTo(toCanvasX(x), 0); ctx.lineTo(toCanvasX(x), canvas.height);
+        ctx.stroke();
+      }
+      for (let y = -10; y <= 10; y++) {
+        ctx.beginPath();
+        ctx.moveTo(0, toCanvasY(y)); ctx.lineTo(canvas.width, toCanvasY(y));
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = "#a0aec0";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, centerY); ctx.lineTo(canvas.width, centerY);
+      ctx.moveTo(centerX, 0); ctx.lineTo(centerX, canvas.height);
+      ctx.stroke();
+
+      ctx.fillStyle = "#718096";
+      ctx.font = "10px sans-serif";
+      for (let i = -8; i <= 8; i += 2) {
+        if (i !== 0) {
+          ctx.fillText(i, toCanvasX(i) - 6, centerY + 14);
+          ctx.fillText(i, centerX + 5, toCanvasY(i) + 4);
+        }
+      }
+    }
+
+    function drawInequalityItem(ineq, st, color) {
+      if (!st.step1Ok) return;
+
+      const p1 = st.p1, p2 = st.p2;
+
+      if (st.step3Ok) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        if (st.lineType === 'dashed') ctx.setLineDash([6, 6]);
+        else ctx.setLineDash([]);
+
+        let dx = p2[0] - p1[0], dy = p2[1] - p1[1];
+        let cx1, cy1, cx2, cy2;
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+          let k = dy / dx;
+          cx1 = toCanvasX(-12); cy1 = toCanvasY(p1[1] + k * (-12 - p1[0]));
+          cx2 = toCanvasX(12);  cy2 = toCanvasY(p1[1] + k * (12 - p1[0]));
+        } else {
+          let k = dx / dy;
+          cx1 = toCanvasX(p1[0] + k * (-12 - p1[1])); cy1 = toCanvasY(-12);
+          cx2 = toCanvasX(p1[0] + k * (12 - p1[1]));  cy2 = toCanvasY(12);
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(cx1, cy1); ctx.lineTo(cx2, cy2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        let midX = (toCanvasX(p1[0]) + toCanvasX(p2[0])) / 2;
+        let midY = (toCanvasY(p1[1]) + toCanvasY(p2[1])) / 2;
+        ctx.fillStyle = color;
+        ctx.font = "bold 13px sans-serif";
+        ctx.fillText(ineq.eqExpr, midX + 8, midY - 8);
+      }
+
+      if (st.step2Ok) {
+        [p1, p2].forEach(pt => {
+          const x = toCanvasX(pt[0]), y = toCanvasY(pt[1]);
+          ctx.beginPath();
+          ctx.arc(x, y, 6, 0, Math.PI * 2);
+          if (st.pointType === 'hollow') {
+            ctx.fillStyle = "#fff"; ctx.fill();
+            ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+          } else {
+            ctx.fillStyle = color; ctx.fill();
+          }
+        });
+      }
+
+      if (st.step4Ok) {
+        drawBoundaryArrows(ineq, st, color);
+      }
+    }
+
+    function drawBoundaryArrows(ineq, st, color) {
+      let unx, uny;
+      const isHorizontal = (ineq.a === 0);
+
+      if (isHorizontal) {
+        if (st.userDir === 'above') { unx = 0; uny = 1; }
+        else { unx = 0; uny = -1; }
+      } else {
+        let len = Math.hypot(ineq.a, ineq.b);
+        if (st.userDir === 'right') {
+          let sign = ineq.a > 0 ? 1 : -1;
+          unx = (ineq.a * sign) / len; uny = (ineq.b * sign) / len;
+        } else {
+          let sign = ineq.a > 0 ? -1 : 1;
+          unx = (ineq.a * sign) / len; uny = (ineq.b * sign) / len;
+        }
+      }
+
+      let p1 = st.p1, p2 = st.p2;
+      let dx = p2[0] - p1[0], dy = p2[1] - p1[1];
+      let startX, startY, endX, endY;
+
+      if (Math.abs(dx) > Math.abs(dy)) {
+        let k = dy / dx;
+        startX = -9.5; startY = p1[1] + k * (-9.5 - p1[0]);
+        endX = 9.5;   endY = p1[1] + k * (9.5 - p1[0]);
+      } else {
+        let k = dx / dy;
+        startX = p1[0] + k * (-9.5 - p1[1]); startY = -9.5;
+        endX = p1[0] + k * (9.5 - p1[1]);     endY = 9.5;
+      }
+
+      let count = 8;
+      for (let i = 1; i <= count; i++) {
+        let t = i / (count + 1);
+        let rx = startX + t * (endX - startX);
+        let ry = startY + t * (endY - startY);
+
+        if (rx < -10 || rx > 10 || ry < -10 || ry > 10) continue;
+
+        let sx = toCanvasX(rx), sy = toCanvasY(ry);
+        let ex = sx + unx * 16, ey = sy - uny * 16;
+
+        ctx.strokeStyle = color; ctx.lineWidth = 1.8;
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+
+        let angle = Math.atan2(ey - sy, ex - sx);
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.moveTo(ex, ey);
+        ctx.lineTo(ex - 5 * Math.cos(angle - Math.PI / 6), ey - 5 * Math.sin(angle - Math.PI / 6));
+        ctx.lineTo(ex - 5 * Math.cos(angle + Math.PI / 6), ey - 5 * Math.sin(angle + Math.PI / 6));
+        ctx.closePath(); ctx.fill();
+      }
+    }
+
+    function drawSelectedRegion() {
+      if (!selectedRegionPattern) return;
+
+      ctx.fillStyle = "rgba(236, 201, 75, 0.45)";
+      for (let px = 0; px < canvas.width; px += 3) {
+        for (let py = 0; py < canvas.height; py += 3) {
+          let x = (px - centerX) / scale;
+          let y = (centerY - py) / scale;
+          let match = true;
+
+          for (let i = 0; i < systemData.length; i++) {
+            let ineq = systemData[i];
+            let sign = Math.sign(ineq.a * x + ineq.b * y - ineq.c);
+            if (sign !== selectedRegionPattern[i]) {
+              match = false;
+              break;
+            }
+          }
+          if (match) ctx.fillRect(px, py, 3, 3);
+        }
+      }
+    }
+
+    function drawFeasibleRegion() {
+      ctx.fillStyle = "rgba(56, 161, 105, 0.55)";
+      for (let px = 0; px < canvas.width; px += 3) {
+        for (let py = 0; py < canvas.height; py += 3) {
+          let x = (px - centerX) / scale;
+          let y = (centerY - py) / scale;
+          let ok = true;
+
+          for (let ineq of systemData) {
+            let val = ineq.a * x + ineq.b * y;
+            if (ineq.op === "<=" && val > ineq.c + 0.01) ok = false;
+            if (ineq.op === ">=" && val < ineq.c - 0.01) ok = false;
+            if (ineq.op === "<" && val >= ineq.c) ok = false;
+            if (ineq.op === ">" && val <= ineq.c) ok = false;
+            if (!ok) break;
+          }
+          if (ok) ctx.fillRect(px, py, 3, 3);
+        }
+      }
+    }
+
+    function draw() {
+      drawGrid();
+
+      if (showFinalRegion) {
+        drawFeasibleRegion();
+      } else if (selectedRegionPattern) {
+        drawSelectedRegion();
+      }
+
+      systemData.forEach((ineq, idx) => {
+        drawInequalityItem(ineq, userState[idx], colors[idx % colors.length]);
+      });
+    }
+
+    switchLevel(0);
+  </script>
+</body>
+</html>
