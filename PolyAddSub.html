@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>多項式加減法 闖關互動學具 (iPad 橫向優化版)</title>
+  <style>
+    * { box-sizing: border-box; font-family: "Microsoft JhengHei", Arial, sans-serif; }
+    body { margin: 0; padding: 18px; background-color: #f0f4f8; color: #2d3748; font-size: 1.1rem; }
+    
+    /* 數學專用變數 x 字型 */
+    .math-x { font-family: "Times New Roman", Times, serif; font-style: italic; font-weight: bold; padding: 0 1px; }
+
+    /* 適用於 iPad 橫向之雙欄佈局 */
+    .container { max-width: 1300px; margin: 0 auto; display: flex; flex-direction: row; gap: 20px; align-items: stretch; }
+    .card { background: #ffffff; border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); padding: 22px; }
+    .panel { flex: 1.25; min-width: 0; }
+    .visual-panel { flex: 0.85; min-width: 0; display: flex; flex-direction: column; }
+
+    h1 { font-size: 1.8rem; margin: 0 0 16px 0; color: #1a365d; text-align: center; }
+    
+    /* 關卡頁籤與按鈕 */
+    .level-tabs { display: flex; gap: 10px; margin-bottom: 18px; justify-content: center; flex-wrap: wrap; }
+    .tab-btn { padding: 10px 18px; border: 2px solid #3182ce; background: #fff; color: #3182ce; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.05rem; transition: all 0.2s; }
+    .tab-btn.active { background: #3182ce; color: #fff; }
+    .tab-btn:disabled { border-color: #cbd5e0; color: #a0aec0; background: #edf2f7; cursor: not-allowed; }
+    .random-btn { padding: 10px 18px; border: 2px solid #38a169; background: #38a169; color: #fff; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.05rem; margin-left: 8px; }
+    .random-btn:hover { background: #2f855a; }
+
+    /* 題目顯示區 */
+    .problem-card { background: #ebf8ff; border: 2px solid #3182ce; border-radius: 10px; padding: 16px; margin-bottom: 18px; text-align: center; }
+    .problem-title { font-weight: bold; color: #2b6cb0; margin-bottom: 8px; font-size: 1.15rem; }
+    .problem-math { font-family: "Times New Roman", Times, serif; font-size: 1.8rem; font-weight: bold; color: #1a202c; letter-spacing: 0.5px; }
+
+    /* 步驟卡片 */
+    .step-box { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 16px; transition: opacity 0.3s; }
+    .step-box.disabled { opacity: 0.35; pointer-events: none; }
+    .step-header { font-weight: bold; font-size: 1.15rem; color: #2d3748; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .step-status { font-size: 0.95rem; padding: 4px 10px; border-radius: 6px; }
+    .step-status.done { background: #c6f6d5; color: #22543d; }
+    .step-status.pending { background: #edf2f7; color: #4a5568; }
+
+    /* iPad 觸控優化：加大輸入框與下拉選單 */
+    .input-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px; font-size: 1.4rem; font-family: "Times New Roman", Times, serif; }
+    input[type="text"] { width: 56px; height: 46px; border: 2px solid #cbd5e0; border-radius: 6px; text-align: center; font-size: 1.3rem; font-weight: bold; background: #fff; }
+    input[type="text"]:focus { border-color: #3182ce; outline: none; background: #fffaf0; box-shadow: 0 0 0 3px rgba(49,130,206,0.2); }
+    
+    .op-select { height: 46px; padding: 0 8px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1.3rem; font-weight: bold; background-color: #ffffff; cursor: pointer; color: #2b6cb0; }
+    .op-select:focus { border-color: #3182ce; outline: none; }
+
+    .verify-btn { padding: 10px 20px; border-radius: 6px; border: none; background: #319795; color: white; cursor: pointer; font-weight: bold; font-size: 1rem; margin-top: 12px; }
+    .verify-btn:hover { background: #2c7a7b; }
+    .verify-btn:disabled { background: #cbd5e0; cursor: not-allowed; }
+
+    .status-msg { font-size: 1rem; font-weight: bold; margin-top: 8px; font-family: sans-serif; }
+    .status-msg.ok { color: #38a169; }
+    .status-msg.error { color: #e53e3e; }
+
+    /* 直式分離係數表格 */
+    .vertical-table { border-collapse: collapse; margin: 12px 0; font-family: "Times New Roman", Times, serif; font-size: 1.3rem; width: 100%; max-width: 480px; }
+    .vertical-table th, .vertical-table td { border: 1.5px solid #cbd5e0; padding: 8px 12px; text-align: center; }
+    .vertical-table th { background: #edf2f7; font-weight: bold; font-size: 1.1rem; font-family: sans-serif; }
+    .vertical-table tr.result-row { border-top: 3px solid #2d3748; }
+
+    /* 右側觀念輔導與步驟預覽區 */
+    .concept-box { background: #fefcbf; border: 1.5px solid #faf089; border-radius: 10px; padding: 16px; color: #742a2a; font-size: 1.05rem; line-height: 1.6; margin-bottom: 18px; }
+    .preview-box { background: #f7fafc; border: 1.5px dashed #cbd5e0; border-radius: 10px; padding: 18px; flex: 1; font-family: "Times New Roman", Times, serif; }
+    .preview-title { font-weight: bold; font-family: sans-serif; font-size: 1.05rem; color: #4a5568; margin-bottom: 12px; }
+
+    /* 通關 Modal 彈窗與灑花 Canvas */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 999; }
+    .modal-card { background: #fff; padding: 36px 48px; border-radius: 18px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1001; max-width: 460px; width: 90%; }
+    .modal-card h2 { color: #2b6cb0; margin-top: 0; font-size: 2rem; }
+    .modal-card p { font-size: 1.2rem; color: #4a5568; margin: 18px 0 28px; }
+    .restart-btn { background: #38a169; color: #fff; border: none; padding: 14px 32px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+    .restart-btn:hover { background: #2f855a; }
+    #confetti-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1000; }
+  </style>
+</head>
+<body>
+
+  <h1>多項式加減法 闖關互動學具</h1>
+
+  <div class="level-tabs">
+    <button class="tab-btn active" id="btn-lvl-0" onclick="switchLevel(0)">第 1 關 (橫式加法)</button>
+    <button class="tab-btn" id="btn-lvl-1" onclick="switchLevel(1)" disabled>🔒 第 2 關 (橫式減法)</button>
+    <button class="tab-btn" id="btn-lvl-2" onclick="switchLevel(2)" disabled>🔒 第 3 關 (直式加法)</button>
+    <button class="tab-btn" id="btn-lvl-3" onclick="switchLevel(3)" disabled>🔒 第 4 關 (直式減法)</button>
+    <button class="random-btn" onclick="generateRandomProblem()">🎲 重新出題</button>
+  </div>
+
+  <div class="container">
+    <!-- 左側解題互動區 -->
+    <div class="card panel">
+      <div class="problem-card">
+        <div class="problem-title" id="mode-title">目標計算題目：</div>
+        <div class="problem-math" id="problem-display"></div>
+      </div>
+
+      <div id="steps-container"></div>
+    </div>
+
+    <!-- 右側觀念提示與進度對照區 -->
+    <div class="card visual-panel">
+      <div class="concept-box" id="concept-text">
+        💡 <b>解題提示：</b><br>
+        請依序完成各步驟驗證。每一步驟驗證通過後，才會解鎖下一個步驟！
+      </div>
+
+      <div class="preview-box">
+        <div class="preview-title">解析進度與運算對照：</div>
+        <div id="preview-content" style="font-size: 1.3rem; line-height: 1.9;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 通關 Modal -->
+  <div id="victory-modal" class="modal-overlay" style="display:none;">
+    <canvas id="confetti-canvas"></canvas>
+    <div class="modal-card">
+      <h2>🎉 全關卡通關成功！ 🎉</h2>
+      <p>恭喜您順利掌握多項式加減法的橫式與分離係數直式計算！</p>
+      <button class="restart-btn" onclick="restartAllGame()">重新開始遊戲</button>
+    </div>
+  </div>
+
+  <script>
+    let currentLevel = 0; // 0: 橫式加, 1: 橫式減, 2: 直式加, 3: 直式減
+    let maxUnlockedLevel = 0;
+
+    let poly1 = [0, 0, 0];
+    let poly2 = [0, 0, 0];
+    let stepOk = [false, false, false, false];
+
+    function parseVal(valStr) {
+      if (valStr === null || valStr === undefined) return null;
+      valStr = String(valStr).trim();
+      if (valStr === "") return null;
+      const num = parseFloat(valStr);
+      return isNaN(num) ? null : num;
+    }
+
+    function getSignedInput(opId, inputId) {
+      const opEle = document.getElementById(opId);
+      const inputEle = document.getElementById(inputId);
+      if (!opEle || !inputEle) return null;
+      const val = parseVal(inputEle.value);
+      if (val === null) return null;
+      const op = opEle.value;
+      return (op === '-' ? -1 : 1) * val;
+    }
+
+    // 格式化多項式字串 (套用數學專用 x 字型)
+    function formatPoly(p) {
+      let terms = [];
+      const x2 = `<span class="math-x">x</span>²`;
+      const x1 = `<span class="math-x">x</span>`;
+
+      if (p[0] !== 0) {
+        if (p[0] === 1) terms.push(x2);
+        else if (p[0] === -1) terms.push(`-${x2}`);
+        else terms.push(`${p[0]}${x2}`);
+      }
+      if (p[1] !== 0) {
+        if (terms.length > 0) {
+          if (p[1] > 0) terms.push(`+ ${p[1] === 1 ? x1 : p[1] + x1}`);
+          else terms.push(`- ${p[1] === -1 ? x1 : Math.abs(p[1]) + x1}`);
+        } else {
+          if (p[1] === 1) terms.push(x1);
+          else if (p[1] === -1) terms.push(`-${x1}`);
+          else terms.push(`${p[1]}${x1}`);
+        }
+      }
+      if (p[2] !== 0 || terms.length === 0) {
+        if (terms.length > 0) {
+          if (p[2] > 0) terms.push(`+ ${p[2]}`);
+          else terms.push(`- ${Math.abs(p[2])}`);
+        } else {
+          terms.push(`${p[2]}`);
+        }
+      }
+      return terms.join(" ");
+    }
+
+    function generateRandomProblem() {
+      let a2, a1, a0, b2, b1, b0;
+
+      a2 = Math.floor(Math.random() * 5) + 1; if (Math.random() < 0.5) a2 = -a2;
+      b2 = Math.floor(Math.random() * 5) + 1; if (Math.random() < 0.5) b2 = -b2;
+
+      if (currentLevel === 0) { // 橫式加法
+        a1 = Math.floor(Math.random() * 7) - 3;
+        a0 = Math.floor(Math.random() * 9) - 4;
+        b1 = Math.floor(Math.random() * 7) - 3;
+        b0 = Math.floor(Math.random() * 9) - 4;
+      } else if (currentLevel === 1) { // 橫式減法
+        a1 = 0;
+        a0 = Math.floor(Math.random() * 8) - 4;
+        b1 = Math.floor(Math.random() * 7) - 3; if (b1 === 0) b1 = 2;
+        b0 = Math.floor(Math.random() * 8) - 4;
+      } else if (currentLevel === 2) { // 直式加法
+        a1 = Math.floor(Math.random() * 7) - 3; if (a1 === 0) a1 = -3;
+        a0 = Math.floor(Math.random() * 8) - 4;
+        b1 = 0;
+        b0 = Math.floor(Math.random() * 8) - 4;
+      } else { // 直式減法
+        a1 = Math.floor(Math.random() * 7) - 3; if (a1 === 0) a1 = 4;
+        a0 = 0;
+        b1 = 0;
+        b0 = Math.floor(Math.random() * 8) - 4; if (b0 === 0) b0 = -2;
+      }
+
+      poly1 = [a2, a1, a0];
+      poly2 = [b2, b1, b0];
+      stepOk = [false, false, false, false];
+
+      renderProblemDisplay();
+      renderSteps();
+      updatePreview();
+    }
+
+    function renderProblemDisplay() {
+      const isSub = (currentLevel === 1 || currentLevel === 3);
+      const opSign = isSub ? "-" : "+";
+      const p1Str = formatPoly(poly1);
+      const p2Str = formatPoly(poly2);
+
+      const titleMap = [
+        "第 1 關：橫式加法運算",
+        "第 2 關：橫式減法運算",
+        "第 3 關：分離係數直式加法",
+        "第 4 關：分離係數直式減法"
+      ];
+      document.getElementById('mode-title').innerText = titleMap[currentLevel] + "：";
+      document.getElementById('problem-display').innerHTML = `(${p1Str}) ${opSign} (${p2Str})`;
+    }
+
+    function renderSteps() {
+      const container = document.getElementById('steps-container');
+      const isSub = (currentLevel === 1 || currentLevel === 3);
+      const isVertical = (currentLevel >= 2);
+      const x2 = `<span class="math-x">x</span>²`;
+      const x1 = `<span class="math-x">x</span>`;
+
+      let html = "";
+
+      if (!isVertical) {
+        // --- 橫式計算 3 步驟 ---
+        // 步驟 1: 去括號
+        html += `
+          <div class="step-box" id="stepbox-0">
+            <div class="step-header">
+              <span>步驟 1：去括號 (請選取符號並填入拆開括號後的各項，缺項請填 0)</span>
+              <span class="step-status ${stepOk[0] ? 'done' : 'pending'}">${stepOk[0] ? '✓ 完成' : '待驗證'}</span>
+            </div>
+            <div class="input-row">
+              = <input type="text" id="h-s1-1"> ${x2} 
+              <select id="h-s1-op2" class="op-select"><option value="+">+</option><option value="-">-</option></select>
+              <input type="text" id="h-s1-2"> ${x1} 
+              <select id="h-s1-op3" class="op-select"><option value="+">+</option><option value="-">-</option></select>
+              <input type="text" id="h-s1-3"> 
+              <select id="h-s1-op4" class="op-select"><option value="+">+</option><option value="-">-</option></select>
+              <input type="text" id="h-s1-4"> ${x2} 
+              <select id="h-s1-op5" class="op-select"><option value="+">+</option><option value="-">-</option></select>
+              <input type="text" id="h-s1-5"> ${x1} 
+              <select id="h-s1-op6" class="op-select"><option value="+">+</option><option value="-">-</option></select>
+              <input type="text" id="h-s1-6">
+            </div>
+            <div style="font-size:0.9rem; color:#718096; margin-top:8px;">提示：請注意減法去括號時，第二個括號內每一項都要變號！</div>
+            <button class="verify-btn" onclick="verifyHorizontalStep1()">驗證步驟 1</button>
+            <div class="status-msg" id="msg-0"></div>
+          </div>`;
+
+        // 步驟 2: 同類項分組
+        html += `
+          <div class="step-box ${stepOk[0] ? '' : 'disabled'}" id="stepbox-1">
+            <div class="step-header">
+              <span>步驟 2：同類項分組 (保留各項文字符號)</span>
+              <span class="step-status ${stepOk[1] ? 'done' : 'pending'}">${stepOk[1] ? '✓ 完成' : '待驗證'}</span>
+            </div>
+            <div class="input-row">
+              = ( <input type="text" id="h-s2-1"> ${x2} 
+                  <select id="h-s2-op2" class="op-select"><option value="+">+</option><option value="-">-</option></select>
+                  <input type="text" id="h-s2-2"> ${x2} ) + 
+                ( <input type="text" id="h-s2-3"> ${x1} 
+                  <select id="h-s2-op4" class="op-select"><option value="+">+</option><option value="-">-</option></select>
+                  <input type="text" id="h-s2-4"> ${x1} ) + 
+                ( <input type="text" id="h-s2-5"> 
+                  <select id="h-s2-op6" class="op-select"><option value="+">+</option><option value="-">-</option></select>
+                  <input type="text" id="h-s2-6"> )
+            </div>
+            <button class="verify-btn" ${stepOk[0] ? '' : 'disabled'} onclick="verifyHorizontalStep2()">驗證步驟 2</button>
+            <div class="status-msg" id="msg-1"></div>
+          </div>`;
+
+        // 步驟 3: 同類項合併
+        html += `
+          <div class="step-box ${stepOk[1] ? '' : 'disabled'}" id="stepbox-2">
+            <div class="step-header">
+              <span>步驟 3：同類項合併 (得出最終結果)</span>
+              <span class="step-status ${stepOk[2] ? 'done' : 'pending'}">${stepOk[2] ? '✓ 完成' : '待驗證'}</span>
+            </div>
+            <div class="input-row">
+              = <input type="text" id="h-s3-1"> ${x2} 
+              <select id="h-s3-op2" class="op-select"><option value="+">+</option><option value="-">-</option></select>
+              <input type="text" id="h-s3-2"> ${x1} 
+              <select id="h-s3-op3" class="op-select"><option value="+">+</option><option value="-">-</option></select>
+              <input type="text" id="h-s3-3">
+            </div>
+            <button class="verify-btn" ${stepOk[1] ? '' : 'disabled'} onclick="verifyHorizontalStep3()">驗證步驟 3</button>
+            <div class="status-msg" id="msg-2"></div>
+          </div>`;
+
+      } else {
+        // --- 分離係數直式計算 4 步驟 ---
+        html += `
+          <div class="step-box" id="stepbox-0">
+            <div class="step-header">
+              <span>步驟 1：填入第一個多項式分離係數 (缺項填 0)</span>
+              <span class="step-status ${stepOk[0] ? 'done' : 'pending'}">${stepOk[0] ? '✓ 完成' : '待驗證'}</span>
+            </div>
+            <table class="vertical-table">
+              <thead>
+                <tr><th>${x2} 項</th><th>${x1} 項</th><th>常數項</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="text" id="v-s1-1"></td>
+                  <td><input type="text" id="v-s1-2"></td>
+                  <td><input type="text" id="v-s1-3"></td>
+                </tr>
+              </tbody>
+            </table>
+            <button class="verify-btn" onclick="verifyVerticalStep1()">驗證步驟 1</button>
+            <div class="status-msg" id="msg-0"></div>
+          </div>
+
+          <div class="step-box ${stepOk[0] ? '' : 'disabled'}" id="stepbox-1">
+            <div class="step-header">
+              <span>步驟 2：填入第二個多項式分離係數 (缺項填 0)</span>
+              <span class="step-status ${stepOk[1] ? 'done' : 'pending'}">${stepOk[1] ? '✓ 完成' : '待驗證'}</span>
+            </div>
+            <table class="vertical-table">
+              <thead>
+                <tr><th>${x2} 項</th><th>${x1} 項</th><th>常數項</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="text" id="v-s2-1" ${stepOk[0] ? '' : 'disabled'}></td>
+                  <td><input type="text" id="v-s2-2" ${stepOk[0] ? '' : 'disabled'}></td>
+                  <td><input type="text" id="v-s2-3" ${stepOk[0] ? '' : 'disabled'}></td>
+                </tr>
+              </tbody>
+            </table>
+            <button class="verify-btn" ${stepOk[0] ? '' : 'disabled'} onclick="verifyVerticalStep2()">驗證步驟 2</button>
+            <div class="status-msg" id="msg-1"></div>
+          </div>
+
+          <div class="step-box ${stepOk[1] ? '' : 'disabled'}" id="stepbox-2">
+            <div class="step-header">
+              <span>步驟 3：按對齊位置進行${isSub ? '減法' : '加法'}運算</span>
+              <span class="step-status ${stepOk[2] ? 'done' : 'pending'}">${stepOk[2] ? '✓ 完成' : '待驗證'}</span>
+            </div>
+            <table class="vertical-table">
+              <thead>
+                <tr><th>${x2} 項</th><th>${x1} 項</th><th>常數項</th></tr>
+              </thead>
+              <tbody>
+                <tr class="result-row">
+                  <td><input type="text" id="v-s3-1" ${stepOk[1] ? '' : 'disabled'}></td>
+                  <td><input type="text" id="v-s3-2" ${stepOk[1] ? '' : 'disabled'}></td>
+                  <td><input type="text" id="v-s3-3" ${stepOk[1] ? '' : 'disabled'}></td>
+                </tr>
+              </tbody>
+            </table>
+            <button class="verify-btn" ${stepOk[1] ? '' : 'disabled'} onclick="verifyVerticalStep3()">驗證步驟 3</button>
+            <div class="status-msg" id="msg-2"></div>
+          </div>
+
+          <div class="step-box ${stepOk[2] ? '' : 'disabled'}" id="stepbox-3">
+            <div class="step-header">
+              <span>步驟 4：寫出正確結果 (補上各項文字符號)</span>
+              <span class="step-status ${stepOk[3] ? 'done' : 'pending'}">${stepOk[3] ? '✓ 完成' : '待驗證'}</span>
+            </div>
+            <div class="input-row">
+              最終多項式 = <input type="text" id="v-s4-1" ${stepOk[2] ? '' : 'disabled'}> ${x2} 
+              <select id="v-s4-op2" class="op-select" ${stepOk[2] ? '' : 'disabled'}><option value="+">+</option><option value="-">-</option></select>
+              <input type="text" id="v-s4-2" ${stepOk[2] ? '' : 'disabled'}> ${x1} 
+              <select id="v-s4-op3" class="op-select" ${stepOk[2] ? '' : 'disabled'}><option value="+">+</option><option value="-">-</option></select>
+              <input type="text" id="v-s4-3" ${stepOk[2] ? '' : 'disabled'}>
+            </div>
+            <button class="verify-btn" ${stepOk[2] ? '' : 'disabled'} onclick="verifyVerticalStep4()">驗證步驟 4</button>
+            <div class="status-msg" id="msg-3"></div>
+          </div>`;
+      }
+
+      container.innerHTML = html;
+      updateConceptText();
+    }
+
+    // --- 橫式驗證邏輯 ---
+    function verifyHorizontalStep1() {
+      const isSub = (currentLevel === 1);
+      const v1 = parseVal(document.getElementById('h-s1-1').value);
+      const v2 = getSignedInput('h-s1-op2', 'h-s1-2');
+      const v3 = getSignedInput('h-s1-op3', 'h-s1-3');
+      const v4 = getSignedInput('h-s1-op4', 'h-s1-4');
+      const v5 = getSignedInput('h-s1-op5', 'h-s1-5');
+      const v6 = getSignedInput('h-s1-op6', 'h-s1-6');
+
+      const msg = document.getElementById('msg-0');
+
+      if ([v1, v2, v3, v4, v5, v6].includes(null)) {
+        msg.className = "status-msg error";
+        msg.innerText = "✕ 請填寫所有各項數值！若原多項式缺項請填 0。";
+        return;
+      }
+
+      const target4 = isSub ? -poly2[0] : poly2[0];
+      const target5 = isSub ? -poly2[1] : poly2[1];
+      const target6 = isSub ? -poly2[2] : poly2[2];
+
+      if (v1 === poly1[0] && v2 === poly1[1] && v3 === poly1[2] &&
+          v4 === target4 && v5 === target5 && v6 === target6) {
+        stepOk[0] = true;
+        msg.className = "status-msg ok";
+        msg.innerText = "✓ 正確！去括號結果完全正確。";
+        renderSteps();
+      } else {
+        msg.className = "status-msg error";
+        msg.innerText = isSub ? "✕ 錯誤：請注意減號去括號時，第二個括號內的每一項都要變號！" : "✕ 錯誤：請檢查去括號後的各項正負號與數值。";
+      }
+      updatePreview();
+    }
+
+    function verifyHorizontalStep2() {
+      const isSub = (currentLevel === 1);
+      const u1 = parseVal(document.getElementById('h-s2-1').value);
+      const u2 = getSignedInput('h-s2-op2', 'h-s2-2');
+      const u3 = parseVal(document.getElementById('h-s2-3').value);
+      const u4 = getSignedInput('h-s2-op4', 'h-s2-4');
+      const u5 = parseVal(document.getElementById('h-s2-5').value);
+      const u6 = getSignedInput('h-s2-op6', 'h-s2-6');
+
+      const msg = document.getElementById('msg-1');
+
+      if ([u1, u2, u3, u4, u5, u6].includes(null)) {
+        msg.className = "status-msg error";
+        msg.innerText = "✕ 請填寫所有同類項係數與運算符號！";
+        return;
+      }
+
+      const exp4 = isSub ? -poly2[0] : poly2[0];
+      const exp5 = isSub ? -poly2[1] : poly2[1];
+      const exp6 = isSub ? -poly2[2] : poly2[2];
+
+      if (u1 === poly1[0] && u2 === exp4 &&
+          u3 === poly1[1] && u4 === exp5 &&
+          u5 === poly1[2] && u6 === exp6) {
+        stepOk[1] = true;
+        msg.className = "status-msg ok";
+        msg.innerText = "✓ 正確！同類項已成功分組。";
+        renderSteps();
+      } else {
+        msg.className = "status-msg error";
+        msg.innerText = "✕ 錯誤：請將同類項連同其文字符號與正負號正確分組。";
+      }
+      updatePreview();
+    }
+
+    function verifyHorizontalStep3() {
+      const isSub = (currentLevel === 1);
+      const r1 = parseVal(document.getElementById('h-s3-1').value);
+      const r2 = getSignedInput('h-s3-op2', 'h-s3-2');
+      const r3 = getSignedInput('h-s3-op3', 'h-s3-3');
+
+      const msg = document.getElementById('msg-2');
+
+      if ([r1, r2, r3].includes(null)) {
+        msg.className = "status-msg error";
+        msg.innerText = "✕ 請填寫最終各項係數與符號！";
+        return;
+      }
+
+      const expR1 = isSub ? poly1[0] - poly2[0] : poly1[0] + poly2[0];
+      const expR2 = isSub ? poly1[1] - poly2[1] : poly1[1] + poly2[1];
+      const expR3 = isSub ? poly1[2] - poly2[2] : poly1[2] + poly2[2];
+
+      if (r1 === expR1 && r2 === expR2 && r3 === expR3) {
+        stepOk[2] = true;
+        msg.className = "status-msg ok";
+        msg.innerText = "🎉 恭喜！本關橫式計算完全正確！";
+        unlockNextLevel();
+      } else {
+        msg.className = "status-msg error";
+        msg.innerText = "✕ 錯誤：合併同類項計算結果有誤，請檢查正負號加減。";
+      }
+      updatePreview();
+    }
+
+    // --- 直式分離係數驗證邏輯 ---
+    function verifyVerticalStep1() {
+      const v1 = parseVal(document.getElementById('v-s1-1').value);
+      const v2 = parseVal(document.getElementById('v-s1-2').value);
+      const v3 = parseVal(document.getElementById('v-s1-3').value);
+      const msg = document.getElementById('msg-0');
+
+      if ([v1, v2, v3].includes(null)) {
+        msg.className = "status-msg error";
+        msg.innerText = "✕ 請完整填寫第一個多項式分離係數！若有缺項請填 0。";
+        return;
+      }
+
+      if (v1 === poly1[0] && v2 === poly1[1] && v3 === poly1[2]) {
+        stepOk[0] = true;
+        msg.className = "status-msg ok";
+        msg.innerText = "✓ 正確！第一個多項式係數分離成功。";
+        renderSteps();
+      } else {
+        msg.className = "status-msg error";
+        msg.innerText = "✕ 錯誤：請確認各項係數，若該項不存在請填 0！";
+      }
+      updatePreview();
+    }
+
+    function verifyVerticalStep2() {
+      const v1 = parseVal(document.getElementById('v-s2-1').value);
+      const v2 = parseVal(document.getElementById('v-s2-2').value);
+      const v3 = parseVal(document.getElementById('v-s2-3').value);
+      const msg = document.getElementById('msg-1');
+
+      if ([v1, v2, v3].includes(null)) {
+        msg.className = "status-msg error";
+        msg.innerText = "✕ 請完整填寫第二個多項式分離係數！";
+        return;
+      }
+
+      if (v1 === poly2[0] && v2 === poly2[1] && v3 === poly2[2]) {
+        stepOk[1] = true;
+        msg.className = "status-msg ok";
+        msg.innerText = "✓ 正確！第二個多項式係數分離成功。";
+        renderSteps();
+      } else {
+        msg.className = "status-msg error";
+        msg.innerText = "✕ 錯誤：請檢查第二個多項式的係數，注意缺項需補 0。";
+      }
+      updatePreview();
+    }
+
+    function verifyVerticalStep3() {
+      const isSub = (currentLevel === 3);
+      const r1 = parseVal(document.getElementById('v-s3-1').value);
+      const r2 = parseVal(document.getElementById('v-s3-2').value);
+      const r3 = parseVal(document.getElementById('v-s3-3').value);
+      const msg = document.getElementById('msg-2');
+
+      if ([r1, r2, r3].includes(null)) {
+        msg.className = "status-msg error";
+        msg.innerText = "✕ 請填寫直式對齊計算結果！";
+        return;
+      }
+
+      const exp1 = isSub ? poly1[0] - poly2[0] : poly1[0] + poly2[0];
+      const exp2 = isSub ? poly1[1] - poly2[1] : poly1[1] + poly2[1];
+      const exp3 = isSub ? poly1[2] - poly2[2] : poly1[2] + poly2[2];
+
+      if (r1 === exp1 && r2 === exp2 && r3 === exp3) {
+        stepOk[2] = true;
+        msg.className = "status-msg ok";
+        msg.innerText = "✓ 正確！直式對齊加減計算正確。";
+        renderSteps();
+      } else {
+        msg.className = "status-msg error";
+        msg.innerText = isSub ? "✕ 錯誤：減法直式計算請以 第一列係數 減去 第二列係數！" : "✕ 錯誤：直式對齊加法計算有誤。";
+      }
+      updatePreview();
+    }
+
+    function verifyVerticalStep4() {
+      const isSub = (currentLevel === 3);
+      const f1 = parseVal(document.getElementById('v-s4-1').value);
+      const f2 = getSignedInput('v-s4-op2', 'v-s4-2');
+      const f3 = getSignedInput('v-s4-op3', 'v-s4-3');
+      const msg = document.getElementById('msg-3');
+
+      if ([f1, f2, f3].includes(null)) {
+        msg.className = "status-msg error";
+        msg.innerText = "✕ 請完整寫出還原後的各項係數與符號！";
+        return;
+      }
+
+      const exp1 = isSub ? poly1[0] - poly2[0] : poly1[0] + poly2[0];
+      const exp2 = isSub ? poly1[1] - poly2[1] : poly1[1] + poly2[1];
+      const exp3 = isSub ? poly1[2] - poly2[2] : poly1[2] + poly2[2];
+
+      if (f1 === exp1 && f2 === exp2 && f3 === exp3) {
+        stepOk[3] = true;
+        msg.className = "status-msg ok";
+        msg.innerText = "🎉 恭喜！本關直式分離係數計算完全正確！";
+        unlockNextLevel();
+      } else {
+        msg.className = "status-msg error";
+        msg.innerText = "✕ 錯誤：還原多項式與步驟 3 計算結果不符。";
+      }
+      updatePreview();
+    }
+
+    function unlockNextLevel() {
+      if (currentLevel < 3) {
+        if (currentLevel === maxUnlockedLevel) {
+          maxUnlockedLevel++;
+        }
+        updateLevelButtons();
+      } else {
+        setTimeout(showVictoryModal, 500);
+      }
+    }
+
+    function updateLevelButtons() {
+      for (let i = 0; i < 4; i++) {
+        const btn = document.getElementById(`btn-lvl-${i}`);
+        const names = ["第 1 關 (橫式加法)", "第 2 關 (橫式減法)", "第 3 關 (直式加法)", "第 4 關 (直式減法)"];
+        if (i <= maxUnlockedLevel) {
+          btn.disabled = false;
+          btn.innerText = names[i];
+        } else {
+          btn.disabled = true;
+          btn.innerText = `🔒 第 ${i + 1} 關`;
+        }
+        btn.classList.toggle('active', i === currentLevel);
+      }
+    }
+
+    function switchLevel(idx) {
+      if (idx > maxUnlockedLevel) return;
+      currentLevel = idx;
+      updateLevelButtons();
+      generateRandomProblem();
+    }
+
+    function updateConceptText() {
+      const box = document.getElementById('concept-text');
+      const isSub = (currentLevel === 1 || currentLevel === 3);
+      const isVertical = (currentLevel >= 2);
+      const x2 = `<span class="math-x">x</span>²`;
+      const x1 = `<span class="math-x">x</span>`;
+
+      if (!isVertical) {
+        if (isSub) {
+          box.innerHTML = `💡 <b>橫式減法重點觀念：</b><br>
+            1. <b>去括號</b>：減號後方的括號拆開時，<b>裡面每一項的正負號都要改變</b>。<br>
+            2. <b>同類項分組</b>：將包含 ${x2}、${x1} 的同類項保留文字符號並以括號分組。<br>
+            3. <b>合併</b>：將括號內同類項進行加減計算。`;
+        } else {
+          box.innerHTML = `💡 <b>橫式加法重點觀念：</b><br>
+            1. <b>去括號</b>：加法拆開括號時，各項正負性質符號保持不變。<br>
+            2. 依降次順序將 ${x2} 項、${x1} 項與常數項保留文字符號並分組合併。`;
+        }
+      } else {
+        if (isSub) {
+          box.innerHTML = `💡 <b>分離係數直式減法重點觀念：</b><br>
+            1. 依降次順序填入係數，<b>若有缺項必須補 0</b>！<br>
+            2. 直式減法前方加上紅色大運算符號 <span style="color:#e53e3e; font-size:1.4rem; font-weight:bold;">-</span>)，為「第一列 減 第二列」。<br>
+            3. 最後將係數補上對應的 ${x2}、${x1} 文字符號。`;
+        } else {
+          box.innerHTML = `💡 <b>分離係數直式加法重點觀念：</b><br>
+            1. 將多項式的係數分離，照 ${x2}、${x1}、常數項對齊。<br>
+            2. 直式加法前方加上藍色大運算符號 <span style="color:#3182ce; font-size:1.4rem; font-weight:bold;">+</span>)。<br>
+            3. <b>若題目有缺項，對應位置一定要補 0</b>。`;
+        }
+      }
+    }
+
+    // 更新右側進度與計算列式對照
+    function updatePreview() {
+      const box = document.getElementById('preview-content');
+      const isSub = (currentLevel === 1 || currentLevel === 3);
+      const isVertical = (currentLevel >= 2);
+      const x2 = `<span class="math-x">x</span>²`;
+      const x1 = `<span class="math-x">x</span>`;
+
+      let html = `<div><b>原式：</b> (${formatPoly(poly1)}) ${isSub ? '-' : '+'} (${formatPoly(poly2)})</div>`;
+
+      if (!isVertical) {
+        if (stepOk[0]) {
+          const t4 = isSub ? -poly2[0] : poly2[0];
+          const t5 = isSub ? -poly2[1] : poly2[1];
+          const t6 = isSub ? -poly2[2] : poly2[2];
+          html += `<div style="color:#2b6cb0; margin-top:8px;"><b>步驟 1 (去括號展開)：</b><br>
+            = ${poly1[0]}${x2} ${poly1[1]>=0?'+':'-'} ${Math.abs(poly1[1])}${x1} ${poly1[2]>=0?'+':'-'} ${Math.abs(poly1[2])} ${t4>=0?'+':'-'} ${Math.abs(t4)}${x2} ${t5>=0?'+':'-'} ${Math.abs(t5)}${x1} ${t6>=0?'+':'-'} ${Math.abs(t6)}</div>`;
+        }
+        if (stepOk[1]) {
+          const t4 = isSub ? -poly2[0] : poly2[0];
+          const t5 = isSub ? -poly2[1] : poly2[1];
+          const t6 = isSub ? -poly2[2] : poly2[2];
+
+          const formatTerm = (c, pow) => {
+            const xStr = pow === 2 ? x2 : (pow === 1 ? x1 : '');
+            return `${c}${xStr}`;
+          };
+
+          const term1 = formatTerm(poly1[0], 2);
+          const term2 = t4 >= 0 ? `+ ${formatTerm(t4, 2)}` : `- ${formatTerm(Math.abs(t4), 2)}`;
+
+          const term3 = formatTerm(poly1[1], 1);
+          const term4 = t5 >= 0 ? `+ ${formatTerm(t5, 1)}` : `- ${formatTerm(Math.abs(t5), 1)}`;
+
+          const term5 = `${poly1[2]}`;
+          const term6 = t6 >= 0 ? `+ ${t6}` : `- ${Math.abs(t6)}`;
+
+          html += `<div style="color:#2c7a7b; margin-top:8px;"><b>步驟 2 (同類項分組)：</b><br>
+            = ( ${term1} ${term2} ) + ( ${term3} ${term4} ) + ( ${term5} ${term6} )</div>`;
+        }
+        if (stepOk[2]) {
+          const res = [
+            isSub ? poly1[0]-poly2[0] : poly1[0]+poly2[0],
+            isSub ? poly1[1]-poly2[1] : poly1[1]+poly2[1],
+            isSub ? poly1[2]-poly2[2] : poly1[2]+poly2[2]
+          ];
+          html += `<div style="color:#276749; font-weight:bold; margin-top:8px;"><b>步驟 3 (合併結果)：</b><br>
+            = ${formatPoly(res)}</div>`;
+        }
+      } else {
+        // 第 3、4 關卡：右側直式對照表第二列前方放置 +) / -) 運算子，+ 套用藍色、- 套用紅色，並將 + / - 字體放大
+        const opSignFormatted = isSub
+          ? `<span style="color:#e53e3e; font-size:1.7rem; font-weight:bold;">-</span>)`
+          : `<span style="color:#3182ce; font-size:1.7rem; font-weight:bold;">+</span>)`;
+
+        html += `<table style="margin-top:12px; border-collapse:collapse; width:100%; text-align:center; border:1.5px solid #cbd5e0;">
+          <tr style="background:#edf2f7; font-family:sans-serif; font-size:1rem;">
+            <th style="width:50px;"></th>
+            <th>${x2} 項</th>
+            <th>${x1} 項</th>
+            <th>常數項</th>
+          </tr>`;
+        
+        if (stepOk[0]) {
+          html += `<tr><td></td><td>${poly1[0]}</td><td>${poly1[1]}</td><td>${poly1[2]}</td></tr>`;
+        } else {
+          html += `<tr><td></td><td>?</td><td>?</td><td>?</td></tr>`;
+        }
+
+        if (stepOk[1]) {
+          html += `<tr><td style="font-size:1.3rem; vertical-align:middle; line-height:1;">${opSignFormatted}</td><td>${poly2[0]}</td><td>${poly2[1]}</td><td>${poly2[2]}</td></tr>`;
+        } else {
+          html += `<tr><td style="font-size:1.3rem; vertical-align:middle; line-height:1;">${opSignFormatted}</td><td>?</td><td>?</td><td>?</td></tr>`;
+        }
+
+        if (stepOk[2]) {
+          const res = [
+            isSub ? poly1[0]-poly2[0] : poly1[0]+poly2[0],
+            isSub ? poly1[1]-poly2[1] : poly1[1]+poly2[1],
+            isSub ? poly1[2]-poly2[2] : poly1[2]+poly2[2]
+          ];
+          html += `<tr style="border-top:2.5px solid #2d3748; font-weight:bold; color:#276749;"><td></td><td>${res[0]}</td><td>${res[1]}</td><td>${res[2]}</td></tr>`;
+        }
+        html += `</table>`;
+
+        if (stepOk[3]) {
+          const res = [
+            isSub ? poly1[0]-poly2[0] : poly1[0]+poly2[0],
+            isSub ? poly1[1]-poly2[1] : poly1[1]+poly2[1],
+            isSub ? poly1[2]-poly2[2] : poly1[2]+poly2[2]
+          ];
+          html += `<div style="color:#276749; font-weight:bold; margin-top:12px;"><b>步驟 4 (還原多項式)：</b><br>
+            = ${formatPoly(res)}</div>`;
+        }
+      }
+
+      box.innerHTML = html;
+    }
+
+    // --- 灑花動畫與通關 Modal ---
+    let confettiAnimationId = null;
+    let confettiParticles = [];
+
+    function showVictoryModal() {
+      document.getElementById('victory-modal').style.display = 'flex';
+      startConfetti();
+    }
+
+    function restartAllGame() {
+      stopConfetti();
+      document.getElementById('victory-modal').style.display = 'none';
+      maxUnlockedLevel = 0;
+      currentLevel = 0;
+      updateLevelButtons();
+      generateRandomProblem();
+    }
+
+    function startConfetti() {
+      const c = document.getElementById('confetti-canvas');
+      c.width = window.innerWidth;
+      c.height = window.innerHeight;
+      const ctxC = c.getContext('2d');
+
+      confettiParticles = [];
+      const particleColors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#ffeb3b', '#ff9800'];
+
+      for (let i = 0; i < 120; i++) {
+        confettiParticles.push({
+          x: Math.random() * c.width,
+          y: Math.random() * c.height - c.height,
+          r: Math.random() * 6 + 4,
+          d: Math.random() * 120 + 10,
+          color: particleColors[Math.floor(Math.random() * particleColors.length)],
+          tilt: Math.floor(Math.random() * 10) - 10,
+          tiltAngleIncremental: Math.random() * 0.07 + 0.05,
+          tiltAngle: 0
+        });
+      }
+
+      function drawConfetti() {
+        ctxC.clearRect(0, 0, c.width, c.height);
+        confettiParticles.forEach((p, index) => {
+          p.tiltAngle += p.tiltAngleIncremental;
+          p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+          p.x += Math.sin(p.d);
+          p.tilt = Math.sin(p.tiltAngle) * 15;
+
+          ctxC.beginPath();
+          ctxC.lineWidth = p.r;
+          ctxC.strokeStyle = p.color;
+          ctxC.moveTo(p.x + p.tilt + p.r / 2, p.y);
+          ctxC.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+          ctxC.stroke();
+
+          if (p.y > c.height) {
+            confettiParticles[index] = {
+              x: Math.random() * c.width,
+              y: -20,
+              r: p.r,
+              d: p.d,
+              color: p.color,
+              tilt: p.tilt,
+              tiltAngleIncremental: p.tiltAngleIncremental,
+              tiltAngle: p.tiltAngle
+            };
+          }
+        });
+        confettiAnimationId = requestAnimationFrame(drawConfetti);
+      }
+      drawConfetti();
+    }
+
+    function stopConfetti() {
+      if (confettiAnimationId) {
+        cancelAnimationFrame(confettiAnimationId);
+        confettiAnimationId = null;
+      }
+    }
+
+    // 初始化第一關
+    switchLevel(0);
+  </script>
+</body>
+</html>
