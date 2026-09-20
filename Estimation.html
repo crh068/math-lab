@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>度量與估測：互動探險隊</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #334155;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* iPad 橫向容器 (1024x768 比例優化) */
+        #app-container {
+            width: 100vw;
+            height: 100vh;
+            max-width: 1024px;
+            max-height: 768px;
+            background-color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+        }
+
+        header {
+            background-color: #0f766e;
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 1.3rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* 關卡選單列 */
+        .stage-nav {
+            display: flex;
+            background-color: #1e293b;
+            padding: 6px;
+            gap: 6px;
+            z-index: 10;
+        }
+
+        .stage-btn {
+            flex: 1;
+            padding: 10px 4px;
+            background-color: #475569;
+            color: #f1f5f9;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .stage-btn.active {
+            background-color: #f59e0b;
+            color: white;
+            transform: scale(1.02);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .stage-btn.locked {
+            background-color: #334155;
+            color: #64748b;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .stage-btn.completed {
+            background-color: #10b981;
+        }
+
+        /* 主區域佈局：左圖右步驟 */
+        main {
+            flex: 1;
+            padding: 14px;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 14px;
+            height: calc(100% - 95px);
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #cbd5e1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 左側圖示區極大化 */
+        .graphic-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .graphic-title {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #0f766e;
+            margin-bottom: 8px;
+        }
+
+        .interactive-area {
+            flex: 1;
+            background-color: #f1f5f9;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed #94a3b8;
+            position: relative;
+            overflow: hidden;
+            padding: 4px;
+        }
+
+        /* 步驟引導區 */
+        .step-card {
+            overflow-y: auto;
+        }
+
+        .step-progress-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .step-dot {
+            flex: 1;
+            height: 6px;
+            background-color: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .step-dot.active {
+            background-color: #2563eb;
+        }
+
+        .step-dot.done {
+            background-color: #10b981;
+        }
+
+        .step-history {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .history-item {
+            background-color: #f0fdf4;
+            border: 1px solid #86efac;
+            color: #166534;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .active-step-box {
+            background-color: #eff6ff;
+            border: 2px solid #93c5fd;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .step-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #1e40af;
+        }
+
+        .step-desc {
+            font-size: 0.95rem;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        /* 關鍵公式重點強調樣式 */
+        .formula-highlight {
+            color: #dc2626;
+            font-weight: bold;
+            font-size: 1.15rem;
+            background-color: #fef2f2;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #fecaca;
+            display: inline-block;
+            margin: 4px 0;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        input[type="number"], input[type="text"], select {
+            padding: 8px 12px;
+            font-size: 1.05rem;
+            border: 2px solid #94a3b8;
+            border-radius: 6px;
+            outline: none;
+            background: white;
+            font-weight: bold;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 140px;
+            text-align: center;
+        }
+
+        select {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .btn-verify {
+            padding: 12px 18px;
+            font-size: 1rem;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #1d4ed8;
+            transition: all 0.1s;
+        }
+
+        .btn-verify:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .feedback-msg {
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding: 8px 10px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .feedback-msg.error {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            display: block;
+        }
+
+        /* Modal 通關對話框 */
+        #modal {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.75);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-body {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 440px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 灑花 Canvas Overlay */
+        #confetti-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 101;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <canvas id="confetti-canvas"></canvas>
+    
+    <header>
+        <h1>📐 度量與估測：互動學習教具</h1>
+        <span id="progress-text" style="font-weight: bold; font-size: 0.95rem;">進度：1 / 8 關</span>
+    </header>
+
+    <div class="stage-nav">
+        <button class="stage-btn active" id="nav-1" onclick="selectStage(1)">1. 估測概念</button>
+        <button class="stage-btn locked" id="nav-2" onclick="selectStage(2)">2. 步數測距</button>
+        <button class="stage-btn locked" id="nav-3" onclick="selectStage(3)">3. 等腰三角</button>
+        <button class="stage-btn locked" id="nav-4" onclick="selectStage(4)">4. 相似河寬</button>
+        <button class="stage-btn locked" id="nav-5" onclick="selectStage(5)">5. 相似樹高</button>
+        <button class="stage-btn locked" id="nav-6" onclick="selectStage(6)">6. 比重測重</button>
+        <button class="stage-btn locked" id="nav-7" onclick="selectStage(7)">7. 準確估計</button>
+        <button class="stage-btn locked" id="nav-8" onclick="selectStage(8)">8. 誤差計算</button>
+    </div>
+
+    <main>
+        <!-- 左側：幾何圖示區域 -->
+        <div class="card graphic-card">
+            <div class="graphic-title" id="stage-title">關卡載入中...</div>
+            <div class="interactive-area" id="svg-container"></div>
+        </div>
+
+        <!-- 右側：步驟驗證區域 -->
+        <div class="card step-card">
+            <div class="step-progress-bar" id="step-progress-bar"></div>
+            <div class="step-history" id="step-history"></div>
+            
+            <div class="active-step-box" id="active-step-box">
+                <!-- 動態載入步驟 -->
+            </div>
+            <div id="feedback-msg" class="feedback-msg"></div>
+        </div>
+    </main>
+
+    <!-- 通關 Modal -->
+    <div id="modal">
+        <div class="modal-body">
+            <h2 id="modal-title" style="color:#10b981; margin-bottom:12px; font-size: 1.6rem;">🎉 關卡完成！</h2>
+            <p id="modal-msg" style="color:#334155; margin-bottom:24px; line-height:1.6; font-size:1.05rem;"></p>
+            <button id="modal-btn" class="btn-verify" style="width:100%;" onclick="closeModal()">進入下一關</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let unlockedStage = 1;
+    let currentStage = 1;
+    let currentStep = 1;
+    let stageData = {};
+
+    function pickRandom(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    // 重置所有數據並回回第 1 關步驟 1
+    function resetAllData() {
+        unlockedStage = 1;
+        currentStage = 1;
+        currentStep = 1;
+
+        stageData = {
+            1: { type: 'concept' },
+            2: {
+                stepLen: pickRandom([50, 60]),
+                steps: pickRandom([500, 1000, 2000])
+            },
+            3: {
+                distBC: pickRandom([5, 10, 15, 20])
+            },
+            4: {
+                stepsBC: pickRandom([20, 30]),
+                stepsCD: 5,
+                distDE: pickRandom([2, 3, 4, 5])
+            },
+            5: {
+                bfLen: pickRandom([1.5, 1.6, 2.0]),
+                efLen: pickRandom([0.4, 0.5, 0.6])
+            },
+            6: {
+                material: pickRandom([
+                    {name: '鐵', sp: 8.0},
+                    {name: '鋁', sp: 2.7},
+                    {name: '水', sp: 1.0}
+                ]),
+                L: 10, W: 10, H: 10
+            },
+            7: {
+                reading: pickRandom([12.3, 18.5, 25.4, 32.8])
+            },
+            8: {
+                trueVal: pickRandom([100, 200]),
+                diff: pickRandom([2, 4, 5, 10])
+            }
+        };
+        
+        stageData[8].measVal = stageData[8].trueVal + stageData[8].diff;
+        loadStage(1);
+    }
+
+    window.onload = function() {
+        resetAllData();
+    };
+
+    function selectStage(stageNum) {
+        if (stageNum > unlockedStage) return;
+        currentStage = stageNum;
+        currentStep = 1;
+        loadStage(currentStage);
+    }
+
+    function loadStage(sNum) {
+        updateStageNav();
+        const config = stageConfigs[sNum];
+        document.getElementById('stage-title').innerText = config.title;
+        
+        config.renderSVG();
+
+        renderStepProgress(config.steps.length);
+        document.getElementById('step-history').innerHTML = '';
+        renderActiveStep();
+    }
+
+    function updateStageNav() {
+        for (let i = 1; i <= 8; i++) {
+            const btn = document.getElementById(`nav-${i}`);
+            btn.className = 'stage-btn';
+            if (i < unlockedStage) btn.classList.add('completed');
+            if (i === currentStage) btn.classList.add('active');
+            if (i > unlockedStage) btn.classList.add('locked');
+        }
+        document.getElementById('progress-text').innerText = `進度：${currentStage} / 8 關`;
+    }
+
+    function renderStepProgress(totalSteps) {
+        const bar = document.getElementById('step-progress-bar');
+        bar.innerHTML = '';
+        for (let i = 1; i <= totalSteps; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'step-dot';
+            if (i < currentStep) dot.classList.add('done');
+            if (i === currentStep) dot.classList.add('active');
+            bar.appendChild(dot);
+        }
+    }
+
+    function renderActiveStep() {
+        const config = stageConfigs[currentStage];
+        const step = config.steps[currentStep - 1];
+        const box = document.getElementById('active-step-box');
+        
+        box.innerHTML = `
+            <div class="step-title">步驟 ${currentStep} / ${config.steps.length}：${step.title}</div>
+            <div class="step-desc">${step.getDesc()}</div>
+            <div id="step-input-area">${step.getInputHTML()}</div>
+            <button class="btn-verify" onclick="verifyCurrentStep()">驗證此步驟</button>
+        `;
+
+        document.getElementById('feedback-msg').className = 'feedback-msg';
+    }
+
+    function verifyCurrentStep() {
+        const config = stageConfigs[currentStage];
+        const step = config.steps[currentStep - 1];
+        const result = step.check();
+
+        const fb = document.getElementById('feedback-msg');
+        if (result.success) {
+            fb.className = 'feedback-msg';
+            const history = document.getElementById('step-history');
+            const hItem = document.createElement('div');
+            hItem.className = 'history-item';
+            hItem.innerHTML = `<span>✅</span> <strong>步驟 ${currentStep}：</strong> ${result.summary}`;
+            history.appendChild(hItem);
+
+            currentStep++;
+            if (currentStep > config.steps.length) {
+                if (currentStage === unlockedStage && unlockedStage < 8) {
+                    unlockedStage++;
+                }
+                updateStageNav();
+                showModal();
+            } else {
+                renderStepProgress(config.steps.length);
+                renderActiveStep();
+            }
+        } else {
+            fb.className = 'feedback-msg error';
+            fb.innerText = result.msg || '答案不正確，請再算算看！';
+        }
+    }
+
+    function showModal() {
+        const modal = document.getElementById('modal');
+        const title = document.getElementById('modal-title');
+        const msg = document.getElementById('modal-msg');
+        const btn = document.getElementById('modal-btn');
+
+        modal.style.display = 'flex';
+        if (currentStage === 8) {
+            title.innerText = "🏆 恭喜大通關成功！";
+            msg.innerHTML = "太棒了！您已經順利完成全部 8 個關卡！<br>成功掌握了<b>永備尺、相似三角形測高測距與誤差分析</b>！";
+            btn.innerText = "🔄 重新開始挑戰（產生新數據）";
+            btn.onclick = function() {
+                closeModal();
+                resetAllData();
+            };
+            launchConfetti();
+        } else {
+            title.innerText = `🎉 第 ${currentStage} 關 完成！`;
+            msg.innerText = "步驟計算完全正確，點擊下方按鈕繼續挑戰下一關。";
+            btn.innerText = "進入下一關";
+            btn.onclick = function() {
+                closeModal();
+                currentStage++;
+                currentStep = 1;
+                loadStage(currentStage);
+            };
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('modal').style.display = 'none';
+    }
+
+    // 灑花特效 (Confetti)
+    function launchConfetti() {
+        const canvas = document.getElementById('confetti-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const pieces = [];
+        const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#ef4444', '#facc15'];
+        for (let i = 0; i < 120; i++) {
+            pieces.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                size: Math.random() * 10 + 6,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                vx: Math.random() * 4 - 2,
+                vy: Math.random() * 4 + 3,
+                angle: Math.random() * 360,
+                vAngle: Math.random() * 8 - 4
+            });
+        }
+
+        let startTime = Date.now();
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let active = false;
+            pieces.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.angle += p.vAngle;
+                if (p.y < canvas.height) active = true;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate((p.angle * Math.PI) / 180);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                ctx.restore();
+            });
+
+            if (active && Date.now() - startTime < 4000) {
+                requestAnimationFrame(update);
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+        update();
+    }
+
+    // ==========================================
+    // 各關卡圖示與步驟 (1~8關)
+    // ==========================================
+    const stageConfigs = {
+        // --- 關卡 1：估測的概念 ---
+        1: {
+            title: "關卡 1：估測是什麼？與永備尺概念",
+            renderSVG: function() {
+                document.getElementById('svg-container').innerHTML = `
+                    <svg viewBox="0 0 520 250">
+                        <rect x="10" y="10" width="500" height="230" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+                        
+                        <!-- 左側：手掌（拃） -->
+                        <g transform="translate(25, 25)">
+                            <text x="110" y="20" font-size="15" font-weight="bold" fill="#0f766e" text-anchor="middle">手掌（一拃）測量桌面長度</text>
+                            <rect x="10" y="110" width="200" height="20" rx="4" fill="#b45309" stroke="#78350f" stroke-width="2"/>
+                            <rect x="20" y="130" width="15" height="50" fill="#78350f"/>
+                            <rect x="185" y="130" width="15" height="50" fill="#78350f"/>
+                            
+                            <path d="M 60,110 C 50,100 45,85 40,75 C 38,70 42,68 45,72 C 52,82 58,92 65,95 C 65,80 62,60 62,50 C 62,45 68,45 70,50 C 73,65 76,80 77,88 C 82,75 88,55 90,48 C 92,43 98,44 98,50 C 97,65 92,80 91,90 C 97,80 106,68 110,62 C 113,58 118,61 115,66 C 108,78 98,92 95,98 C 105,95 125,92 135,92 C 140,92 140,98 134,100 C 120,105 100,108 85,110 Z" 
+                                  fill="#fde047" stroke="#d97706" stroke-width="2.5" stroke-linejoin="round"/>
+                            
+                            <path d="M 40,35 L 135,35" stroke="#dc2626" stroke-width="3" stroke-dasharray="4"/>
+                            <polygon points="40,35 48,30 48,40" fill="#dc2626"/>
+                            <polygon points="135,35 127,30 127,40" fill="#dc2626"/>
+                            <text x="88" y="28" font-size="13" font-weight="bold" fill="#dc2626" text-anchor="middle">一拃 (手掌伸展)</text>
+                        </g>
+
+                        <line x1="260" y1="30" x2="260" y2="210" stroke="#e2e8f0" stroke-width="3" stroke-dasharray="6"/>
+
+                        <!-- 右側：雙腳步數 -->
+                        <g transform="translate(275, 25)">
+                            <text x="110" y="20" font-size="15" font-weight="bold" fill="#0f766e" text-anchor="middle">雙腳跨步估測距離</text>
+                            
+                            <line x1="10" y1="130" x2="210" y2="130" stroke="#94a3b8" stroke-width="3" stroke-dasharray="6"/>
+                            
+                            <g transform="translate(30, 105) rotate(-10)">
+                                <path d="M0,0 C-5,-10 0,-25 10,-25 C20,-25 25,-10 20,0 C18,8 12,15 10,25 C8,15 2,8 0,0 Z" fill="#2563eb"/>
+                                <text x="10" y="-5" font-size="10" fill="white" font-weight="bold" text-anchor="middle">左</text>
+                            </g>
+
+                            <g transform="translate(130, 85) rotate(10)">
+                                <path d="M0,0 C-5,-10 0,-25 10,-25 C20,-25 25,-10 20,0 C18,8 12,15 10,25 C8,15 2,8 0,0 Z" fill="#0284c7"/>
+                                <text x="10" y="-5" font-size="10" fill="white" font-weight="bold" text-anchor="middle">右</text>
+                            </g>
+
+                            <path d="M 40,155 L 140,155" stroke="#d97706" stroke-width="3"/>
+                            <polygon points="40,155 48,150 48,160" fill="#d97706"/>
+                            <polygon points="140,155 132,150 132,160" fill="#d97706"/>
+                            <text x="90" y="175" font-size="13" font-weight="bold" fill="#b45309" text-anchor="middle">單步步長</text>
+                        </g>
+
+                        <rect x="50" y="200" width="420" height="30" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+                        <text x="260" y="220" font-size="14" font-weight="bold" fill="#166534" text-anchor="middle">觀念：「不用精密儀器，利用身體特徵（永備尺）快速估算概數」</text>
+                    </svg>
+                `;
+            },
+            steps: [
+                {
+                    title: "觀念理解",
+                    getDesc: () => "日常生活中，不用專業尺規，而是用隨身物件或經驗推算概數。這種測量方式稱為？",
+                    getInputHTML: () => `
+                        <select id="s1-opt1">
+                            <option value="">--請選擇--</option>
+                            <option value="A">真值測量</option>
+                            <option value="B">估測</option>
+                            <option value="C">絕對誤差</option>
+                        </select>`,
+                    check: () => {
+                        const val = document.getElementById('s1-opt1').value;
+                        if (val === 'B') return { success: true, summary: "「估測」指不靠儀器，估計出長度或重量。" };
+                        return { success: false, msg: "請選擇「估測」！" };
+                    }
+                },
+                {
+                    title: "永備尺認識",
+                    getDesc: () => "以身體特徵（如手掌一拃、一步長）作為隨身測量基準，這種工具稱為？",
+                    getInputHTML: () => `
+                        <select id="s1-opt2">
+                            <option value="">--請選擇--</option>
+                            <option value="A">永備尺</option>
+                            <option value="B">標準鋼捲尺</option>
+                            <option value="C">游標卡尺</option>
+                        </select>`,
+                    check: () => {
+                        const val = document.getElementById('s1-opt2').value;
+                        if (val === 'A') return { success: true, summary: "身體特徵隨身帶，稱為「永備尺」。" };
+                        return { success: false, msg: "請選擇「永備尺」！" };
+                    }
+                }
+            ]
+        },
+
+        // --- 關卡 2：步數測距法 ---
+        2: {
+            title: "關卡 2：步數測距法（永備尺應用）",
+            renderSVG: function() {
+                const d = stageData[2];
+                document.getElementById('svg-container').innerHTML = `
+                    <svg viewBox="0 0 500 230">
+                        <path d="M 50 160 L 450 160" stroke="#64748b" stroke-width="4" stroke-dasharray="8 8"/>
+                        <path d="M 40 160 L 40 120 L 70 90 L 100 120 L 100 160 Z" fill="#38bdf8"/>
+                        <text x="70" y="185" font-size="14" font-weight="bold" fill="#0284c7" text-anchor="middle">家 (起點)</text>
+                        
+                        <rect x="390" y="100" width="60" height="60" fill="#f59e0b"/>
+                        <polygon points="380,100 420,70 460,100" fill="#ea580c"/>
+                        <text x="420" y="185" font-size="14" font-weight="bold" fill="#c2410c" text-anchor="middle">學校 (終點)</text>
+                        
+                        <rect x="130" y="25" width="240" height="65" rx="8" fill="#ffffff" stroke="#0284c7" stroke-width="2"/>
+                        <text x="250" y="50" font-size="14" font-weight="bold" fill="#1e293b" text-anchor="middle">平均步長：${d.stepLen} 公分</text>
+                        <text x="250" y="72" font-size="15" font-weight="bold" fill="#2563eb" text-anchor="middle">單程步數：${d.steps} 步</text>
+                    </svg>
+                `;
+            },
+            steps: [
+                {
+                    title: "計算單程公分數",
+                    getDesc: () => `核心公式：<div class="formula-highlight">距離 = 步長 × 步數</div><br>請算出家到學校單程是多少「公分」(cm)？`,
+                    getInputHTML: () => `<div class="input-group"><input type="number" id="s2-in1"><span>公分 (cm)</span></div>`,
+                    check: () => {
+                        const val = parseFloat(document.getElementById('s2-in1').value);
+                        const ans = stageData[2].stepLen * stageData[2].steps;
+                        if (val === ans) return { success: true, summary: `單程距離 = ${stageData[2].stepLen} × ${stageData[2].steps} = ${ans} 公分。` };
+                        return { success: false, msg: `請計算：${stageData[2].stepLen} × ${stageData[2].steps}` };
+                    }
+                },
+                {
+                    title: "單位換算為公尺",
+                    getDesc: () => `將上述公分數換算為「公尺」(m)？（提示：直接除以 100）`,
+                    getInputHTML: () => `<div class="input-group"><input type="number" id="s2-in2"><span>公尺 (m)</span></div>`,
+                    check: () => {
+                        const val = parseFloat(document.getElementById('s2-in2').value);
+                        const ans = (stageData[2].stepLen * stageData[2].steps) / 100;
+                        if (val === ans) return { success: true, summary: `換算成功！單程距離 = ${ans} 公尺。` };
+                        return { success: false, msg: `請將公分數除以 100！` };
+                    }
+                },
+                {
+                    title: "每日往返公里數",
+                    getDesc: () => `每天上下學「往返兩趟」，請問共走多少「公里」(km)？（提示：公尺×2 再除以 1000）`,
+                    getInputHTML: () => `<div class="input-group"><input type="number" step="0.01" id="s2-in3"><span>公里 (km)</span></div>`,
+                    check: () => {
+                        const val = parseFloat(document.getElementById('s2-in3').value);
+                        const m = (stageData[2].stepLen * stageData[2].steps) / 100;
+                        const ans = parseFloat(((m * 2) / 1000).toFixed(2));
+                        if (Math.abs(val - ans) < 0.01) return { success: true, summary: `計算正確！往返總距離 = ${ans} 公里。` };
+                        return { success: false, msg: `請計算：(${m} × 2) ÷ 1000` };
+                    }
+                }
+            ]
+        },
+
+        // --- 關卡 3：等腰三角測高法 ---
+        3: {
+            title: "關卡 3：等腰三角測高法",
+            renderSVG: function() {
+                const d = stageData[3];
+                document.getElementById('svg-container').innerHTML = `
+                    <svg viewBox="0 0 500 230">
+                        <line x1="40" y1="180" x2="460" y2="180" stroke="#475569" stroke-width="3"/>
+                        <rect x="375" y="60" width="10" height="120" fill="#78350f"/>
+                        <polygon points="380,30 320,110 440,110" fill="#15803d"/>
+                        <circle cx="380" cy="30" r="5" fill="#dc2626"/>
+                        <text x="395" y="35" font-size="14" font-weight="bold" fill="#dc2626">A (樹頂)</text>
+                        <circle cx="380" cy="180" r="5" fill="#1e293b"/>
+                        <text x="395" y="195" font-size="14" font-weight="bold" fill="#1e293b">B (樹根)</text>
+                        
+                        <circle cx="240" cy="180" r="6" fill="#2563eb"/>
+                        <text x="230" y="202" font-size="14" font-weight="bold" fill="#2563eb">C (觀測點)</text>
+
+                        <polygon points="380,180 380,30 240,180" fill="rgba(59,130,246,0.15)" stroke="#2563eb" stroke-width="2.5" stroke-dasharray="4"/>
+                        <text x="310" y="165" font-size="15" font-weight="bold" fill="#0f766e" text-anchor="middle">地面 BC = ${d.distBC} m</text>
+                    </svg>
+                `;
+            },
+            steps: [
+                {
+                    title: "幾何模型辨識",
+                    getDesc: () => "將鉛筆對準樹幹，旋轉 90 度橫擺對準地面 C 點。視線與地面構成的 <b>ΔABC</b> 為？",
+                    getInputHTML: () => `
+                        <select id="s3-opt1">
+                            <option value="">--請選擇--</option>
+                            <option value="A">正三角形</option>
+                            <option value="B">等腰直角三角形</option>
+                            <option value="C">鈍角三角形</option>
+                        </select>`,
+                    check: () => {
+                        const val = document.getElementById('s3-opt1').value;
+                        if (val === 'B') return { success: true, summary: "旋轉 90 度後形成「等腰直角三角形」。" };
+                        return { success: false, msg: "請選擇「等腰直角三角形」！" };
+                    }
+                },
+                {
+                    title: "邊長等長關係",
+                    getDesc: () => `核心觀念：<div class="formula-highlight">樹高 AB = 地面 BC</div><br>因此測量樹高可以直接量測？`,
+                    getInputHTML: () => `
+                        <select id="s3-opt2">
+                            <option value="">--請選擇--</option>
+                            <option value="A">地面 BC 距離</option>
+                            <option value="B">AC 斜邊距離</option>
+                        </select>`,
+                    check: () => {
+                        const val = document.getElementById('s3-opt2').value;
+                        if (val === 'A') return { success: true, summary: "樹高直接等於地面 BC 距離。" };
+                        return { success: false, msg: "請選擇 BC 距離！" };
+                    }
+                },
+                {
+                    title: "樹高數值求值",
+                    getDesc: () => `已知量得地面 BC 距離為 ${stageData[3].distBC} 公尺。請推算樹高為多少公尺？`,
+                    getInputHTML: () => `<div class="input-group"><input type="number" id="s3-in3"><span>公尺 (m)</span></div>`,
+                    check: () => {
+                        const val = parseFloat(document.getElementById('s3-in3').value);
+                        if (val === stageData[3].distBC) return { success: true, summary: `樹高 = ${stageData[3].distBC} 公尺。` };
+                        return { success: false, msg: `數字直接等於 ${stageData[3].distBC}` };
+                    }
+                }
+            ]
+        },
+
+        // --- 關卡 4：相似三角測距法（B 點標示於點下方） ---
+        4: {
+            title: "關卡 4：相似三角測距法（測量河寬）",
+            renderSVG: function() {
+                const d = stageData[4];
+                document.getElementById('svg-container').innerHTML = `
+                    <svg viewBox="0 0 500 230">
+                        <rect x="0" y="30" width="500" height="80" fill="#38bdf8" opacity="0.25"/>
+                        <text x="250" y="65" fill="#0284c7" font-weight="bold" font-size="15" text-anchor="middle">~ 河流 (無法直接跨越) ~</text>
+
+                        <circle cx="100" cy="30" r="5" fill="#dc2626"/>
+                        <text x="100" y="18" font-weight="bold" font-size="13" fill="#dc2626" text-anchor="middle">A (對岸目標)</text>
+
+                        <line x1="100" y1="30" x2="100" y2="110" stroke="#0284c7" stroke-width="3" stroke-dasharray="4"/>
+                        <text x="55" y="70" font-size="13" font-weight="bold" fill="#0284c7" text-anchor="middle">河寬 AB</text>
+
+                        <line x1="100" y1="110" x2="350" y2="110" stroke="#1e293b" stroke-width="2.5"/>
+
+                        <!-- B 點標示移至點的正下方 (y=132)，不被虛線遮蔽 -->
+                        <circle cx="100" cy="110" r="5" fill="#1e293b"/>
+                        <text x="100" y="132" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">B</text>
+
+                        <circle cx="260" cy="110" r="5" fill="#1e293b"/>
+                        <text x="260" y="95" font-weight="bold" font-size="13" fill="#1e293b" text-anchor="middle">C</text>
+
+                        <circle cx="300" cy="110" r="5" fill="#1e293b"/>
+                        <text x="300" y="95" font-weight="bold" font-size="13" fill="#1e293b" text-anchor="middle">D</text>
+
+                        <circle cx="300" cy="130" r="5" fill="#dc2626"/>
+                        <text x="312" y="135" font-weight="bold" font-size="13" fill="#dc2626" text-anchor="start">E (實測 ${d.distDE}m)</text>
+
+                        <line x1="100" y1="110" x2="260" y2="110" stroke="#0f766e" stroke-width="4"/>
+                        <text x="180" y="132" font-size="14" font-weight="bold" fill="#0f766e" text-anchor="middle">${d.stepsBC} 步</text>
+
+                        <line x1="260" y1="110" x2="300" y2="110" stroke="#b45309" stroke-width="4"/>
+                        <text x="280" y="152" font-size="14" font-weight="bold" fill="#b45309" text-anchor="middle">${d.stepsCD} 步</text>
+
+                        <line x1="300" y1="110" x2="300" y2="130" stroke="#1e293b" stroke-width="2"/>
+                        <line x1="100" y1="30" x2="300" y2="130" stroke="#dc2626" stroke-width="2" stroke-dasharray="4"/>
+                    </svg>
+                `;
+            },
+            steps: [
+                {
+                    title: "相似三角形對應邊比例",
+                    getDesc: () => {
+                        const d = stageData[4];
+                        return `因為 <b>ΔABC ~ ΔEDC (相似三角形)</b>。<br>請計算步數比例 (BC ÷ CD = ${d.stepsBC} ÷ ${d.stepsCD}) 是幾倍？`;
+                    },
+                    getInputHTML: () => `<div class="input-group"><input type="number" id="s4-in1"><span>倍</span></div>`,
+                    check: () => {
+                        const d = stageData[4];
+                        const val = parseFloat(document.getElementById('s4-in1').value);
+                        const ans = d.stepsBC / d.stepsCD;
+                        if (val === ans) return { success: true, summary: `步數對應比例為 ${d.stepsBC} ÷ ${d.stepsCD} = ${ans} 倍。` };
+                        return { success: false, msg: `請計算 ${d.stepsBC} ÷ ${d.stepsCD}` };
+                    }
+                },
+                {
+                    title: "河寬與 DE 長度關係式",
+                    getDesc: () => {
+                        const d = stageData[4];
+                        const r = d.stepsBC / d.stepsCD;
+                        return `核心公式：<div class="formula-highlight">河寬 AB = ${r} × DE</div><br>已知大三角形是小三角形的 ${r} 倍，河寬 AB 等於 DE 的幾倍？`;
+                    },
+                    getInputHTML: () => `
+                        <select id="s4-opt2">
+                            <option value="">--請選擇--</option>
+                            <option value="ans">${stageData[4].stepsBC / stageData[4].stepsCD} 倍</option>
+                            <option value="1">1 倍</option>
+                        </select>`,
+                    check: () => {
+                        const val = document.getElementById('s4-opt2').value;
+                        if (val === 'ans') return { success: true, summary: `河寬 AB 等於 DE 的倍數關係成立。` };
+                        return { success: false, msg: "請選擇正確的倍數！" };
+                    }
+                },
+                {
+                    title: "計算河寬實測值",
+                    getDesc: () => {
+                        const d = stageData[4];
+                        const r = d.stepsBC / d.stepsCD;
+                        return `實測 DE 距離為 ${d.distDE} 公尺。請計算河寬 AB 為多少公尺？`;
+                    },
+                    getInputHTML: () => `<div class="input-group"><input type="number" id="s4-in3"><span>公尺 (m)</span></div>`,
+                    check: () => {
+                        const d = stageData[4];
+                        const r = d.stepsBC / d.stepsCD;
+                        const val = parseFloat(document.getElementById('s4-in3').value);
+                        const ans = r * d.distDE;
+                        if (val === ans) return { success: true, summary: `河寬 AB = ${r} × ${d.distDE} = ${ans} 公尺。` };
+                        return { success: false, msg: `請計算 ${r} × ${d.distDE}` };
+                    }
+                }
+            ]
+        },
+
+        // --- 關卡 5：相似三角測高法（修正 BF, EF 與 D 樹頂之遮蔽） ---
+        5: {
+            title: "關卡 5：相似三角測高法（標竿測高）",
+            renderSVG: function() {
+                const d = stageData[5];
+                document.getElementById('svg-container').innerHTML = `
+                    <svg viewBox="0 0 500 230">
+                        <!-- 地面基線 -->
+                        <line x1="20" y1="180" x2="480" y2="180" stroke="#475569" stroke-width="2.5"/>
+
+                        <!-- 左上方數據提示框 (移出中央，徹底解決遮蔽與疊字) -->
+                        <rect x="20" y="10" width="270" height="34" rx="6" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+                        <text x="155" y="32" font-size="13" font-weight="bold" fill="#0f766e" text-anchor="middle">BF(平視高) = ${d.bfLen}m ， EF(記號距) = ${d.efLen}m</text>
+
+                        <!-- 樹木與樹頂 D -->
+                        <rect x="375" y="60" width="10" height="120" fill="#78350f"/>
+                        <polygon points="380,50 330,120 430,120" fill="#15803d"/>
+                        
+                        <!-- 點 D (樹頂) - 標籤移至點右側，避免與樹葉重疊 -->
+                        <circle cx="380" cy="50" r="5" fill="#dc2626"/>
+                        <text x="395" y="54" font-weight="bold" font-size="13" fill="#dc2626" text-anchor="start">D (樹頂)</text>
+
+                        <!-- 點 H (平視點) -->
+                        <circle cx="380" cy="120" r="4" fill="#0284c7"/>
+                        <text x="395" y="124" font-weight="bold" font-size="13" fill="#0284c7" text-anchor="start">H (平視點)</text>
+
+                        <!-- 點 A (樹底) -->
+                        <circle cx="380" cy="180" r="5" fill="#1e293b"/>
+                        <text x="380" y="198" font-weight="bold" font-size="13" fill="#1e293b" text-anchor="middle">A (樹底)</text>
+
+                        <!-- 觀測點 G (眼睛) -->
+                        <circle cx="70" cy="120" r="5" fill="#ea580c"/>
+                        <text x="58" y="115" font-size="13" font-weight="bold" fill="#ea580c" text-anchor="end">G (眼睛)</text>
+                        <line x1="70" y1="125" x2="70" y2="180" stroke="#ea580c" stroke-width="2"/>
+
+                        <!-- 點 C -->
+                        <circle cx="70" cy="180" r="5" fill="#1e293b"/>
+                        <text x="70" y="198" font-size="13" font-weight="bold" fill="#1e293b" text-anchor="middle">C</text>
+
+                        <!-- 標竿與點 B, E, F -->
+                        <line x1="110" y1="70" x2="110" y2="180" stroke="#d97706" stroke-width="4"/>
+                        <circle cx="110" cy="180" r="5" fill="#1e293b"/>
+                        <text x="110" y="198" font-size="13" font-weight="bold" fill="#1e293b" text-anchor="middle">B</text>
+
+                        <circle cx="110" cy="120" r="3" fill="#1e293b"/>
+                        <text x="122" y="124" font-size="13" font-weight="bold" fill="#1e293b" text-anchor="start">F</text>
+
+                        <circle cx="110" cy="110" r="5" fill="#dc2626"/>
+                        <text x="122" y="105" font-size="13" font-weight="bold" fill="#dc2626" text-anchor="start">E</text>
+
+                        <!-- BC 線段標示 "1 步" -->
+                        <line x1="70" y1="180" x2="110" y2="180" stroke="#b45309" stroke-width="4"/>
+                        <text x="90" y="165" font-size="14" font-weight="bold" fill="#b45309" text-anchor="middle">1 步</text>
+
+                        <!-- AB 線段標示 "9 步" -->
+                        <line x1="110" y1="180" x2="380" y2="180" stroke="#0f766e" stroke-width="4"/>
+                        <text x="245" y="165" font-size="14" font-weight="bold" fill="#0f766e" text-anchor="middle">9 步</text>
+
+                        <!-- 視線虛線 -->
+                        <line x1="70" y1="120" x2="380" y2="120" stroke="#0284c7" stroke-dasharray="4" stroke-width="1.5"/>
+                        <line x1="70" y1="120" x2="380" y2="50" stroke="#dc2626" stroke-dasharray="4" stroke-width="1.5"/>
+                    </svg>
+                `;
+            },
+            steps: [
+                {
+                    title: "總距離與小距離比例",
+                    getDesc: () => "走 9 步（AB段）立標竿，再走 1 步（BC段）觀測。總步數 CA (1+9=10步) 是 CB (1步) 的幾倍？",
+                    getInputHTML: () => `<div class="input-group"><input type="number" id="s5-in1"><span>倍</span></div>`,
+                    check: () => {
+                        const val = parseFloat(document.getElementById('s5-in1').value);
+                        if (val === 10) return { success: true, summary: "步數比例 CA ÷ CB = 10 ÷ 1 = 10 倍。" };
+                        return { success: false, msg: "請計算 (1 + 9) ÷ 1 的結果！" };
+                    }
+                },
+                {
+                    title: "樹梢高出部分公式推導",
+                    getDesc: () => "樹梢高出平視線部分 DH 等於標竿記號 EF 的幾倍？",
+                    getInputHTML: () => `
+                        <select id="s5-opt2">
+                            <option value="">--請選擇--</option>
+                            <option value="10">10 倍 (DH = 10 × EF)</option>
+                            <option value="1">1 倍</option>
+                        </select>`,
+                    check: () => {
+                        const val = document.getElementById('s5-opt2').value;
+                        if (val === '10') return { success: true, summary: "高出部分 DH = 10 × EF。" };
+                        return { success: false, msg: "大三角形的高是小三角形的 10 倍！" };
+                    }
+                },
+                {
+                    title: "計算總樹高",
+                    getDesc: () => {
+                        const d = stageData[5];
+                        return `核心公式：<div class="formula-highlight">總樹高 = 平視高 BF + 10 × EF</div><br>已知 BF = ${d.bfLen} m，EF = ${d.efLen} m。求總樹高多少公尺？`;
+                    },
+                    getInputHTML: () => `<div class="input-group"><input type="number" step="0.1" id="s5-in3"><span>公尺 (m)</span></div>`,
+                    check: () => {
+                        const d = stageData[5];
+                        const val = parseFloat(document.getElementById('s5-in3').value);
+                        const ans = parseFloat((d.bfLen + 10 * d.efLen).toFixed(1));
+                        if (val === ans) return { success: true, summary: `總樹高 = ${d.bfLen} + 10 × ${d.efLen} = ${ans} 公尺。` };
+                        return { success: false, msg: `請算算看：${d.bfLen} + (10 × ${d.efLen})` };
+                    }
+                }
+            ]
+        },
+
+        // --- 關卡 6：比重測重法 ---
+        6: {
+            title: "關卡 6：比重測重法",
+            renderSVG: function() {
+                const d = stageData[6];
+                document.getElementById('svg-container').innerHTML = `
+                    <svg viewBox="0 0 500 230">
+                        <g transform="translate(160, 25)">
+                            <polygon points="0,60 120,60 160,20 40,20" fill="#94a3b8" stroke="#334155"/>
+                            <polygon points="120,60 160,20 160,90 120,130" fill="#64748b" stroke="#334155"/>
+                            <polygon points="0,60 120,60 120,130 0,130" fill="#cbd5e1" stroke="#334155"/>
+                            
+                            <text x="60" y="100" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">${d.material.name}塊</text>
+                            <text x="60" y="160" font-size="14" fill="#2563eb" font-weight="bold" text-anchor="middle">尺寸：${d.L} × ${d.W} × ${d.H} cm</text>
+                            <text x="60" y="182" font-size="14" fill="#059669" font-weight="bold" text-anchor="middle">${d.material.name}的比重 = ${d.material.sp}</text>
+                        </g>
+                    </svg>
+                `;
+            },
+            steps: [
+                {
+                    title: "長方體體積計算",
+                    getDesc: () => {
+                        const d = stageData[6];
+                        return `公式：<div class="formula-highlight">體積 = 長 × 寬 × 高</div><br>已知尺寸為 ${d.L} × ${d.W} × ${d.H} cm，求體積多少 cm³？`;
+                    },
+                    getInputHTML: () => `<div class="input-group"><input type="number" id="s6-in1"><span>cm³</span></div>`,
+                    check: () => {
+                        const d = stageData[6];
+                        const val = parseFloat(document.getElementById('s6-in1').value);
+                        const ans = d.L * d.W * d.H;
+                        if (val === ans) return { success: true, summary: `體積 = ${d.L} × ${d.W} × ${d.H} = ${ans} cm³。` };
+                        return { success: false, msg: `請將長 × 寬 × 高相乘！` };
+                    }
+                },
+                {
+                    title: "計算公克重",
+                    getDesc: () => {
+                        const d = stageData[6];
+                        return `核心公式：<div class="formula-highlight">重量 = 體積 × 比重</div><br>已知比重為 ${d.material.sp}，請計算重量是多少「公克」(g)？`;
+                    },
+                    getInputHTML: () => `<div class="input-group"><input type="number" id="s6-in2"><span>公克 (g)</span></div>`,
+                    check: () => {
+                        const d = stageData[6];
+                        const val = parseFloat(document.getElementById('s6-in2').value);
+                        const v = d.L * d.W * d.H;
+                        const ans = v * d.material.sp;
+                        if (val === ans) return { success: true, summary: `公克重 = ${v} × ${d.material.sp} = ${ans} g。` };
+                        return { success: false, msg: `請將體積乘以比重 ${d.material.sp}！` };
+                    }
+                },
+                {
+                    title: "換算為公斤重",
+                    getDesc: () => `請將上述公克重換算為「公斤」(kg)？（提示：直接除以 1000）`,
+                    getInputHTML: () => `<div class="input-group"><input type="number" step="0.1" id="s6-in3"><span>公斤 (kg)</span></div>`,
+                    check: () => {
+                        const d = stageData[6];
+                        const val = parseFloat(document.getElementById('s6-in3').value);
+                        const v = d.L * d.W * d.H;
+                        const g = v * d.material.sp;
+                        const ans = g / 1000;
+                        if (val === ans) return { success: true, summary: `換算成功！重量 = ${ans} 公斤。` };
+                        return { success: false, msg: `請將公克重除以 1000！` };
+                    }
+                }
+            ]
+        },
+
+        // --- 關卡 7：準確值與估計值 ---
+        7: {
+            title: "關卡 7：準確值與估計值識別",
+            renderSVG: function() {
+                const d = stageData[7];
+                document.getElementById('svg-container').innerHTML = `
+                    <svg viewBox="0 0 500 230">
+                        <rect x="40" y="50" width="420" height="110" fill="#fef08a" stroke="#eab308" stroke-width="2.5" rx="10"/>
+                        <text x="250" y="105" font-size="28" font-weight="bold" fill="#1e293b" text-anchor="middle">測量讀數：${d.reading} cm</text>
+                        <text x="250" y="140" font-size="14" fill="#71717a" text-anchor="middle">（最小刻度為 1 cm 的直尺）</text>
+                    </svg>
+                `;
+            },
+            steps: [
+                {
+                    title: "觀念問答",
+                    getDesc: () => `核心觀念：<div class="formula-highlight">測量值 = 準確值 + 1位估計值</div><br>測量數值的最後一位數字稱為？`,
+                    getInputHTML: () => `
+                        <select id="s7-opt1">
+                            <option value="">--請選擇--</option>
+                            <option value="A">準確值</option>
+                            <option value="B">估計值</option>
+                        </select>`,
+                    check: () => {
+                        const val = document.getElementById('s7-opt1').value;
+                        if (val === 'B') return { success: true, summary: "最後一位數為「估計值」。" };
+                        return { success: false, msg: "請選擇「估計值」！" };
+                    }
+                },
+                {
+                    title: "識別準確值",
+                    getDesc: () => `針對讀數 <b>${stageData[7].reading} cm</b>，可精確讀出的「準確值」是多少？`,
+                    getInputHTML: () => `<div class="input-group"><input type="number" id="s7-in2"><span>cm</span></div>`,
+                    check: () => {
+                        const val = parseFloat(document.getElementById('s7-in2').value);
+                        const ans = Math.floor(stageData[7].reading);
+                        if (val === ans) return { success: true, summary: `準確值為 ${ans} cm。` };
+                        return { success: false, msg: `請填寫小數點前面的整數部份 (${ans})` };
+                    }
+                },
+                {
+                    title: "識別估計值",
+                    getDesc: () => `針對讀數 <b>${stageData[7].reading} cm</b>，最後一位目測的「估計值」是多少？`,
+                    getInputHTML: () => `<div class="input-group"><input type="number" step="0.1" id="s7-in3"><span>cm</span></div>`,
+                    check: () => {
+                        const val = parseFloat(document.getElementById('s7-in3').value);
+                        const ans = parseFloat((stageData[7].reading % 1).toFixed(1));
+                        if (Math.abs(val - ans) < 0.01) return { success: true, summary: `估計值為 ${ans} cm。` };
+                        return { success: false, msg: `請填寫小數點後面的估計數字 (${ans})` };
+                    }
+                }
+            ]
+        },
+
+        // --- 關卡 8：絕對誤差與相對誤差 ---
+        8: {
+            title: "關卡 8：絕對誤差與相對誤差",
+            renderSVG: function() {
+                const d = stageData[8];
+                document.getElementById('svg-container').innerHTML = `
+                    <svg viewBox="0 0 500 230">
+                        <rect x="50" y="40" width="180" height="140" fill="#ffffff" stroke="#cbd5e1" stroke-width="2.5" rx="10"/>
+                        <text x="140" y="80" font-size="15" font-weight="bold" fill="#0f766e" text-anchor="middle">權狀標示 (真值)</text>
+                        <text x="140" y="130" font-size="28" font-weight="bold" fill="#0f766e" text-anchor="middle">${d.trueVal} 坪</text>
+
+                        <rect x="270" y="40" width="180" height="140" fill="#ffffff" stroke="#cbd5e1" stroke-width="2.5" rx="10"/>
+                        <text x="360" y="80" font-size="15" font-weight="bold" fill="#2563eb" text-anchor="middle">實測結果 (測量值)</text>
+                        <text x="360" y="130" font-size="28" font-weight="bold" fill="#2563eb" text-anchor="middle">${d.measVal} 坪</text>
+                    </svg>
+                `;
+            },
+            steps: [
+                {
+                    title: "絕對誤差計算",
+                    getDesc: () => {
+                        const d = stageData[8];
+                        return `核心公式：<div class="formula-highlight">絕對誤差 = 測量值 - 真值</div><br>已知真值 ${d.trueVal} 坪，實測值 ${d.measVal} 坪。求絕對誤差多少坪？`;
+                    },
+                    getInputHTML: () => `<div class="input-group"><input type="number" id="s8-in1"><span>坪</span></div>`,
+                    check: () => {
+                        const d = stageData[8];
+                        const val = parseFloat(document.getElementById('s8-in1').value);
+                        const ans = d.measVal - d.trueVal;
+                        if (val === ans) return { success: true, summary: `絕對誤差 = ${d.measVal} - ${d.trueVal} = ${ans} 坪。` };
+                        return { success: false, msg: `請計算 ${d.measVal} - ${d.trueVal}` };
+                    }
+                },
+                {
+                    title: "相對誤差百分比計算",
+                    getDesc: () => {
+                        const d = stageData[8];
+                        return `核心公式：<div class="formula-highlight">相對誤差 = (絕對誤差 ÷ 真值) × 100%</div><br>請算出相對誤差百分比是多少 %？`;
+                    },
+                    getInputHTML: () => `<div class="input-group"><input type="number" step="0.1" id="s8-in2"><span>%</span></div>`,
+                    check: () => {
+                        const d = stageData[8];
+                        const val = parseFloat(document.getElementById('s8-in2').value);
+                        const absErr = Math.abs(d.measVal - d.trueVal);
+                        const ans = parseFloat(((absErr / d.trueVal) * 100).toFixed(1));
+                        if (Math.abs(val - ans) < 0.1) return { success: true, summary: `相對誤差 = (${absErr} ÷ ${d.trueVal}) × 100% = ${ans}%。` };
+                        return { success: false, msg: `請計算 (${absErr} ÷ ${d.trueVal}) × 100` };
+                    }
+                }
+            ]
+        }
+    };
+</script>
+</body>
+</html>
