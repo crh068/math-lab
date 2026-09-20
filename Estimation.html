@@ -379,7 +379,7 @@
         return arr[Math.floor(Math.random() * arr.length)];
     }
 
-    // 重置所有數據並回回第 1 關步驟 1
+    // 重置所有數據並返回第 1 關步驟 1
     function resetAllData() {
         unlockedStage = 1;
         currentStage = 1;
@@ -412,7 +412,8 @@
                 L: 10, W: 10, H: 10
             },
             7: {
-                reading: pickRandom([12.3, 18.5, 25.4, 32.8])
+                // 第 7 關卡測量結果為小數點後 2 位 (例如最小刻度為 0.1 cm，讀數估計到 0.01 cm)
+                reading: pickRandom([12.34, 18.56, 25.47, 32.85])
             },
             8: {
                 trueVal: pickRandom([100, 200]),
@@ -665,6 +666,7 @@
                             <option value="A">真值測量</option>
                             <option value="B">估測</option>
                             <option value="C">絕對誤差</option>
+                            <option value="D">相對誤差</option>
                         </select>`,
                     check: () => {
                         const val = document.getElementById('s1-opt1').value;
@@ -681,6 +683,7 @@
                             <option value="A">永備尺</option>
                             <option value="B">標準鋼捲尺</option>
                             <option value="C">游標卡尺</option>
+                            <option value="D">雷射測距儀</option>
                         </select>`,
                     check: () => {
                         const val = document.getElementById('s1-opt2').value;
@@ -783,6 +786,7 @@
                             <option value="A">正三角形</option>
                             <option value="B">等腰直角三角形</option>
                             <option value="C">鈍角三角形</option>
+                            <option value="D">任意直角三角形</option>
                         </select>`,
                     check: () => {
                         const val = document.getElementById('s3-opt1').value;
@@ -798,11 +802,13 @@
                             <option value="">--請選擇--</option>
                             <option value="A">地面 BC 距離</option>
                             <option value="B">AC 斜邊距離</option>
+                            <option value="C">樹幹直徑</option>
+                            <option value="D">觀測者身長</option>
                         </select>`,
                     check: () => {
                         const val = document.getElementById('s3-opt2').value;
                         if (val === 'A') return { success: true, summary: "樹高直接等於地面 BC 距離。" };
-                        return { success: false, msg: "請選擇 BC 距離！" };
+                        return { success: false, msg: "請選擇地面 BC 距離！" };
                     }
                 },
                 {
@@ -818,7 +824,7 @@
             ]
         },
 
-        // --- 關卡 4：相似三角測距法（B 點標示於點下方） ---
+        // --- 關卡 4：相似三角測距法 ---
         4: {
             title: "關卡 4：相似三角測距法（測量河寬）",
             renderSVG: function() {
@@ -836,7 +842,6 @@
 
                         <line x1="100" y1="110" x2="350" y2="110" stroke="#1e293b" stroke-width="2.5"/>
 
-                        <!-- B 點標示移至點的正下方 (y=132)，不被虛線遮蔽 -->
                         <circle cx="100" cy="110" r="5" fill="#1e293b"/>
                         <text x="100" y="132" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">B</text>
 
@@ -883,12 +888,17 @@
                         const r = d.stepsBC / d.stepsCD;
                         return `核心公式：<div class="formula-highlight">河寬 AB = ${r} × DE</div><br>已知大三角形是小三角形的 ${r} 倍，河寬 AB 等於 DE 的幾倍？`;
                     },
-                    getInputHTML: () => `
+                    getInputHTML: () => {
+                        const r = stageData[4].stepsBC / stageData[4].stepsCD;
+                        return `
                         <select id="s4-opt2">
                             <option value="">--請選擇--</option>
-                            <option value="ans">${stageData[4].stepsBC / stageData[4].stepsCD} 倍</option>
-                            <option value="1">1 倍</option>
-                        </select>`,
+                            <option value="ans">${r} 倍</option>
+                            <option value="w1">1 倍</option>
+                            <option value="w2">${r + 1} 倍</option>
+                            <option value="w3">${Math.max(1, r - 1)} 倍</option>
+                        </select>`;
+                    },
                     check: () => {
                         const val = document.getElementById('s4-opt2').value;
                         if (val === 'ans') return { success: true, summary: `河寬 AB 等於 DE 的倍數關係成立。` };
@@ -915,46 +925,37 @@
             ]
         },
 
-        // --- 關卡 5：相似三角測高法（修正 BF, EF 與 D 樹頂之遮蔽） ---
+        // --- 關卡 5：相似三角測高法 ---
         5: {
             title: "關卡 5：相似三角測高法（標竿測高）",
             renderSVG: function() {
                 const d = stageData[5];
                 document.getElementById('svg-container').innerHTML = `
                     <svg viewBox="0 0 500 230">
-                        <!-- 地面基線 -->
                         <line x1="20" y1="180" x2="480" y2="180" stroke="#475569" stroke-width="2.5"/>
 
-                        <!-- 左上方數據提示框 (移出中央，徹底解決遮蔽與疊字) -->
                         <rect x="20" y="10" width="270" height="34" rx="6" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
                         <text x="155" y="32" font-size="13" font-weight="bold" fill="#0f766e" text-anchor="middle">BF(平視高) = ${d.bfLen}m ， EF(記號距) = ${d.efLen}m</text>
 
-                        <!-- 樹木與樹頂 D -->
                         <rect x="375" y="60" width="10" height="120" fill="#78350f"/>
                         <polygon points="380,50 330,120 430,120" fill="#15803d"/>
                         
-                        <!-- 點 D (樹頂) - 標籤移至點右側，避免與樹葉重疊 -->
                         <circle cx="380" cy="50" r="5" fill="#dc2626"/>
                         <text x="395" y="54" font-weight="bold" font-size="13" fill="#dc2626" text-anchor="start">D (樹頂)</text>
 
-                        <!-- 點 H (平視點) -->
                         <circle cx="380" cy="120" r="4" fill="#0284c7"/>
                         <text x="395" y="124" font-weight="bold" font-size="13" fill="#0284c7" text-anchor="start">H (平視點)</text>
 
-                        <!-- 點 A (樹底) -->
                         <circle cx="380" cy="180" r="5" fill="#1e293b"/>
                         <text x="380" y="198" font-weight="bold" font-size="13" fill="#1e293b" text-anchor="middle">A (樹底)</text>
 
-                        <!-- 觀測點 G (眼睛) -->
                         <circle cx="70" cy="120" r="5" fill="#ea580c"/>
                         <text x="58" y="115" font-size="13" font-weight="bold" fill="#ea580c" text-anchor="end">G (眼睛)</text>
                         <line x1="70" y1="125" x2="70" y2="180" stroke="#ea580c" stroke-width="2"/>
 
-                        <!-- 點 C -->
                         <circle cx="70" cy="180" r="5" fill="#1e293b"/>
                         <text x="70" y="198" font-size="13" font-weight="bold" fill="#1e293b" text-anchor="middle">C</text>
 
-                        <!-- 標竿與點 B, E, F -->
                         <line x1="110" y1="70" x2="110" y2="180" stroke="#d97706" stroke-width="4"/>
                         <circle cx="110" cy="180" r="5" fill="#1e293b"/>
                         <text x="110" y="198" font-size="13" font-weight="bold" fill="#1e293b" text-anchor="middle">B</text>
@@ -965,15 +966,12 @@
                         <circle cx="110" cy="110" r="5" fill="#dc2626"/>
                         <text x="122" y="105" font-size="13" font-weight="bold" fill="#dc2626" text-anchor="start">E</text>
 
-                        <!-- BC 線段標示 "1 步" -->
                         <line x1="70" y1="180" x2="110" y2="180" stroke="#b45309" stroke-width="4"/>
                         <text x="90" y="165" font-size="14" font-weight="bold" fill="#b45309" text-anchor="middle">1 步</text>
 
-                        <!-- AB 線段標示 "9 步" -->
                         <line x1="110" y1="180" x2="380" y2="180" stroke="#0f766e" stroke-width="4"/>
                         <text x="245" y="165" font-size="14" font-weight="bold" fill="#0f766e" text-anchor="middle">9 步</text>
 
-                        <!-- 視線虛線 -->
                         <line x1="70" y1="120" x2="380" y2="120" stroke="#0284c7" stroke-dasharray="4" stroke-width="1.5"/>
                         <line x1="70" y1="120" x2="380" y2="50" stroke="#dc2626" stroke-dasharray="4" stroke-width="1.5"/>
                     </svg>
@@ -997,7 +995,9 @@
                         <select id="s5-opt2">
                             <option value="">--請選擇--</option>
                             <option value="10">10 倍 (DH = 10 × EF)</option>
-                            <option value="1">1 倍</option>
+                            <option value="1">1 倍 (DH = 1 × EF)</option>
+                            <option value="9">9 倍 (DH = 9 × EF)</option>
+                            <option value="5">5 倍 (DH = 5 × EF)</option>
                         </select>`,
                     check: () => {
                         const val = document.getElementById('s5-opt2').value;
@@ -1091,7 +1091,7 @@
             ]
         },
 
-        // --- 關卡 7：準確值與估計值 ---
+        // --- 關卡 7：準確值與估計值（修正為小數點後 2 位測量值） ---
         7: {
             title: "關卡 7：準確值與估計值識別",
             renderSVG: function() {
@@ -1099,47 +1099,58 @@
                 document.getElementById('svg-container').innerHTML = `
                     <svg viewBox="0 0 500 230">
                         <rect x="40" y="50" width="420" height="110" fill="#fef08a" stroke="#eab308" stroke-width="2.5" rx="10"/>
-                        <text x="250" y="105" font-size="28" font-weight="bold" fill="#1e293b" text-anchor="middle">測量讀數：${d.reading} cm</text>
-                        <text x="250" y="140" font-size="14" fill="#71717a" text-anchor="middle">（最小刻度為 1 cm 的直尺）</text>
+                        <text x="250" y="105" font-size="28" font-weight="bold" fill="#1e293b" text-anchor="middle">測量讀數：${d.reading.toFixed(2)} cm</text>
+                        <text x="250" y="140" font-size="14" fill="#71717a" text-anchor="middle">（最小刻度為 0.1 cm / 1 mm 的直尺）</text>
                     </svg>
                 `;
             },
             steps: [
                 {
                     title: "觀念問答",
-                    getDesc: () => `核心觀念：<div class="formula-highlight">測量值 = 準確值 + 1位估計值</div><br>測量數值的最後一位數字稱為？`,
+                    getDesc: () => `核心觀念：<div class="formula-highlight">測量值 = 準確值 + 1位估計值</div><br>測量數值最後一位（小數點第2位）目測數字稱為？`,
                     getInputHTML: () => `
                         <select id="s7-opt1">
                             <option value="">--請選擇--</option>
                             <option value="A">準確值</option>
                             <option value="B">估計值</option>
+                            <option value="C">絕對誤差</option>
+                            <option value="D">相對誤差</option>
                         </select>`,
                     check: () => {
                         const val = document.getElementById('s7-opt1').value;
-                        if (val === 'B') return { success: true, summary: "最後一位數為「估計值」。" };
+                        if (val === 'B') return { success: true, summary: "測量值最後一位數為「估計值」。" };
                         return { success: false, msg: "請選擇「估計值」！" };
                     }
                 },
                 {
                     title: "識別準確值",
-                    getDesc: () => `針對讀數 <b>${stageData[7].reading} cm</b>，可精確讀出的「準確值」是多少？`,
-                    getInputHTML: () => `<div class="input-group"><input type="number" id="s7-in2"><span>cm</span></div>`,
+                    getDesc: () => {
+                        const d = stageData[7];
+                        return `針對讀數 <b>${d.reading.toFixed(2)} cm</b>，最小刻度為 0.1 cm，能精確讀出的「準確值」是多少 cm？`;
+                    },
+                    getInputHTML: () => `<div class="input-group"><input type="number" step="0.1" id="s7-in2"><span>cm</span></div>`,
                     check: () => {
+                        const d = stageData[7];
                         const val = parseFloat(document.getElementById('s7-in2').value);
-                        const ans = Math.floor(stageData[7].reading);
-                        if (val === ans) return { success: true, summary: `準確值為 ${ans} cm。` };
-                        return { success: false, msg: `請填寫小數點前面的整數部份 (${ans})` };
+                        const accurateVal = parseFloat((Math.floor(d.reading * 10) / 10).toFixed(1));
+                        if (Math.abs(val - accurateVal) < 0.01) return { success: true, summary: `準確值為 ${accurateVal} cm。` };
+                        return { success: false, msg: `請填寫精確至最小刻度的數值 (${accurateVal})` };
                     }
                 },
                 {
                     title: "識別估計值",
-                    getDesc: () => `針對讀數 <b>${stageData[7].reading} cm</b>，最後一位目測的「估計值」是多少？`,
-                    getInputHTML: () => `<div class="input-group"><input type="number" step="0.1" id="s7-in3"><span>cm</span></div>`,
+                    getDesc: () => {
+                        const d = stageData[7];
+                        return `針對讀數 <b>${d.reading.toFixed(2)} cm</b>，最後一位目測的「估計值」是多少 cm？（請填寫包含小數點的數值，如 0.04）`;
+                    },
+                    getInputHTML: () => `<div class="input-group"><input type="number" step="0.01" id="s7-in3"><span>cm</span></div>`,
                     check: () => {
+                        const d = stageData[7];
                         const val = parseFloat(document.getElementById('s7-in3').value);
-                        const ans = parseFloat((stageData[7].reading % 1).toFixed(1));
-                        if (Math.abs(val - ans) < 0.01) return { success: true, summary: `估計值為 ${ans} cm。` };
-                        return { success: false, msg: `請填寫小數點後面的估計數字 (${ans})` };
+                        const accurateVal = Math.floor(d.reading * 10) / 10;
+                        const estimatedVal = parseFloat((d.reading - accurateVal).toFixed(2));
+                        if (Math.abs(val - estimatedVal) < 0.005) return { success: true, summary: `估計值為 ${estimatedVal} cm。` };
+                        return { success: false, msg: `請填寫最後一位估計值的數值 (${estimatedVal})` };
                     }
                 }
             ]
