@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>高中數學互動學具：二元一次聯立不等式與線性規劃</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --border: #cbd5e1;
+            --success: #16a34a;
+            --error: #dc2626;
+            --disabled: #94a3b8;
+            --warning: #d97706;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); line-height: 1.4; padding: 12px; height: 100vh; overflow: hidden; }
+        
+        .app-container { max-width: 1120px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
+
+        header { text-align: center; margin-bottom: 8px; flex-shrink: 0; }
+        header h1 { font-size: 1.35rem; color: #0f172a; margin-bottom: 2px; }
+        header p { color: #64748b; font-size: 0.82rem; }
+
+        .math { font-family: "Times New Roman", Times, serif; font-style: italic; padding: 0 2px; }
+
+        .math-system { display: inline-flex; align-items: center; vertical-align: middle; margin: 4px 0; }
+        .brace-svg { width: 12px; align-self: stretch; margin-right: 6px; }
+        .eq-group { display: flex; flex-direction: column; gap: 2px; text-align: left; font-size: 0.9rem; }
+
+        .nav-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 8px; flex-shrink: 0; }
+        .tab-btn { 
+            padding: 8px 16px; font-size: 0.88rem; font-weight: bold; border: 2px solid var(--border); 
+            background: #fff; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+        }
+        .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .tab-btn.locked { background: #e2e8f0; color: var(--disabled); border-color: #cbd5e1; cursor: not-allowed; }
+
+        .tab-content { display: none; background: var(--card-bg); border-radius: 12px; padding: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); flex: 1; overflow: hidden; }
+        .tab-content.active { display: flex; flex-direction: column; }
+
+        h2 { font-size: 1.05rem; margin-bottom: 8px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
+        
+        .btn { padding: 6px 12px; font-size: 0.85rem; border: none; border-radius: 6px; cursor: pointer; background: var(--primary); color: #fff; transition: 0.2s; font-weight: bold; }
+        .btn:hover { background: var(--primary-hover); }
+        .btn:disabled { background: var(--disabled); cursor: not-allowed; }
+        .btn-sm { padding: 4px 8px; font-size: 0.8rem; }
+        .btn-warning { background: var(--warning); }
+        .btn-warning:hover { background: #b45309; }
+        .btn-outline { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: #eff6ff; }
+
+        .canvas-container { display: flex; gap: 14px; flex: 1; min-height: 0; align-items: flex-start; }
+        .canvas-wrapper { flex: 0 0 440px; display: flex; flex-direction: column; align-items: center; position: relative; }
+        canvas { border: 1px solid var(--border); border-radius: 8px; background: #ffffff; width: 440px; height: 440px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        .controls-panel { flex: 1; min-width: 0; height: 100%; max-height: 480px; overflow-y: auto; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; }
+
+        .slider-group { background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 10px; }
+        .slider-group label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 0.88rem; }
+        .slider-group input { width: 100%; height: 24px; }
+        .k-display-large { font-size: 1.1rem; font-weight: bold; margin-top: 4px; padding: 4px; border-radius: 6px; background: #f1f5f9; text-align: center; }
+
+        .q-title { font-weight: bold; margin-bottom: 6px; font-size: 0.9rem; color: #0f172a; }
+        .select-inline, .input-inline { padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px; font-family: "Times New Roman", serif; font-size: 0.88rem; }
+        .input-inline { width: 52px; text-align: center; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 0.84rem; }
+        th, td { border: 1px solid var(--border); padding: 5px 6px; text-align: center; }
+        th { background: #f1f5f9; }
+
+        .step-box { background: #ffffff; padding: 10px 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-left: 4px solid var(--primary); }
+        .step-box.locked-step { opacity: 0.5; pointer-events: none; filter: grayscale(0.6); }
+
+        .hint-box { margin-top: 6px; padding: 6px 10px; border-radius: 6px; font-size: 0.84rem; line-height: 1.35; }
+        .hint-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .hint-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .hint-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .hint-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        .line-input-row { background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 8px; font-size: 0.84rem; }
+        .line-input-row.done { border-color: var(--success); background: #f0fdf4; }
+
+        /* 第 1 關對對碰 */
+        .matching-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+        .match-card { padding: 8px 12px; border: 2px solid var(--border); border-radius: 8px; background: #fafafa; cursor: pointer; user-select: none; transition: 0.2s; min-height: 44px; display: flex; align-items: center; font-size: 0.88rem; }
+        .match-card:hover { border-color: var(--primary); background: #eff6ff; }
+        .match-card.selected { border-color: var(--primary); background: #dbeafe; font-weight: bold; }
+        .match-card.matched { border-color: var(--success); background: #f0fdf4; color: var(--success); cursor: default; }
+
+        /* 通關 Modal 與 Confetti Canvas */
+        #confettiCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9998; display: none; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.65); display: flex; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(2px); }
+        .modal-card { background: #fff; border-radius: 16px; padding: 24px 32px; width: 90%; max-width: 440px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); animation: popIn 0.3s ease-out; }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- 恭喜通關 Modal -->
+    <div id="congratsModal" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <div style="font-size:3.5rem; margin-bottom:6px;">🎉</div>
+            <h2 style="color:#16a34a; font-size:1.4rem; margin-bottom:8px; border:none; justify-content:center;">恭喜完全通關！</h2>
+            <p style="font-size:0.92rem; color:#475569; line-height:1.6; margin-bottom:18px;">
+                您已成功完成全邊界直線繪製、區域即時塗色驗證、頂點逐步解鎖與極值計算的所有步驟！
+            </p>
+            <button class="btn" style="padding:10px 24px; font-size:0.95rem; background:#16a34a;" onclick="restartApp()">確認/重新開始</button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <h1>二元一次聯立不等式與線性規劃 互動學具</h1>
+            <p>全邊界半平面垂直箭頭 · 區域即時塗色預覽 · 頂點部份驗證即時顯示 · 動態隨機命題</p>
+        </header>
+
+        <!-- 頁籤導覽 (前關卡通過才解鎖下一關卡) -->
+        <div class="nav-tabs">
+            <button id="btn-tab1" class="tab-btn active" onclick="switchTab(1)"><span>第 1 關：觀念對對碰</span></button>
+            <button id="btn-tab2" class="tab-btn locked" onclick="switchTab(2)"><span id="lock2">🔒</span> <span>第 2 關：雙斜率極值探索</span></button>
+            <button id="btn-tab3" class="tab-btn locked" onclick="switchTab(3)"><span id="lock3">🔒</span> <span>第 3 關：實戰逐步繪圖解題</span></button>
+        </div>
+
+        <!-- STAGE 1 -->
+        <div id="stage1" class="tab-content active">
+            <h2>第 1 關：線性規劃核心專有名詞對對碰</h2>
+            <p style="font-size: 0.88rem; color: #475569;">請先點擊左側「專有名詞」，再點擊右側對應的「觀念定義」進行配對（配對完成即可解鎖第 2 關）：</p>
+            
+            <div class="matching-grid">
+                <div class="term-list" id="termList" style="display:flex; flex-direction:column; gap:8px;"></div>
+                <div class="def-list" id="defList" style="display:flex; flex-direction:column; gap:8px;"></div>
+            </div>
+            <div id="stage1Result" class="hint-box hint-info" style="display:none; margin-top:12px;"></div>
+        </div>
+
+        <!-- STAGE 2 -->
+        <div id="stage2" class="tab-content">
+            <h2>
+                <span>第 2 關：目標函數動態掃描與極值發生位置觀察</span>
+            </h2>
+            
+            <div class="canvas-container">
+                <div class="canvas-wrapper">
+                    <canvas id="canvas2" width="440" height="440"></canvas>
+                </div>
+                
+                <div class="controls-panel">
+                    <div style="background:#f1f5f9; padding:8px 12px; border-radius:6px; margin-bottom:10px; font-size:0.88rem;">
+                        <strong>限制條件：</strong>
+                        <div class="math-system">
+                            <svg class="brace-svg" viewBox="0 0 15 100" preserveAspectRatio="none">
+                                <path d="M 14 2 C 7 2 7 25 7 48 C 7 49 1 50 1 50 C 1 50 7 51 7 52 C 7 75 7 98 14 98" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                            </svg>
+                            <div class="eq-group" id="s2-inequalities"></div>
+                        </div>
+                    </div>
+
+                    <!-- 題目分頁切換 -->
+                    <div style="display:flex; gap:6px; margin-bottom:10px;">
+                        <button id="s2-tab-q1" class="btn" style="flex:1;" onclick="switchS2SubQ(1)">題目 1：斜率 m &gt; 0</button>
+                        <button id="s2-tab-q2" class="btn" style="flex:1; background:#94a3b8;" disabled onclick="switchS2SubQ(2)">題目 2：斜率 m &lt; 0</button>
+                    </div>
+
+                    <div style="margin-bottom:8px; font-weight:bold; font-size:0.9rem;" id="s2-q-header">
+                        題目 1 目標函數：<span id="s2-obj-str" class="math"></span>
+                    </div>
+
+                    <div class="slider-group">
+                        <label for="kSlider">拖動滑桿平移目標函數直線 <span id="s2-slider-eq" class="math"></span>：</label>
+                        <input type="range" id="kSlider" step="0.1">
+                        
+                        <div class="k-display-large" id="kDisplayBox">
+                            目前 <span class="math">k</span> 值：<span id="kValText">--</span>
+                        </div>
+                    </div>
+
+                    <!-- 最小值與最大值獨立驗證 -->
+                    <div id="s2_step_extremes" class="step-box">
+                        <div class="q-title" id="s2-subq-title">題目 1 極值填答與獨立驗證</div>
+                        
+                        <div style="background:#f8fafc; padding:8px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:8px; font-size:0.86rem;">
+                            <b>1. 最小值驗證：</b><br>
+                            最小值 <span class="math">k</span> = <input type="number" id="s2_ans_min" class="input-inline">，發生在頂點 (<input type="number" id="s2_min_x" class="input-inline">, <input type="number" id="s2_min_y" class="input-inline">)
+                            <button class="btn btn-sm" style="margin-top:4px; width:100%;" onclick="checkS2Min()">驗證最小值</button>
+                            <div id="s2_min_msg" class="hint-box" style="display:none;"></div>
+                        </div>
+
+                        <div style="background:#f8fafc; padding:8px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:6px; font-size:0.86rem;">
+                            <b>2. 最大值驗證：</b><br>
+                            最大值 <span class="math">k</span> = <input type="number" id="s2_ans_max" class="input-inline">，發生在頂點 (<input type="number" id="s2_max_x" class="input-inline">, <input type="number" id="s2_max_y" class="input-inline">)
+                            <button class="btn btn-sm" style="margin-top:4px; width:100%;" onclick="checkS2Max()">驗證最大值</button>
+                            <div id="s2_max_msg" class="hint-box" style="display:none;"></div>
+                        </div>
+
+                        <div id="s2_subq_summary" class="hint-box hint-success" style="display:none;"></div>
+                    </div>
+
+                    <!-- 幾何歸納驗證 -->
+                    <div id="s2_step_theory" class="step-box locked-step">
+                        <div class="q-title">最終步驟：幾何歸納驗證</div>
+                        <p style="font-size:0.84rem; margin-bottom:6px;">觀察斜率 m &gt; 0 與 m &lt; 0 的題目，目標函數的最佳解（極值）通常會在可行解區域的何處發生？</p>
+                        <select id="s2_theory" class="select-inline" style="width:100%;">
+                            <option value="">請選擇幾何觀念...</option>
+                            <option value="center">可行解區域的正中心內部</option>
+                            <option value="vertex">可行解區域的頂點（邊界交點）上</option>
+                            <option value="random">區域外的任意點</option>
+                        </select>
+                        <button class="btn" style="margin-top:8px; width:100%;" onclick="checkS2Theory()">驗證幾何歸納</button>
+                        <div id="s2_theory_msg" class="hint-box" style="display:none;"></div>
+                    </div>
+
+                    <div id="s2TableContainer" style="display:none; margin-top:10px;">
+                        <h4 style="font-size:0.88rem;">頂點代入檢驗總結表 (頂點法)</h4>
+                        <table id="s2SummaryTable">
+                            <thead>
+                                <tr>
+                                    <th>頂點 (<span class="math">x</span>, <span class="math">y</span>)</th>
+                                    <th>題目 1 代入值</th>
+                                    <th>題目 2 代入值</th>
+                                </tr>
+                            </thead>
+                            <tbody id="s2TableBody"></tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- STAGE 3 -->
+        <div id="stage3" class="tab-content">
+            <h2>
+                <span>第 3 關：實戰演練——從無到有繪製全邊界與求解</span>
+            </h2>
+            
+            <div class="canvas-container">
+                <div class="canvas-wrapper">
+                    <canvas id="canvas3" width="440" height="440"></canvas>
+                    <div id="canvas3-tip" style="position:absolute; bottom:8px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,0.85); color:#fff; font-size:0.78rem; padding:4px 10px; border-radius:12px; display:none; pointer-events:none; white-space:nowrap;">
+                        💡 步驟 1.5 啟用：請點擊畫布選取區域進行即時塗色
+                    </div>
+                </div>
+
+                <div class="controls-panel">
+                    <div style="background:#f1f5f9; padding:8px 12px; border-radius:6px; margin-bottom:10px; font-size:0.88rem;">
+                        <p><strong>題目限制條件：</strong></p>
+                        <div class="math-system">
+                            <svg class="brace-svg" viewBox="0 0 15 100" preserveAspectRatio="none">
+                                <path d="M 14 2 C 7 2 7 25 7 48 C 7 49 1 50 1 50 C 1 50 7 51 7 52 C 7 75 7 98 14 98" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                            </svg>
+                            <div class="eq-group" id="s3-inequalities"></div>
+                        </div>
+                        <div style="margin-top:2px;"><strong>目標函數：</strong><span id="s3-obj-str" class="math"></span></div>
+                    </div>
+
+                    <!-- Step 1 -->
+                    <div id="s3-step1" class="step-box">
+                        <div class="q-title">步驟 1：逐一繪製 4 條邊界直線與半平面</div>
+                        <p style="font-size:0.82rem; color:#64748b; margin-bottom:8px;">請尋找線上兩點、線型，並選取符合不等式的半平面側：</p>
+                        
+                        <div id="s3-lines-inputs"></div>
+                        <div id="s3-step1-msg" class="hint-box" style="display:none;"></div>
+                    </div>
+
+                    <!-- Step 1.5 -->
+                    <div id="s3-step-region" class="step-box locked-step">
+                        <div class="q-title">步驟 1.5：選擇完全重疊的可行解區域</div>
+                        <p style="font-size:0.84rem; color:#0369a1; margin-bottom:6px;">
+                            👉 <b>請直接在左側畫布上看圖點擊</b>您認為是 4 個半平面完全重疊的區域：
+                        </p>
+                        <div id="s3-region-msg" class="hint-box hint-info">等待在畫布上點擊目標區域進行即時塗色...</div>
+                        <button class="btn btn-warning" id="s3-verify-region-btn" style="margin-top:8px; width:100%; display:none;" onclick="verifyS3Region()">驗證區域選擇</button>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div id="s3-step2" class="step-box locked-step">
+                        <div class="q-title">步驟 2：求解可行解區域的所有頂點座標</div>
+                        <p style="font-size:0.84rem; margin-bottom:6px;">請觀察畫布上的綠色可行解區域，填入 4 個頂點座標（驗證正確的頂點會即時標示在畫布上）：</p>
+                        <div style="font-size:0.86rem; display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                            <div>頂點 1: (<input type="number" id="v1_x" class="input-inline">, <input type="number" id="v1_y" class="input-inline">)</div>
+                            <div>頂點 2: (<input type="number" id="v2_x" class="input-inline">, <input type="number" id="v2_y" class="input-inline">)</div>
+                            <div>頂點 3: (<input type="number" id="v3_x" class="input-inline">, <input type="number" id="v3_y" class="input-inline">)</div>
+                            <div>頂點 4: (<input type="number" id="v4_x" class="input-inline">, <input type="number" id="v4_y" class="input-inline">)</div>
+                        </div>
+                        <button class="btn" style="margin-top:8px; width:100%;" onclick="checkS3Step2()">驗證頂點座標</button>
+                        <div id="s3-step2-msg" class="hint-box" style="display:none;"></div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div id="s3-step3" class="step-box locked-step">
+                        <div class="q-title">步驟 3：頂點代入目標函數逐一求值與驗證</div>
+                        <p style="font-size:0.84rem; margin-bottom:6px;">請將上方驗證正確的頂點分別代入目標函數，並點擊按鈕逐一驗證：</p>
+                        <table id="s3EvalTable">
+                            <thead>
+                                <tr>
+                                    <th>頂點 (<span class="math">x</span>, <span class="math">y</span>)</th>
+                                    <th>計算值 <span id="s3-eval-obj-str" class="math"></span></th>
+                                    <th>逐一驗證</th>
+                                    <th>狀態</th>
+                                </tr>
+                            </thead>
+                            <tbody id="s3TableBody"></tbody>
+                        </table>
+                        <div id="s3-eval-msg" class="hint-box" style="display:none;"></div>
+
+                        <!-- 最終極值填答區 -->
+                        <div id="s3-final-ans-box" style="margin-top:10px; display:none; border-top:1px dashed #cbd5e1; padding-top:8px;">
+                            <div style="font-size:0.88rem; line-height:1.8;">
+                                <b>最終極值結論：</b><br>
+                                • 最大值為：<input type="number" id="ans_max" class="input-inline"><br>
+                                • 最小值為：<input type="number" id="ans_min" class="input-inline">
+                            </div>
+                            <button class="btn" style="margin-top:8px; width:100%;" onclick="checkS3Step3()">驗證最終極值並通關</button>
+                            <div id="s3-step3-msg" class="hint-box" style="display:none;"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 第 2 關題庫
+        const problemPoolStage2 = [
+            {
+                lines: [
+                    { id: 'l1', label: '① x ≥ -1', lineEq: 'x = -1', a: 1, b: 0, c: -1 },
+                    { id: 'l2', label: '② y ≥ -1', lineEq: 'y = -1', a: 0, b: 1, c: -1 },
+                    { id: 'l3', label: '③ 3x + y ≤ 8', lineEq: '3x + y = 8', a: 3, b: 1, c: 8 },
+                    { id: 'l4', label: '④ x - 3y ≥ -4', lineEq: 'x - 3y = -4', a: 1, b: -3, c: -4 }
+                ],
+                vertices: [{x:-1, y:-1}, {x:3, y:-1}, {x:2, y:2}, {x:-1, y:1}],
+                q1: { slopeType: "m > 0", alpha: -2, beta: 1, str: 'f(x, y) = -2x + y', eqStr: '-2x + y = k' },
+                q2: { slopeType: "m < 0", alpha: 2, beta: 1, str: 'f(x, y) = 2x + y', eqStr: '2x + y = k' }
+            },
+            {
+                lines: [
+                    { id: 'l1', label: '① x ≥ -2', lineEq: 'x = -2', a: 1, b: 0, c: -2 },
+                    { id: 'l2', label: '② y ≥ 0', lineEq: 'y = 0', a: 0, b: 1, c: 0 },
+                    { id: 'l3', label: '③ 3x + 2y ≤ 12', lineEq: '3x + 2y = 12', a: 3, b: 2, c: 12 },
+                    { id: 'l4', label: '④ x - 4y ≥ -10', lineEq: 'x - 4y = -10', a: 1, b: -4, c: -10 }
+                ],
+                vertices: [{x:-2, y:0}, {x:4, y:0}, {x:2, y:3}, {x:-2, y:2}],
+                q1: { slopeType: "m > 0", alpha: -1, beta: 1, str: 'f(x, y) = -x + y', eqStr: '-x + y = k' },
+                q2: { slopeType: "m < 0", alpha: 3, beta: 1, str: 'f(x, y) = 3x + y', eqStr: '3x + y = k' }
+            },
+            {
+                lines: [
+                    { id: 'l1', label: '① x ≥ 0', lineEq: 'x = 0', a: 1, b: 0, c: 0 },
+                    { id: 'l2', label: '② y ≥ -2', lineEq: 'y = -2', a: 0, b: 1, c: -2 },
+                    { id: 'l3', label: '③ 2x + y ≤ 8', lineEq: '2x + y = 8', a: 2, b: 1, c: 8 },
+                    { id: 'l4', label: '④ x - 3y ≥ -3', lineEq: 'x - 3y = -3', a: 1, b: -3, c: -3 }
+                ],
+                vertices: [{x:0, y:-2}, {x:5, y:-2}, {x:3, y:2}, {x:0, y:1}],
+                q1: { slopeType: "m > 0", alpha: -3, beta: 2, str: 'f(x, y) = -3x + 2y', eqStr: '-3x + 2y = k' },
+                q2: { slopeType: "m < 0", alpha: 1, beta: 2, str: 'f(x, y) = x + 2y', eqStr: 'x + 2y = k' }
+            },
+            {
+                lines: [
+                    { id: 'l1', label: '① x ≥ 0', lineEq: 'x = 0', a: 1, b: 0, c: 0 },
+                    { id: 'l2', label: '② y ≥ 0', lineEq: 'y = 0', a: 0, b: 1, c: 0 },
+                    { id: 'l3', label: '③ x + y ≤ 6', lineEq: 'x + y = 6', a: 1, b: 1, c: 6 },
+                    { id: 'l4', label: '④ x + 2y ≤ 8', lineEq: 'x + 2y = 8', a: 1, b: 2, c: 8 }
+                ],
+                vertices: [{x:0, y:0}, {x:6, y:0}, {x:4, y:2}, {x:0, y:4}],
+                q1: { slopeType: "m > 0", alpha: -1, beta: 2, str: 'f(x, y) = -x + 2y', eqStr: '-x + 2y = k' },
+                q2: { slopeType: "m < 0", alpha: 2, beta: 1, str: 'f(x, y) = 2x + y', eqStr: '2x + y = k' }
+            }
+        ];
+
+        // 第 3 關題庫
+        const problemPoolStage3 = [
+            {
+                lines: [
+                    { id: 'x0', label: '① x ≥ 0', lineEq: 'x = 0', a: 1, b: 0, c: 0, dir: 'right', type: 'vertical' },
+                    { id: 'y0', label: '② y ≥ 0', lineEq: 'y = 0', a: 0, b: 1, c: 0, dir: 'up', type: 'horizontal' },
+                    { id: 'l1', label: '③ x + 2y ≤ 8', lineEq: 'x + 2y = 8', a: 1, b: 2, c: 8, dir: 'left', type: 'slanted' },
+                    { id: 'l2', label: '④ x + y ≤ 5', lineEq: 'x + y = 5', a: 1, b: 1, c: 5, dir: 'left', type: 'slanted' }
+                ],
+                vertices: [{x:0, y:0}, {x:5, y:0}, {x:2, y:3}, {x:0, y:4}],
+                obj: { alpha: 3, beta: -2, str: 'f(x, y) = 3x - 2y' }
+            },
+            {
+                lines: [
+                    { id: 'l1', label: '① x ≥ -1', lineEq: 'x = -1', a: 1, b: 0, c: -1, dir: 'right', type: 'vertical' },
+                    { id: 'l2', label: '② y ≥ 0', lineEq: 'y = 0', a: 0, b: 1, c: 0, dir: 'up', type: 'horizontal' },
+                    { id: 'l3', label: '③ 3x + 2y ≤ 12', lineEq: '3x + 2y = 12', a: 3, b: 2, c: 12, dir: 'left', type: 'slanted' },
+                    { id: 'l4', label: '④ x - 3y ≥ -7', lineEq: 'x - 3y = -7', a: 1, b: -3, c: -7, dir: 'right', type: 'slanted' }
+                ],
+                vertices: [{x:-1, y:0}, {x:4, y:0}, {x:2, y:3}, {x:-1, y:2}],
+                obj: { alpha: 2, beta: -3, str: 'f(x, y) = 2x - 3y' }
+            },
+            {
+                lines: [
+                    { id: 'l1', label: '① x ≥ 0', lineEq: 'x = 0', a: 1, b: 0, c: 0, dir: 'right', type: 'vertical' },
+                    { id: 'l2', label: '② y ≥ -1', lineEq: 'y = -1', a: 0, b: 1, c: -1, dir: 'up', type: 'horizontal' },
+                    { id: 'l3', label: '③ 2x + y ≤ 9', lineEq: '2x + y = 9', a: 2, b: 1, c: 9, dir: 'left', type: 'slanted' },
+                    { id: 'l4', label: '④ x - 3y ≥ -6', lineEq: 'x - 3y = -6', a: 1, b: -3, c: -6, dir: 'right', type: 'slanted' }
+                ],
+                vertices: [{x:0, y:-1}, {x:5, y:-1}, {x:3, y:3}, {x:0, y:2}],
+                obj: { alpha: -4, beta: 1, str: 'f(x, y) = -4x + y' }
+            },
+            {
+                lines: [
+                    { id: 'l1', label: '① x ≥ -1', lineEq: 'x = -1', a: 1, b: 0, c: -1, dir: 'right', type: 'vertical' },
+                    { id: 'l2', label: '② y ≥ -1', lineEq: 'y = -1', a: 0, b: 1, c: -1, dir: 'up', type: 'horizontal' },
+                    { id: 'l3', label: '③ 2x + y ≤ 7', lineEq: '2x + y = 7', a: 2, b: 1, c: 7, dir: 'left', type: 'slanted' },
+                    { id: 'l4', label: '④ x - 3y ≥ -4', lineEq: 'x - 3y = -4', a: 1, b: -3, c: -4, dir: 'right', type: 'slanted' }
+                ],
+                vertices: [{x:-1, y:-1}, {x:4, y:-1}, {x:2, y:3}, {x:-1, y:1}],
+                obj: { alpha: 3, beta: -4, str: 'f(x, y) = 3x - 4y' }
+            },
+            {
+                lines: [
+                    { id: 'l1', label: '① x ≥ 0', lineEq: 'x = 0', a: 1, b: 0, c: 0, dir: 'right', type: 'vertical' },
+                    { id: 'l2', label: '② y ≥ 0', lineEq: 'y = 0', a: 0, b: 1, c: 0, dir: 'up', type: 'horizontal' },
+                    { id: 'l3', label: '③ x + 3y ≤ 12', lineEq: 'x + 3y = 12', a: 1, b: 3, c: 12, dir: 'left', type: 'slanted' },
+                    { id: 'l4', label: '④ 3x + y ≤ 12', lineEq: '3x + y = 12', a: 3, b: 1, c: 12, dir: 'left', type: 'slanted' }
+                ],
+                vertices: [{x:0, y:0}, {x:4, y:0}, {x:3, y:3}, {x:0, y:4}],
+                obj: { alpha: -2, beta: -1, str: 'f(x, y) = -2x - y' }
+            },
+            {
+                lines: [
+                    { id: 'l1', label: '① x ≥ -2', lineEq: 'x = -2', a: 1, b: 0, c: -2, dir: 'right', type: 'vertical' },
+                    { id: 'l2', label: '② y ≥ 0', lineEq: 'y = 0', a: 0, b: 1, c: 0, dir: 'up', type: 'horizontal' },
+                    { id: 'l3', label: '③ 2x + y ≤ 6', lineEq: '2x + y = 6', a: 2, b: 1, c: 6, dir: 'left', type: 'slanted' },
+                    { id: 'l4', label: '④ x - 3y ≥ -5', lineEq: 'x - 3y = -5', a: 1, b: -3, c: -5, dir: 'right', type: 'slanted' }
+                ],
+                vertices: [{x:-2, y:0}, {x:3, y:0}, {x:1, y:4}, {x:-2, y:1}],
+                obj: { alpha: 1, beta: -3, str: 'f(x, y) = x - 3y' }
+            },
+            {
+                lines: [
+                    { id: 'l1', label: '① x ≥ 0', lineEq: 'x = 0', a: 1, b: 0, c: 0, dir: 'right', type: 'vertical' },
+                    { id: 'l2', label: '② y ≥ 0', lineEq: 'y = 0', a: 0, b: 1, c: 0, dir: 'up', type: 'horizontal' },
+                    { id: 'l3', label: '③ 2x + y ≤ 10', lineEq: '2x + y = 10', a: 2, b: 1, c: 10, dir: 'left', type: 'slanted' },
+                    { id: 'l4', label: '④ x + 2y ≤ 8', lineEq: 'x + 2y = 8', a: 1, b: 2, c: 8, dir: 'left', type: 'slanted' }
+                ],
+                vertices: [{x:0, y:0}, {x:5, y:0}, {x:4, y:2}, {x:0, y:4}],
+                obj: { alpha: 4, beta: -3, str: 'f(x, y) = 4x - 3y' }
+            },
+            {
+                lines: [
+                    { id: 'l1', label: '① x ≥ 1', lineEq: 'x = 1', a: 1, b: 0, c: 1, dir: 'right', type: 'vertical' },
+                    { id: 'l2', label: '② y ≥ 0', lineEq: 'y = 0', a: 0, b: 1, c: 0, dir: 'up', type: 'horizontal' },
+                    { id: 'l3', label: '③ 2x + y ≤ 10', lineEq: '2x + y = 10', a: 2, b: 1, c: 10, dir: 'left', type: 'slanted' },
+                    { id: 'l4', label: '④ x - 2y ≥ -5', lineEq: 'x - 2y = -5', a: 1, b: -2, c: -5, dir: 'right', type: 'slanted' }
+                ],
+                vertices: [{x:1, y:0}, {x:5, y:0}, {x:3, y:4}, {x:1, y:3}],
+                obj: { alpha: -2, beta: 5, str: 'f(x, y) = -2x + 5y' }
+            },
+            {
+                lines: [
+                    { id: 'l1', label: '① x ≥ -2', lineEq: 'x = -2', a: 1, b: 0, c: -2, dir: 'right', type: 'vertical' },
+                    { id: 'l2', label: '② y ≥ -2', lineEq: 'y = -2', a: 0, b: 1, c: -2, dir: 'up', type: 'horizontal' },
+                    { id: 'l3', label: '③ 5x + 2y ≤ 11', lineEq: '5x + 2y = 11', a: 5, b: 2, c: 11, dir: 'left', type: 'slanted' },
+                    { id: 'l4', label: '④ 2x - 3y ≥ -7', lineEq: '2x - 3y = -7', a: 2, b: -3, c: -7, dir: 'right', type: 'slanted' }
+                ],
+                vertices: [{x:-2, y:-2}, {x:3, y:-2}, {x:1, y:3}, {x:-2, y:1}],
+                obj: { alpha: 3, beta: -2, str: 'f(x, y) = 3x - 2y' }
+            },
+            {
+                lines: [
+                    { id: 'l1', label: '① x ≥ 0', lineEq: 'x = 0', a: 1, b: 0, c: 0, dir: 'right', type: 'vertical' },
+                    { id: 'l2', label: '② y ≥ 0', lineEq: 'y = 0', a: 0, b: 1, c: 0, dir: 'up', type: 'horizontal' },
+                    { id: 'l3', label: '③ x + y ≤ 6', lineEq: 'x + y = 6', a: 1, b: 1, c: 6, dir: 'left', type: 'slanted' },
+                    { id: 'l4', label: '④ 2x + y ≤ 8', lineEq: '2x + y = 8', a: 2, b: 1, c: 8, dir: 'left', type: 'slanted' }
+                ],
+                vertices: [{x:0, y:0}, {x:4, y:0}, {x:2, y:4}, {x:0, y:6}],
+                obj: { alpha: -1, beta: -2, str: 'f(x, y) = -x - 2y' }
+            }
+        ];
+
+        let p2Data, p3Data;
+        let p2CurrentIndex = -1, p3CurrentIndex = -1;
+        let p2CurrentSubQ = 1;
+        let p2Q1Done = false, p2Q2Done = false;
+        let p2MinVal, p2MaxVal, p2MinPts = [], p2MaxPts = [];
+        let p2CurrentSubQMinDone = false, p2CurrentSubQMaxDone = false;
+
+        let s3RegionSelecting = false;
+        let s3RegionVerified = false;
+        let s3UserVerifiedVertices = []; 
+        let s3ClickedPoint = null;
+        let s3SelectedPolygon = null;
+
+        // 關卡鎖定與解鎖控制函式
+        function unlockStage(stageNum) {
+            const btn = document.getElementById(`btn-tab${stageNum}`);
+            const lockIcon = document.getElementById(`lock${stageNum}`);
+            if (btn) btn.classList.remove('locked');
+            if (lockIcon) lockIcon.style.display = 'none';
+        }
+
+        function lockStage(stageNum) {
+            const btn = document.getElementById(`btn-tab${stageNum}`);
+            const lockIcon = document.getElementById(`lock${stageNum}`);
+            if (btn) btn.classList.add('locked');
+            if (lockIcon) lockIcon.style.display = 'inline';
+        }
+
+        function switchTab(stageNum, force = false) {
+            const btn = document.getElementById(`btn-tab${stageNum}`);
+            if (!force && btn && btn.classList.contains('locked')) return;
+
+            document.querySelectorAll('.tab-btn').forEach((b, idx) => {
+                b.classList.toggle('active', idx === stageNum - 1);
+            });
+            document.querySelectorAll('.tab-content').forEach((content, idx) => {
+                content.classList.toggle('active', idx === stageNum - 1);
+            });
+
+            if (stageNum === 2) renderStage2();
+            if (stageNum === 3) renderStage3Canvas();
+        }
+
+        const stage1Data = [
+            { id: 1, term: "限制條件", def: "問題中所列出控制決策的一組二元一次聯立不等式。" },
+            { id: 2, term: "目標函數", def: "待求最大值或最小值的二元一次函數 f(x, y)。" },
+            { id: 3, term: "可行解", def: "所有同時滿足限制條件的點或數對 (x, y)。" },
+            { id: 4, term: "可行解區域", def: "平面上所有可行解點所構成或圍成的圖形區域。" },
+            { id: 5, term: "最佳解", def: "能使目標函數 f(x, y) 得到最大值或最小值的可行解點。" }
+        ];
+
+        let selectedTerm = null, selectedDef = null, matchedCount = 0;
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function initStage1() {
+            matchedCount = 0;
+            selectedTerm = null;
+            selectedDef = null;
+
+            const msg = document.getElementById('stage1Result');
+            if (msg) msg.style.display = 'none';
+
+            const termList = document.getElementById('termList');
+            const defList = document.getElementById('defList');
+            const randomizedDefs = shuffleArray(stage1Data);
+
+            termList.innerHTML = stage1Data.map(item => 
+                `<div class="match-card" data-type="term" data-id="${item.id}" onclick="handleCardClick(this)">${item.term}</div>`
+            ).join('');
+
+            defList.innerHTML = randomizedDefs.map(item => 
+                `<div class="match-card" data-type="def" data-id="${item.id}" onclick="handleCardClick(this)">${item.def}</div>`
+            ).join('');
+        }
+
+        function handleCardClick(el) {
+            if (el.classList.contains('matched')) return;
+
+            const type = el.dataset.type;
+            const id = parseInt(el.dataset.id);
+
+            if (type === 'term') {
+                document.querySelectorAll('.term-list .match-card').forEach(c => c.classList.remove('selected'));
+                el.classList.add('selected');
+                selectedTerm = { id, el };
+            } else {
+                document.querySelectorAll('.def-list .match-card').forEach(c => c.classList.remove('selected'));
+                el.classList.add('selected');
+                selectedDef = { id, el };
+            }
+
+            if (selectedTerm && selectedDef) {
+                if (selectedTerm.id === selectedDef.id) {
+                    selectedTerm.el.classList.remove('selected');
+                    selectedDef.el.classList.remove('selected');
+                    selectedTerm.el.classList.add('matched');
+                    selectedDef.el.classList.add('matched');
+                    matchedCount++;
+
+                    selectedTerm = null; selectedDef = null;
+
+                    if (matchedCount === stage1Data.length) {
+                        const msg = document.getElementById('stage1Result');
+                        msg.className = "hint-box hint-success";
+                        msg.style.display = "block";
+                        msg.innerHTML = "🎉 完全正確！您已通過第 1 關，正式解鎖 <b>【第 2 關：雙斜率極值探索】</b>！";
+                        unlockStage(2);
+                    }
+                } else {
+                    setTimeout(() => {
+                        if (selectedTerm) selectedTerm.el.classList.remove('selected');
+                        if (selectedDef) selectedDef.el.classList.remove('selected');
+                        selectedTerm = null; selectedDef = null;
+                    }, 300);
+                }
+            }
+        }
+
+        class CoordinatePlane {
+            constructor(canvasId, scale = 32, originX = 110, originY = 290) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.scale = scale;
+                this.originX = originX;
+                this.originY = originY;
+            }
+
+            toScreen(x, y) {
+                return {
+                    x: this.originX + x * this.scale,
+                    y: this.originY - y * this.scale
+                };
+            }
+
+            clear() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            drawGrid() {
+                this.clear();
+                const ctx = this.ctx;
+                
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 1;
+
+                for (let x = -4; x <= 12; x++) {
+                    let p = this.toScreen(x, 0);
+                    ctx.beginPath(); ctx.moveTo(p.x, 0); ctx.lineTo(p.x, this.canvas.height); ctx.stroke();
+                }
+                for (let y = -4; y <= 12; y++) {
+                    let p = this.toScreen(0, y);
+                    ctx.beginPath(); ctx.moveTo(0, p.y); ctx.lineTo(this.canvas.width, p.y); ctx.stroke();
+                }
+
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 2;
+                let origin = this.toScreen(0, 0);
+
+                ctx.beginPath(); ctx.moveTo(0, origin.y); ctx.lineTo(this.canvas.width - 6, origin.y); ctx.stroke();
+                ctx.fillStyle = '#334155';
+                ctx.beginPath();
+                ctx.moveTo(this.canvas.width, origin.y);
+                ctx.lineTo(this.canvas.width - 12, origin.y - 5);
+                ctx.lineTo(this.canvas.width - 12, origin.y + 5);
+                ctx.closePath(); ctx.fill();
+
+                ctx.beginPath(); ctx.moveTo(origin.x, this.canvas.height); ctx.lineTo(origin.x, 6); ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(origin.x, 0);
+                ctx.lineTo(origin.x - 5, 12);
+                ctx.lineTo(origin.x + 5, 12);
+                ctx.closePath(); ctx.fill();
+
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 12px "Times New Roman", serif';
+                ctx.fillText("O", origin.x - 14, origin.y + 15);
+                ctx.fillText("x", this.canvas.width - 15, origin.y - 8);
+                ctx.fillText("y", origin.x + 10, 15);
+
+                for (let i = -3; i <= 10; i++) {
+                    if (i === 0) continue;
+                    let px = this.toScreen(i, 0);
+                    if (px.x > 10 && px.x < this.canvas.width - 20) ctx.fillText(i, px.x - 4, origin.y + 15);
+                    let py = this.toScreen(0, i);
+                    if (py.y > 20 && py.y < this.canvas.height - 10) ctx.fillText(i, origin.x - 16, py.y + 4);
+                }
+            }
+
+            drawLine(a, b, c, color = '#2563eb', dash = [], label = '') {
+                const ctx = this.ctx;
+                ctx.save();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2.2;
+                ctx.setLineDash(dash);
+
+                let x1 = -4, y1 = (c - a * x1) / b;
+                let x2 = 12, y2 = (c - a * x2) / b;
+                if (b === 0) {
+                    x1 = c / a; x2 = c / a;
+                    y1 = -4; y2 = 12;
+                }
+
+                let p1 = this.toScreen(x1, y1);
+                let p2 = this.toScreen(x2, y2);
+
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+
+                if (label) {
+                    ctx.fillStyle = color;
+                    ctx.font = 'bold italic 13px "Times New Roman", serif';
+                    ctx.fillText(label, Math.min(Math.max(p2.x, 20), this.canvas.width - 90), Math.max(Math.min(p2.y, this.canvas.height - 10), 25));
+                }
+                ctx.restore();
+            }
+
+            drawHalfPlaneArrowsPerpendicular(a, b, c, dir) {
+                const ctx = this.ctx;
+                ctx.save();
+                ctx.strokeStyle = '#dc2626';
+                ctx.fillStyle = '#dc2626';
+                ctx.lineWidth = 1.8;
+
+                let Nx = a, Ny = b;
+                if (dir === 'left' || dir === 'down') {
+                    Nx = -a;
+                    Ny = -b;
+                }
+
+                let lenN = Math.hypot(Nx, Ny);
+                if (lenN === 0) { ctx.restore(); return; }
+                let unx = Nx / lenN;
+                let uny = Ny / lenN;
+
+                let Sx = unx;
+                let Sy = -uny;
+
+                const Xmin = -4, Xmax = 12, Ymin = -4, Ymax = 12;
+                let pts = [];
+                const eps = 1e-6;
+
+                if (Math.abs(b) > eps) {
+                    let y_xMin = (c - a * Xmin) / b;
+                    if (y_xMin >= Ymin - eps && y_xMin <= Ymax + eps) pts.push({x: Xmin, y: y_xMin});
+                    let y_xMax = (c - a * Xmax) / b;
+                    if (y_xMax >= Ymin - eps && y_xMax <= Ymax + eps) pts.push({x: Xmax, y: y_xMax});
+                }
+                if (Math.abs(a) > eps) {
+                    let x_yMin = (c - b * Ymin) / a;
+                    if (x_yMin >= Xmin - eps && x_yMin <= Xmax + eps) {
+                        if (!pts.some(p => Math.hypot(p.x - x_yMin, p.y - Ymin) < 0.01)) {
+                            pts.push({x: x_yMin, y: Ymin});
+                        }
+                    }
+                    let x_yMax = (c - b * Ymax) / a;
+                    if (x_yMax >= Xmin - eps && x_yMax <= Xmax + eps) {
+                        if (!pts.some(p => Math.hypot(p.x - x_yMax, p.y - Ymax) < 0.01)) {
+                            pts.push({x: x_yMax, y: Ymax});
+                        }
+                    }
+                }
+
+                if (pts.length < 2) { ctx.restore(); return; }
+
+                let pA = this.toScreen(pts[0].x, pts[0].y);
+                let pB = this.toScreen(pts[1].x, pts[1].y);
+
+                const arrowCount = 8;
+                for (let i = 1; i <= arrowCount; i++) {
+                    let t = i / (arrowCount + 1);
+                    let px = pA.x + t * (pB.x - pA.x);
+                    let py = pA.y + t * (pB.y - pA.y);
+
+                    if (px >= 10 && px <= this.canvas.width - 10 && py >= 10 && py <= this.canvas.height - 10) {
+                        const arrowLen = 14;
+                        const endX = px + Sx * arrowLen;
+                        const endY = py + Sy * arrowLen;
+
+                        ctx.beginPath();
+                        ctx.moveTo(px, py);
+                        ctx.lineTo(endX, endY);
+                        ctx.stroke();
+
+                        const angle = Math.atan2(Sy, Sx);
+                        const headLen = 6;
+                        ctx.beginPath();
+                        ctx.moveTo(endX, endY);
+                        ctx.lineTo(endX - headLen * Math.cos(angle - Math.PI / 6), endY - headLen * Math.sin(angle - Math.PI / 6));
+                        ctx.lineTo(endX - headLen * Math.cos(angle + Math.PI / 6), endY - headLen * Math.sin(angle + Math.PI / 6));
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+
+                ctx.restore();
+            }
+
+            drawPolygon(vertices, fillColor = 'rgba(59, 130, 246, 0.32)', strokeColor = '#2563eb', dash = []) {
+                if (!vertices || vertices.length < 3) return;
+                const ctx = this.ctx;
+                ctx.save();
+                ctx.fillStyle = fillColor;
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = 2;
+                ctx.setLineDash(dash);
+
+                ctx.beginPath();
+                vertices.forEach((v, idx) => {
+                    let p = this.toScreen(v.x, v.y);
+                    if (idx === 0) ctx.moveTo(p.x, p.y);
+                    else ctx.lineTo(p.x, p.y);
+                });
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            drawPoint(x, y, label = '', color = '#dc2626') {
+                const ctx = this.ctx;
+                let p = this.toScreen(x, y);
+                ctx.save();
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (label) {
+                    ctx.font = 'bold italic 13px "Times New Roman", serif';
+                    ctx.fillText(label, p.x + 8, p.y - 8);
+                }
+                ctx.restore();
+            }
+        }
+
+        function clipPolygonByHalfPlane(poly, A, B, C) {
+            const out = [];
+            const eps = 1e-7;
+            for (let i = 0; i < poly.length; i++) {
+                const p1 = poly[i];
+                const p2 = poly[(i + 1) % poly.length];
+                const v1 = A * p1.x + B * p1.y - C;
+                const v2 = A * p2.x + B * p2.y - C;
+
+                const in1 = v1 <= eps;
+                const in2 = v2 <= eps;
+
+                if (in1) out.push(p1);
+
+                if (in1 !== in2) {
+                    const dx = p2.x - p1.x;
+                    const dy = p2.y - p1.y;
+                    const denom = A * dx + B * dy;
+                    if (Math.abs(denom) > 1e-9) {
+                        const t = (C - A * p1.x - B * p1.y) / denom;
+                        out.push({ x: p1.x + t * dx, y: p1.y + t * dy });
+                    }
+                }
+            }
+            return out;
+        }
+
+        function getCellPolygonAtPoint(xm, ym) {
+            let poly = [
+                { x: -4, y: -4 },
+                { x: 12, y: -4 },
+                { x: 12, y: 12 },
+                { x: -4, y: 12 }
+            ];
+
+            p3Data.lines.forEach(l => {
+                const v = l.a * xm + l.b * ym - l.c;
+                const A = (v > 0) ? -l.a : l.a;
+                const B = (v > 0) ? -l.b : l.b;
+                const C = (v > 0) ? -l.c : l.c;
+                poly = clipPolygonByHalfPlane(poly, A, B, C);
+            });
+
+            return poly;
+        }
+
+        let plane2;
+
+        function initStage2Data() {
+            let newIdx;
+            do {
+                newIdx = Math.floor(Math.random() * problemPoolStage2.length);
+            } while (newIdx === p2CurrentIndex && problemPoolStage2.length > 1);
+            
+            p2CurrentIndex = newIdx;
+            p2Data = JSON.parse(JSON.stringify(problemPoolStage2[p2CurrentIndex]));
+            
+            const ineqBox = document.getElementById('s2-inequalities');
+            ineqBox.innerHTML = p2Data.lines.map(l => `<div>${l.label}</div>`).join('');
+
+            p2Q1Done = false; p2Q2Done = false;
+            document.getElementById('s2-tab-q1').style.background = '#2563eb';
+            document.getElementById('s2-tab-q2').disabled = true;
+            document.getElementById('s2-tab-q2').style.background = '#94a3b8';
+            document.getElementById('s2_step_theory').classList.add('locked-step');
+            document.getElementById('s2TableContainer').style.display = 'none';
+
+            loadS2SubQ(1);
+        }
+
+        function loadS2SubQ(qNum) {
+            p2CurrentSubQ = qNum;
+            p2CurrentSubQMinDone = false;
+            p2CurrentSubQMaxDone = false;
+
+            const objObj = (qNum === 1) ? p2Data.q1 : p2Data.q2;
+
+            document.getElementById('s2-q-header').innerHTML = `題目 ${qNum} 目標函數（斜率 ${objObj.slopeType}）：<span class="math">${objObj.str}</span>`;
+            document.getElementById('s2-slider-eq').innerText = objObj.eqStr;
+            document.getElementById('s2-subq-title').innerText = `題目 ${qNum}（斜率 ${objObj.slopeType}）極值獨立驗證`;
+
+            let kVals = p2Data.vertices.map(v => ({
+                val: objObj.alpha * v.x + objObj.beta * v.y,
+                x: v.x, y: v.y
+            }));
+
+            kVals.sort((a,b) => a.val - b.val);
+            p2MinVal = kVals[0].val;
+            p2MaxVal = kVals[kVals.length - 1].val;
+
+            p2MinPts = kVals.filter(k => k.val === p2MinVal);
+            p2MaxPts = kVals.filter(k => k.val === p2MaxVal);
+
+            const slider = document.getElementById('kSlider');
+            slider.min = (p2MinVal - 2).toFixed(1);
+            slider.max = (p2MaxVal + 2).toFixed(1);
+            slider.value = (p2MinVal - 1).toFixed(1);
+
+            document.getElementById('s2_ans_min').value = '';
+            document.getElementById('s2_min_x').value = '';
+            document.getElementById('s2_min_y').value = '';
+            document.getElementById('s2_ans_max').value = '';
+            document.getElementById('s2_max_x').value = '';
+            document.getElementById('s2_max_y').value = '';
+
+            document.getElementById('s2_min_msg').style.display = 'none';
+            document.getElementById('s2_max_msg').style.display = 'none';
+            document.getElementById('s2_subq_summary').style.display = 'none';
+
+            renderStage2();
+        }
+
+        function switchS2SubQ(qNum) {
+            loadS2SubQ(qNum);
+            document.getElementById('s2-tab-q1').style.background = (qNum === 1) ? '#2563eb' : '#94a3b8';
+            document.getElementById('s2-tab-q2').style.background = (qNum === 2) ? '#2563eb' : '#94a3b8';
+        }
+
+        function renderStage2() {
+            if (!p2Data) initStage2Data();
+            if (!plane2) plane2 = new CoordinatePlane('canvas2', 32, 110, 290);
+
+            const k = parseFloat(document.getElementById('kSlider').value);
+            const valText = document.getElementById('kValText');
+            
+            const inRegion = (k >= p2MinVal - 0.001 && k <= p2MaxVal + 0.001);
+
+            if (inRegion) {
+                valText.style.color = '#16a34a';
+                valText.innerHTML = `<b>${k.toFixed(1)}</b> <span style="font-size:0.85rem;">(進入可行解區域)</span>`;
+            } else {
+                valText.style.color = '#dc2626';
+                valText.innerHTML = `未接觸可行解區域`;
+            }
+
+            plane2.drawGrid();
+            plane2.drawPolygon(p2Data.vertices, 'rgba(59, 130, 246, 0.28)', '#1d4ed8');
+
+            p2Data.lines.forEach(l => {
+                plane2.drawLine(l.a, l.b, l.c, '#64748b', [], l.lineEq);
+            });
+
+            const objObj = (p2CurrentSubQ === 1) ? p2Data.q1 : p2Data.q2;
+            const lineColor = inRegion ? '#16a34a' : '#dc2626';
+            plane2.drawLine(objObj.alpha, objObj.beta, k, lineColor, [6, 6], `k=${k.toFixed(1)}`);
+
+            p2Data.vertices.forEach(v => {
+                plane2.drawPoint(v.x, v.y, `(${v.x},${v.y})`);
+            });
+        }
+
+        document.getElementById('kSlider').addEventListener('input', renderStage2);
+
+        function checkS2Min() {
+            const minVal = parseFloat(document.getElementById('s2_ans_min').value);
+            const minX = parseFloat(document.getElementById('s2_min_x').value);
+            const minY = parseFloat(document.getElementById('s2_min_y').value);
+
+            const msg = document.getElementById('s2_min_msg');
+            msg.style.display = 'block';
+
+            const isMinValOk = (minVal === p2MinVal);
+            const isMinPtOk = p2MinPts.some(pt => pt.x === minX && pt.y === minY);
+
+            if (isMinValOk && isMinPtOk) {
+                msg.className = "hint-box hint-success";
+                msg.innerHTML = `✅ 最小值 k = ${minVal} 及發生位置 (${minX}, ${minY}) 驗證正確！`;
+                p2CurrentSubQMinDone = true;
+                checkS2SubQComplete();
+            } else {
+                msg.className = "hint-box hint-error";
+                msg.innerHTML = "❌ 最小值數值或發生位置座標有誤，請滑動滑桿觀察。";
+            }
+        }
+
+        function checkS2Max() {
+            const maxVal = parseFloat(document.getElementById('s2_ans_max').value);
+            const maxX = parseFloat(document.getElementById('s2_max_x').value);
+            const maxY = parseFloat(document.getElementById('s2_max_y').value);
+
+            const msg = document.getElementById('s2_max_msg');
+            msg.style.display = 'block';
+
+            const isMaxValOk = (maxVal === p2MaxVal);
+            const isMaxPtOk = p2MaxPts.some(pt => pt.x === maxX && pt.y === maxY);
+
+            if (isMaxValOk && isMaxPtOk) {
+                msg.className = "hint-box hint-success";
+                msg.innerHTML = `✅ 最大值 k = ${maxVal} 及發生位置 (${maxX}, ${maxY}) 驗證正確！`;
+                p2CurrentSubQMaxDone = true;
+                checkS2SubQComplete();
+            } else {
+                msg.className = "hint-box hint-error";
+                msg.innerHTML = "❌ 最大值數值或發生位置座標有誤，請滑動滑桿觀察。";
+            }
+        }
+
+        function checkS2SubQComplete() {
+            if (p2CurrentSubQMinDone && p2CurrentSubQMaxDone) {
+                const summaryMsg = document.getElementById('s2_subq_summary');
+                summaryMsg.style.display = 'block';
+
+                if (p2CurrentSubQ === 1) {
+                    p2Q1Done = true;
+                    summaryMsg.innerHTML = "🎉 題目 1（斜率 m &gt; 0）最大值與最小值皆已全數驗證正確！已解鎖題目 2。";
+                    document.getElementById('s2-tab-q2').disabled = false;
+                    document.getElementById('s2-tab-q2').style.background = '#2563eb';
+                } else {
+                    p2Q2Done = true;
+                    summaryMsg.innerHTML = "🎉 題目 2（斜率 m &lt; 0）最大值與最小值皆已全數驗證正確！請完成下方幾何歸納驗證。";
+                    document.getElementById('s2_step_theory').classList.remove('locked-step');
+                }
+            }
+        }
+
+        function checkS2Theory() {
+            const theory = document.getElementById('s2_theory').value;
+            const msg = document.getElementById('s2_theory_msg');
+            msg.style.display = 'block';
+
+            if (theory === 'vertex') {
+                msg.className = "hint-box hint-success";
+                msg.innerHTML = "🎉 完全正確！不論目標函數斜率大於或小於 0，極值皆會在可行解區域的頂點發生！<br>您已成功通過第 2 關，正式解鎖 <b>【第 3 關：實戰逐步繪圖解題】</b>！";
+                
+                const tbody = document.getElementById('s2TableBody');
+                tbody.innerHTML = p2Data.vertices.map(v => {
+                    const val1 = p2Data.q1.alpha * v.x + p2Data.q1.beta * v.y;
+                    const val2 = p2Data.q2.alpha * v.x + p2Data.q2.beta * v.y;
+                    return `<tr><td>(${v.x}, ${v.y})</td><td>${val1}</td><td>${val2}</td></tr>`;
+                }).join('');
+
+                document.getElementById('s2TableContainer').style.display = 'block';
+                unlockStage(3);
+            } else {
+                msg.className = "hint-box hint-error";
+                msg.innerHTML = "❌ 歸納選項不正確，請觀察目標函數掃描線接觸區域時的點位置。";
+            }
+        }
+
+        let plane3;
+
+        function initStage3Inputs() {
+            let newIdx;
+            do {
+                newIdx = Math.floor(Math.random() * problemPoolStage3.length);
+            } while (newIdx === p3CurrentIndex && problemPoolStage3.length > 1);
+
+            p3CurrentIndex = newIdx;
+            p3Data = JSON.parse(JSON.stringify(problemPoolStage3[p3CurrentIndex]));
+
+            s3RegionSelecting = false;
+            s3RegionVerified = false;
+            s3UserVerifiedVertices = [];
+            s3ClickedPoint = null;
+            s3SelectedPolygon = null;
+
+            const ineqBox = document.getElementById('s3-inequalities');
+            ineqBox.innerHTML = p3Data.lines.map(l => `<div>${l.label}</div>`).join('');
+            document.getElementById('s3-obj-str').innerText = p3Data.obj.str;
+            document.getElementById('s3-eval-obj-str').innerText = p3Data.obj.str;
+
+            const inputContainer = document.getElementById('s3-lines-inputs');
+            inputContainer.innerHTML = p3Data.lines.map((l, idx) => {
+                let optionsHtml = '<option value="">選擇方向...</option>';
+                if (l.type === 'horizontal') {
+                    optionsHtml += `<option value="up">上側</option><option value="down">下側</option>`;
+                } else {
+                    optionsHtml += `<option value="right">右側</option><option value="left">左側</option>`;
+                }
+
+                return `
+                    <div class="line-input-row ${idx > 0 ? 'locked-step' : ''}" id="s3-line-row-${idx}">
+                        <b>${l.label} (邊界線：<span class="math">${l.lineEq}</span>)</b><br>
+                        線上兩點：( <input type="number" class="input-inline p1x"> , <input type="number" class="input-inline p1y"> ) 
+                        與 ( <input type="number" class="input-inline p2x"> , <input type="number" class="input-inline p2y"> )<br>
+                        線型：<select class="select-inline lstyle"><option value="solid">實線</option><option value="dashed">虛線</option></select>
+                        &nbsp;半平面：
+                        <select class="select-inline ldir">${optionsHtml}</select>
+                        <button class="btn" style="margin-top:6px; width:100%;" id="s3-line-btn-${idx}" onclick="checkS3Line(${idx})">驗證此不等式邊界與半平面</button>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('s3-step1-msg').style.display = 'none';
+            document.getElementById('s3-step-region').className = 'step-box locked-step';
+            document.getElementById('s3-region-msg').className = 'hint-box hint-info';
+            document.getElementById('s3-region-msg').innerText = '等待在畫布上點擊目標區域進行即時塗色...';
+            document.getElementById('s3-verify-region-btn').style.display = 'none';
+
+            document.getElementById('s3-step2').className = 'step-box locked-step';
+            ['v1_x','v1_y','v2_x','v2_y','v3_x','v3_y','v4_x','v4_y'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            document.getElementById('s3-step2-msg').style.display = 'none';
+
+            document.getElementById('s3-step3').className = 'step-box locked-step';
+            document.getElementById('s3TableBody').innerHTML = '';
+            document.getElementById('s3-eval-msg').style.display = 'none';
+            document.getElementById('s3-final-ans-box').style.display = 'none';
+            document.getElementById('ans_max').value = '';
+            document.getElementById('ans_min').value = '';
+            document.getElementById('s3-step3-msg').style.display = 'none';
+
+            document.getElementById('canvas3-tip').style.display = 'none';
+
+            if (plane3) {
+                redrawStage3Canvas();
+            }
+        }
+
+        function renderStage3Canvas() {
+            if (!p3Data) initStage3Inputs();
+            if (!plane3) {
+                plane3 = new CoordinatePlane('canvas3', 32, 110, 290);
+                plane3.canvas.addEventListener('click', handleCanvas3Click);
+            }
+            redrawStage3Canvas();
+        }
+
+        function checkS3Line(idx) {
+            const row = document.getElementById(`s3-line-row-${idx}`);
+            const p1x = parseFloat(row.querySelector('.p1x').value);
+            const p1y = parseFloat(row.querySelector('.p1y').value);
+            const p2x = parseFloat(row.querySelector('.p2x').value);
+            const p2y = parseFloat(row.querySelector('.p2y').value);
+            const ldir = row.querySelector('.ldir').value;
+
+            const target = p3Data.lines[idx];
+            const msg = document.getElementById('s3-step1-msg');
+            msg.style.display = 'block';
+
+            if (isNaN(p1x) || isNaN(p1y) || isNaN(p2x) || isNaN(p2y) || !ldir) {
+                msg.className = 'hint-box hint-error';
+                msg.innerText = '請完整填寫兩點座標與選擇半平面方向！';
+                return;
+            }
+
+            if (p1x === p2x && p1y === p2y) {
+                msg.className = 'hint-box hint-error';
+                msg.innerText = '兩點不能為同一點！';
+                return;
+            }
+
+            const onLine1 = Math.abs(target.a * p1x + target.b * p1y - target.c) < 1e-5;
+            const onLine2 = Math.abs(target.a * p2x + target.b * p2y - target.c) < 1e-5;
+            const dirOk = (ldir === target.dir);
+
+            if (onLine1 && onLine2 && dirOk) {
+                row.classList.add('done');
+                row.querySelectorAll('input, select, button').forEach(el => el.disabled = true);
+                msg.className = 'hint-box hint-success';
+                msg.innerText = `✅ 第 ${idx + 1} 條邊界直線與半平面驗證正確！`;
+
+                if (idx + 1 < p3Data.lines.length) {
+                    const nextRow = document.getElementById(`s3-line-row-${idx + 1}`);
+                    if (nextRow) nextRow.classList.remove('locked-step');
+                } else {
+                    msg.innerText = '🎉 4 條邊界直線與半平面全數繪製完成！進入步驟 1.5：選取可行解區域。';
+                    unlockS3StepRegion();
+                }
+                redrawStage3Canvas();
+            } else {
+                msg.className = 'hint-box hint-error';
+                msg.innerText = '❌ 輸入之點不符合邊界直線方程，或半平面方向選擇錯誤，請重新檢查。';
+            }
+        }
+
+        function unlockS3StepRegion() {
+            const regBox = document.getElementById('s3-step-region');
+            regBox.classList.remove('locked-step');
+            s3RegionSelecting = true;
+            document.getElementById('canvas3-tip').style.display = 'block';
+        }
+
+        function handleCanvas3Click(e) {
+            if (!s3RegionSelecting && !s3RegionVerified) return;
+            if (!plane3) return;
+
+            const rect = plane3.canvas.getBoundingClientRect();
+            const cx = e.clientX - rect.left;
+            const cy = e.clientY - rect.top;
+
+            const xm = (cx - plane3.originX) / plane3.scale;
+            const ym = (plane3.originY - cy) / plane3.scale;
+
+            s3ClickedPoint = { x: xm, y: ym };
+            s3SelectedPolygon = getCellPolygonAtPoint(xm, ym);
+
+            const msg = document.getElementById('s3-region-msg');
+            msg.className = 'hint-box hint-info';
+            msg.innerHTML = `已在畫布上記號點 (${xm.toFixed(1)}, ${ym.toFixed(1)})，並即時著色選取區域。請確認是否為完全重疊可行解區域：`;
+            document.getElementById('s3-verify-region-btn').style.display = 'block';
+
+            redrawStage3Canvas();
+        }
+
+        function verifyS3Region() {
+            if (!s3SelectedPolygon || !s3ClickedPoint) return;
+
+            const satisfiesAll = p3Data.lines.every(l => {
+                const val = l.a * s3ClickedPoint.x + l.b * s3ClickedPoint.y;
+                if (l.dir === 'right' || l.dir === 'up') return val >= l.c - 1e-4;
+                else return val <= l.c + 1e-4;
+            });
+
+            const msg = document.getElementById('s3-region-msg');
+            if (satisfiesAll) {
+                msg.className = 'hint-box hint-success';
+                msg.innerText = '🎉 完全正確！您選取的區域即為所有半平面完全重疊的可行解區域！已解鎖步驟 2。';
+                s3RegionVerified = true;
+                s3RegionSelecting = false;
+                document.getElementById('canvas3-tip').style.display = 'none';
+                document.getElementById('s3-verify-region-btn').style.display = 'none';
+                document.getElementById('s3-step2').classList.remove('locked-step');
+            } else {
+                msg.className = 'hint-box hint-error';
+                msg.innerText = '❌ 選取區域不符合所有半平面的交集區域，請點擊其他區域重新嘗試！';
+            }
+            redrawStage3Canvas();
+        }
+
+        function checkS3Step2() {
+            const userVerts = [
+                { x: parseFloat(document.getElementById('v1_x').value), y: parseFloat(document.getElementById('v1_y').value) },
+                { x: parseFloat(document.getElementById('v2_x').value), y: parseFloat(document.getElementById('v2_y').value) },
+                { x: parseFloat(document.getElementById('v3_x').value), y: parseFloat(document.getElementById('v3_y').value) },
+                { x: parseFloat(document.getElementById('v4_x').value), y: parseFloat(document.getElementById('v4_y').value) }
+            ];
+
+            const msg = document.getElementById('s3-step2-msg');
+            msg.style.display = 'block';
+
+            if (userVerts.some(v => isNaN(v.x) || isNaN(v.y))) {
+                msg.className = 'hint-box hint-error';
+                msg.innerText = '請填寫全部 4 個頂點座標！';
+                return;
+            }
+
+            s3UserVerifiedVertices = [];
+            let matchedCount = 0;
+            const used = new Array(p3Data.vertices.length).fill(false);
+
+            userVerts.forEach(uv => {
+                const idx = p3Data.vertices.findIndex((tv, i) => !used[i] && tv.x === uv.x && tv.y === uv.y);
+                if (idx !== -1) {
+                    used[idx] = true;
+                    matchedCount++;
+                    s3UserVerifiedVertices.push(uv);
+                }
+            });
+
+            if (matchedCount === 4) {
+                msg.className = 'hint-box hint-success';
+                msg.innerText = '🎉 4 個頂點座標完全正確！已解鎖步驟 3。';
+                document.getElementById('s3-step3').classList.remove('locked-step');
+                initS3EvalTable();
+            } else {
+                msg.className = 'hint-box hint-warning';
+                msg.innerText = `部分頂點正確（已驗證 ${matchedCount}/4 個），正確的頂點已標示於畫布上，請修正其餘頂點！`;
+            }
+            redrawStage3Canvas();
+        }
+
+        function initS3EvalTable() {
+            const tbody = document.getElementById('s3TableBody');
+            tbody.innerHTML = s3UserVerifiedVertices.map((v, i) => `
+                <tr>
+                    <td>(${v.x}, ${v.y})</td>
+                    <td><input type="number" id="s3_eval_val_${i}" class="input-inline"></td>
+                    <td><button class="btn btn-sm" onclick="checkS3EvalRow(${i})">驗證</button></td>
+                    <td id="s3_eval_status_${i}">--</td>
+                </tr>
+            `).join('');
+        }
+
+        function checkS3EvalRow(idx) {
+            const v = s3UserVerifiedVertices[idx];
+            const val = parseFloat(document.getElementById(`s3_eval_val_${idx}`).value);
+            const statusTd = document.getElementById(`s3_eval_status_${idx}`);
+
+            const expected = p3Data.obj.alpha * v.x + p3Data.obj.beta * v.y;
+
+            if (!isNaN(val) && val === expected) {
+                statusTd.innerHTML = '<span style="color:#16a34a; font-weight:bold;">✅ 正確</span>';
+                document.getElementById(`s3_eval_val_${idx}`).disabled = true;
+
+                let allDone = true;
+                for (let i = 0; i < s3UserVerifiedVertices.length; i++) {
+                    const st = document.getElementById(`s3_eval_status_${i}`);
+                    if (!st || !st.innerText.includes('正確')) {
+                        allDone = false;
+                        break;
+                    }
+                }
+
+                if (allDone) {
+                    document.getElementById('s3-final-ans-box').style.display = 'block';
+                    const msg = document.getElementById('s3-eval-msg');
+                    msg.style.display = 'block';
+                    msg.className = 'hint-box hint-success';
+                    msg.innerText = '🎉 所有頂點目標函數值計算完全正確！請寫出最終的最大值與最小值結論：';
+                }
+            } else {
+                statusTd.innerHTML = '<span style="color:#dc2626; font-weight:bold;">❌ 錯誤</span>';
+            }
+        }
+
+        function checkS3Step3() {
+            const ansMax = parseFloat(document.getElementById('ans_max').value);
+            const ansMin = parseFloat(document.getElementById('ans_min').value);
+
+            const msg = document.getElementById('s3-step3-msg');
+            msg.style.display = 'block';
+
+            const kVals = s3UserVerifiedVertices.map(v => p3Data.obj.alpha * v.x + p3Data.obj.beta * v.y);
+            const trueMax = Math.max(...kVals);
+            const trueMin = Math.min(...kVals);
+
+            if (ansMax === trueMax && ansMin === trueMin) {
+                msg.className = 'hint-box hint-success';
+                msg.innerText = '🎉 恭喜完全答對！您已通關全數關卡，精通二元一次聯立不等式與線性規劃！';
+                triggerConfetti();
+                document.getElementById('congratsModal').style.display = 'flex';
+            } else {
+                msg.className = 'hint-box hint-error';
+                msg.innerText = `❌ 極值填答有誤！請比較頂點代入計算結果（真正最大值為 ${trueMax}，最小值為 ${trueMin}）。`;
+            }
+        }
+
+        function redrawStage3Canvas() {
+            if (!plane3) return;
+            plane3.drawGrid();
+
+            p3Data.lines.forEach((l, idx) => {
+                const row = document.getElementById(`s3-line-row-${idx}`);
+                if (row && row.classList.contains('done')) {
+                    plane3.drawLine(l.a, l.b, l.c, '#2563eb', [], l.lineEq);
+                    plane3.drawHalfPlaneArrowsPerpendicular(l.a, l.b, l.c, l.dir);
+                }
+            });
+
+            if (s3SelectedPolygon && (s3RegionSelecting || s3RegionVerified)) {
+                const color = s3RegionVerified ? 'rgba(22, 163, 74, 0.35)' : 'rgba(59, 130, 246, 0.35)';
+                const stroke = s3RegionVerified ? '#16a34a' : '#2563eb';
+                plane3.drawPolygon(s3SelectedPolygon, color, stroke);
+            }
+
+            s3UserVerifiedVertices.forEach(v => {
+                plane3.drawPoint(v.x, v.y, `(${v.x},${v.y})`, '#16a34a');
+            });
+        }
+
+        function triggerConfetti() {
+            const canvas = document.getElementById('confettiCanvas');
+            canvas.style.display = 'block';
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const pieces = [];
+            const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+            for (let i = 0; i < 120; i++) {
+                pieces.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speedY: Math.random() * 3 + 2,
+                    speedX: Math.random() * 2 - 1,
+                    rot: Math.random() * 360,
+                    rotSpeed: Math.random() * 10 - 5
+                });
+            }
+
+            let animationFrame;
+            function updateConfetti() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                pieces.forEach(p => {
+                    p.y += p.speedY;
+                    p.x += p.speedX;
+                    p.rot += p.rotSpeed;
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rot * Math.PI / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+                });
+
+                if (pieces.some(p => p.y < canvas.height)) {
+                    animationFrame = requestAnimationFrame(updateConfetti);
+                } else {
+                    canvas.style.display = 'none';
+                    cancelAnimationFrame(animationFrame);
+                }
+            }
+            updateConfetti();
+        }
+
+        function restartApp() {
+            document.getElementById('congratsModal').style.display = 'none';
+            lockStage(2);
+            lockStage(3);
+            initStage1();
+            initStage2Data();
+            initStage3Inputs();
+            switchTab(1, true);
+        }
+
+        window.onload = function() {
+            lockStage(2);
+            lockStage(3);
+            initStage1();
+            initStage2Data();
+            initStage3Inputs();
+            switchTab(1, true);
+        };
+    </script>
+</body>
+</html>
