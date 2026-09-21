@@ -381,7 +381,7 @@
             }
         ];
 
-        // 第 3 關題庫
+        // 第 3 關題庫 (已嚴格校對：所有邊界直線之交點與頂點均為精準整數)
         const problemPoolStage3 = [
             {
                 lines: [
@@ -417,18 +417,18 @@
                 lines: [
                     { id: 'l1', label: '① x ≥ -1', lineEq: 'x = -1', a: 1, b: 0, c: -1, dir: 'right', type: 'vertical' },
                     { id: 'l2', label: '② y ≥ -1', lineEq: 'y = -1', a: 0, b: 1, c: -1, dir: 'up', type: 'horizontal' },
-                    { id: 'l3', label: '③ 2x + y ≤ 7', lineEq: '2x + y = 7', a: 2, b: 1, c: 7, dir: 'left', type: 'slanted' },
-                    { id: 'l4', label: '④ x - 3y ≥ -4', lineEq: 'x - 3y = -4', a: 1, b: -3, c: -4, dir: 'right', type: 'slanted' }
+                    { id: 'l3', label: '③ 2x + y ≤ 5', lineEq: '2x + y = 5', a: 2, b: 1, c: 5, dir: 'left', type: 'slanted' },
+                    { id: 'l4', label: '④ x - 2y ≥ -5', lineEq: 'x - 2y = -5', a: 1, b: -2, c: -5, dir: 'right', type: 'slanted' }
                 ],
-                vertices: [{x:-1, y:-1}, {x:4, y:-1}, {x:2, y:3}, {x:-1, y:1}],
+                vertices: [{x:-1, y:-1}, {x:3, y:-1}, {x:1, y:3}, {x:-1, y:2}],
                 obj: { alpha: 3, beta: -4, str: 'f(x, y) = 3x - 4y' }
             },
             {
                 lines: [
                     { id: 'l1', label: '① x ≥ 0', lineEq: 'x = 0', a: 1, b: 0, c: 0, dir: 'right', type: 'vertical' },
                     { id: 'l2', label: '② y ≥ 0', lineEq: 'y = 0', a: 0, b: 1, c: 0, dir: 'up', type: 'horizontal' },
-                    { id: 'l3', label: '③ x + 3y ≤ 12', lineEq: 'x + 3y = 12', a: 1, b: 3, c: 12, dir: 'left', type: 'slanted' },
-                    { id: 'l4', label: '④ 3x + y ≤ 12', lineEq: '3x + y = 12', a: 3, b: 1, c: 12, dir: 'left', type: 'slanted' }
+                    { id: 'l3', label: '③ 3x + y ≤ 12', lineEq: '3x + y = 12', a: 3, b: 1, c: 12, dir: 'left', type: 'slanted' },
+                    { id: 'l4', label: '④ x + 3y ≤ 12', lineEq: 'x + 3y = 12', a: 1, b: 3, c: 12, dir: 'left', type: 'slanted' }
                 ],
                 vertices: [{x:0, y:0}, {x:4, y:0}, {x:3, y:3}, {x:0, y:4}],
                 obj: { alpha: -2, beta: -1, str: 'f(x, y) = -2x - y' }
@@ -438,7 +438,7 @@
                     { id: 'l1', label: '① x ≥ -2', lineEq: 'x = -2', a: 1, b: 0, c: -2, dir: 'right', type: 'vertical' },
                     { id: 'l2', label: '② y ≥ 0', lineEq: 'y = 0', a: 0, b: 1, c: 0, dir: 'up', type: 'horizontal' },
                     { id: 'l3', label: '③ 2x + y ≤ 6', lineEq: '2x + y = 6', a: 2, b: 1, c: 6, dir: 'left', type: 'slanted' },
-                    { id: 'l4', label: '④ x - 3y ≥ -5', lineEq: 'x - 3y = -5', a: 1, b: -3, c: -5, dir: 'right', type: 'slanted' }
+                    { id: 'l4', label: '④ x - y ≥ -3', lineEq: 'x - y = -3', a: 1, b: -1, c: -3, dir: 'right', type: 'slanted' }
                 ],
                 vertices: [{x:-2, y:0}, {x:3, y:0}, {x:1, y:4}, {x:-2, y:1}],
                 obj: { alpha: 1, beta: -3, str: 'f(x, y) = x - 3y' }
@@ -1202,11 +1202,13 @@
             const regBox = document.getElementById('s3-step-region');
             regBox.classList.remove('locked-step');
             s3RegionSelecting = true;
+            s3RegionVerified = false;
             document.getElementById('canvas3-tip').style.display = 'block';
         }
 
         function handleCanvas3Click(e) {
-            if (!s3RegionSelecting && !s3RegionVerified) return;
+            // 驗證通過後，點擊其它區域無效
+            if (!s3RegionSelecting || s3RegionVerified) return;
             if (!plane3) return;
 
             const rect = plane3.canvas.getBoundingClientRect();
