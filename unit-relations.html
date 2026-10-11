@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>度量單位闖關學具</title>
+<style>
+:root{--o:#f28a1e;--b:#1f5fa8;--g:#2e9e5b;--r:#d94040;--bg:#fff8ee}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:#222}
+header{background:var(--o);color:#fff;padding:12px 16px}
+header h1{margin:0;font-size:20px}header small{opacity:.9}
+main{max-width:860px;margin:0 auto;padding:12px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tab{border:2px solid var(--b);background:#fff;color:var(--b);border-radius:20px;padding:6px 14px;font-size:15px;cursor:pointer}
+.tab.on{background:var(--b);color:#fff}.tab:disabled{border-color:#bbb;color:#999;cursor:not-allowed}
+.sub .tab{border-color:var(--o);color:#b55f00;font-size:14px}.sub .tab.on{background:var(--o);color:#fff}
+.sub .tab:disabled{border-color:#ccc;color:#aaa}
+.box{background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 6px #0002;margin-top:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.card{border:2px solid var(--o);border-radius:12px;padding:12px;min-height:110px;cursor:pointer;text-align:center;background:#fffdf7}
+.card b{font-size:30px;color:var(--b);display:block}
+.badge{display:inline-block;background:#e6f0fb;color:var(--b);border-radius:10px;padding:2px 8px;font-size:13px;margin-top:6px}
+.card .bk{display:none;font-size:17px;color:#333}.card.f .fr{display:none}.card.f .bk{display:block}
+.card small{color:#666;font-size:13px}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:10px 14px;font-size:17px;border:2px solid #ccc;border-radius:10px;background:#fff;cursor:pointer}
+.opt:hover{border-color:var(--b)}.ok{background:#dff5e7!important;border-color:var(--g)!important}
+.no{background:#fde3e3!important;border-color:var(--r)!important}
+.btn{background:var(--g);color:#fff;border:0;border-radius:10px;padding:10px 20px;font-size:16px;cursor:pointer;margin-top:10px}
+.btn.alt{background:var(--b)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:10px 30px}
+.m{padding:12px;border:2px solid #ccc;border-radius:10px;background:#fff;font-size:17px;text-align:center;cursor:pointer}
+.m.sel{border-color:var(--b);background:#e6f0fb}.m.dn{border-color:var(--g);background:#dff5e7;cursor:default}
+.m.sh{animation:s .3s}@keyframes s{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+input[type=text]{font-size:17px;width:100px;padding:5px;border:2px solid #aaa;border-radius:8px;text-align:center}
+.q{margin:12px 0;font-size:17px}.fb{font-size:15px;margin-left:8px}
+.prog{color:#666;font-size:14px}.res{text-align:center;padding:10px}.res h2{margin:6px 0}
+footer{max-width:860px;margin:10px auto;padding:0 12px 20px;font-size:12px;color:#777}
+</style></head><body>
+<header><h1>📐 度量單位闖關學具</h1><small>數學(Ⅰ) 2-2.1 度量單位關係｜依序通過 長度→面積→容積→重量</small></header>
+<main><div id="nav"></div><div id="body"></div></main>
+<footer>換算數值依教材 2-2.1（第48–49頁）。「使用地區」教材未逐項標示，為一般常識整理，供教師核對；「≈」表示約略值。</footer>
+<script>
+const R={EN:'美國、英國等英制地區',TW:'台灣',CN:'中國大陸、金門、馬祖',SI:'國際通用公制',TJ:'台灣、日本'};
+const L=[
+{k:'長度',ic:'📏',u:[
+{n:'哩',r:R.EN,m:'≈ 1.6 公里',d:'1 公里 = 0.62137 哩'},
+{n:'呎',r:R.EN,m:'≈ 0.3 公尺',d:'1 公尺 = 3.28084 呎'},
+{n:'吋',r:R.EN,m:'≈ 2.54 公分',d:'1 公分 = 0.3937 吋'},
+{n:'碼',r:R.EN,m:'≈ 0.9 公尺',d:'1 碼 ≈ 0.9 公尺'},
+{n:'尺',r:R.TW,m:'≈ 30 公分',d:'1 公尺 = 3.3 尺；1 尺 ≈ 0.303 公尺'},
+{n:'寸',r:R.TW,m:'≈ 3 公分',d:'1 寸 ≈ 3 公分'},
+{n:'公里',r:R.SI,m:'≈ 0.62137 哩',d:'公制長度單位'}],
+q:[{q:'1 哩 ≈ 幾公里？',a:1.6,u:'公里'},{q:'1 呎 ≈ 幾公尺？',a:0.3,u:'公尺'},{q:'1 吋 ≈ 幾公分？',a:2.54,u:'公分'},
+{q:'1 碼 ≈ 幾公尺？',a:0.9,u:'公尺'},{q:'1 公尺 = 幾尺？',a:3.3,u:'尺'},{q:'1 尺 ≈ 幾公分？',a:30,u:'公分'},{q:'1 寸 ≈ 幾公分？',a:3,u:'公分'}]},
+{k:'面積',ic:'🟦',u:[
+{n:'甲',r:R.TW,m:'≈ 0.96992 公頃',d:'1 公頃 = 1.03102 甲'},
+{n:'坪',r:R.TJ,m:'≈ 3.30579 平方公尺',d:'1 坪 = 6尺 × 6尺；1 平方公尺 = 0.3025 坪'},
+{n:'公頃',r:R.SI,m:'= 1.03102 甲',d:'公制面積單位'},
+{n:'平方公尺',r:R.SI,m:'= 0.3025 坪',d:'公制面積單位'}],
+q:[{q:'1 平方公尺 = 幾坪？',a:0.3025,u:'坪'},{q:'1 坪 ≈ 幾平方公尺？',a:3.30579,u:'平方公尺'},
+{q:'1 公頃 = 幾甲？',a:1.03102,u:'甲'},{q:'1 甲 ≈ 幾公頃？',a:0.96992,u:'公頃'}]},
+{k:'容積',ic:'🧪',u:[
+{n:'加侖',r:R.EN,m:'≈ 3.78537 公升',d:'民間常用 1 加侖 ≈ 4 公升（英制加侖與美制加侖不同）'},
+{n:'公升',r:R.SI,m:'= 1000 毫升',d:'1 公升 = 1000 ml = 1000 cm³'},
+{n:'立方公尺',r:R.SI,m:'= 1000 公升',d:'1 立方公尺 = 1000 公升'}],
+q:[{q:'1 立方公尺 = 幾公升？',a:1000,u:'公升'},{q:'1 公升 = 幾立方公分(cm³)？',a:1000,u:'cm³'},
+{q:'1 加侖 ≈ 幾公升？（取教材數值）',a:3.78537,u:'公升'},{q:'2 加侖 ≈ 幾公升？',a:7.57074,u:'公升'}]},
+{k:'重量',ic:'⚖️',u:[
+{n:'磅',r:R.EN,m:'≈ 453.59 公克',d:'1 公斤 = 2.2 磅'},
+{n:'台斤',r:R.TW,m:'= 600 公克',d:'1 台斤 = 0.6 公斤；民間說法 3 公斤 = 5 台斤'},
+{n:'市斤',r:R.CN,m:'= 500 公克',d:'市斤僅在金門、馬祖及中國大陸使用'},
+{n:'公斤',r:R.SI,m:'≈ 2.2 磅',d:'公制重量單位'}],
+q:[{q:'1 公斤 ≈ 幾磅？',a:2.2,u:'磅'},{q:'1 台斤 = 幾公克？',a:600,u:'公克'},{q:'1 市斤 = 幾公克？',a:500,u:'公克'},
+{q:'3 公斤 = 幾台斤？',a:5,u:'台斤'},{q:'1 磅 ≈ 幾公克？',a:453.59,u:'公克'}]}
+];
+const $=s=>document.querySelector(s);
+const sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+let S={lv:0,st:0,done:[0,0,0,0]},g={};
+try{const d=JSON.parse(localStorage.getItem('uq')||'null');if(d)S.done=d}catch(e){}
+const save=()=>{try{localStorage.setItem('uq',JSON.stringify(S.done))}catch(e){}};
+const go=(lv,st)=>{S.lv=lv;S.st=st;g={};render()};
+const lock=i=>i>0&&S.done[i-1]<3;
+function render(){
+ $('#nav').innerHTML='<div class="tabs">'+L.map((l,i)=>`<button class="tab ${i==S.lv?'on':''}" ${lock(i)?'disabled':''} onclick="go(${i},0)">${lock(i)?'🔒':l.ic} ${l.k}${S.done[i]>=3?' ✅':''}</button>`).join('')+'</div><div class="tabs sub">'+
+ ['📖 認識單位','① 選擇題','② 配對','③ 填充'].map((t,j)=>`<button class="tab ${j==S.st?'on':''}" ${j>0&&S.done[S.lv]<j-1?'disabled':''} onclick="go(${S.lv},${j})">${j>0&&S.done[S.lv]<j-1?'🔒 ':''}${t}${j>0&&S.done[S.lv]>=j?' ✔':''}</button>`).join('')+'</div>';
+ [learn,choice,match,fill][S.st]();
+}
+const B=h=>$('#body').innerHTML='<div class="box">'+h+'</div>';
+function learn(){const lv=L[S.lv];
+ B(`<h3>${lv.ic} ${lv.k}單位：點卡片看換算（共 ${lv.u.length} 個）</h3><div class="grid">`+lv.u.map(u=>`<div class="card" onclick="this.classList.toggle('f')"><div class="fr"><b>${u.n}</b><span class="badge">📍 ${u.r}</span><br><small>（點一下翻面）</small></div><div class="bk"><b style="font-size:20px">1 ${u.n}</b>${u.m}<br><small>${u.d}</small></div></div>`).join('')+`</div><button class="btn" onclick="go(S.lv,1)">我記好了，開始闖關 ▶</button>`)}
+function res(ok,txt,st){
+ if(ok){S.done[S.lv]=Math.max(S.done[S.lv],st);save()}
+ let nx='';
+ if(ok){nx=st<3?`<button class="btn" onclick="go(S.lv,${st+1})">下一關 ▶</button>`:S.lv<3?`<button class="btn" onclick="go(${S.lv+1},0)">解鎖下一單元：${L[S.lv+1].k} ▶</button>`:'<h3>🏆 全部通關！長度、面積、容積、重量都學會了。</h3>'}
+ B(`<div class="res"><h2>${ok?'✅ 通過':'❌ 未通過'}</h2><p>${txt}</p>${nx}<button class="btn alt" onclick="go(S.lv,${st})">${ok?'再玩一次':'重新挑戰'}</button>${ok?'':`<button class="btn alt" onclick="go(S.lv,0)">回去複習</button>`}</div>`)}
+function opts(u){return [R.EN,R.TW,R.CN,R.SI].map(x=>u.r===R.TJ&&x===R.TW?R.TJ:x)}
+function choice(){const lv=L[S.lv];
+ if(!g.qs){g.qs=sh(lv.u).slice(0,5);g.i=0;g.c=0;g.a=null}
+ const n=g.qs.length;
+ if(g.i>=n){const need=Math.ceil(n*.75);return res(g.c>=need,`答對 ${g.c} / ${n} 題（需答對 ${need} 題）`,1)}
+ const u=g.qs[g.i],o=opts(u);
+ B(`<div class="prog">第 ${g.i+1} / ${n} 題</div><div class="q">「<b>${u.n}</b>」這個單位主要在哪個國家／地區使用？</div>`+
+ o.map((t,j)=>{let c='';if(g.a!==null){if(t===u.r)c='ok';else if(j===g.a)c='no'}return `<button class="opt ${c}" ${g.a!==null?'disabled':''} onclick="pick(${j})">${t}</button>`}).join('')+
+ (g.a!==null?`<p>換算：1 ${u.n} ${u.m}<br><small>${u.d}</small></p><button class="btn" onclick="g.i++;g.a=null;choice()">${g.i+1<n?'下一題':'看結果'} ▶</button>`:''))}
+function pick(j){const u=g.qs[g.i];g.a=j;if(opts(u)[j]===u.r)g.c++;choice()}
+function match(){const lv=L[S.lv];
+ if(!g.p){g.p=sh(lv.u).slice(0,4);g.r=sh(g.p.map((_,i)=>i));g.s=null;g.dn=[];g.e=0}
+ if(g.dn.length===g.p.length)return res(g.e<=2,`全部配對完成，錯誤 ${g.e} 次（需 2 次以內）`,2);
+ B(`<div class="q">把「單位」連到正確的「換算」：先點左邊，再點右邊。　<span class="prog">錯誤 ${g.e} 次</span></div><div class="cols"><div>`+
+ g.p.map((u,i)=>`<div class="m ${g.dn.includes(i)?'dn':''} ${g.s===i?'sel':''}" style="margin:6px 0" onclick="ml(${i})">1 ${u.n}</div>`).join('')+'</div><div>'+
+ g.r.map(i=>`<div class="m ${g.dn.includes(i)?'dn':''}" style="margin:6px 0" onclick="mr(${i},this)">${g.p[i].m}</div>`).join('')+'</div></div>')}
+function ml(i){if(g.dn.includes(i))return;g.s=i;match()}
+function mr(i,el){if(g.s===null||g.dn.includes(i))return;
+ if(g.s===i){g.dn.push(i);g.s=null;match()}else{g.e++;g.s=null;match();}}
+function fill(){const lv=L[S.lv];
+ if(!g.qs){g.qs=sh(lv.q).slice(0,4);g.ck=false}
+ B(`<div class="q">填入數值（可輸入小數）。答案容許約 1% 誤差。</div>`+g.qs.map((x,i)=>`<div class="q">${i+1}. ${x.q} <input type="text" id="f${i}" inputmode="decimal" ${g.ck?'disabled':''} value="${g.v?g.v[i]:''}"> ${x.u}<span class="fb" id="b${i}"></span></div>`).join('')+
+ (g.ck?`<button class="btn" onclick="fin()">看結果 ▶</button>`:`<button class="btn" onclick="chk()">送出</button>`));
+ if(g.ck)g.qs.forEach((x,i)=>{$('#b'+i).innerHTML=g.o[i]?'✅':`❌ 正確：${x.a}`})}
+function chk(){g.v=g.qs.map((_,i)=>$('#f'+i).value);
+ g.o=g.qs.map((x,i)=>{const v=parseFloat(g.v[i].replace(/[,，\s]/g,''));return !isNaN(v)&&Math.abs(v-x.a)<=Math.abs(x.a)*0.01});
+ g.ck=true;fill()}
+function fin(){const n=g.qs.length,c=g.o.filter(Boolean).length,need=Math.ceil(n*.75);res(c>=need,`答對 ${c} / ${n} 題（需答對 ${need} 題）`,3)}
+render();
+</script></body></html>
