@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>指數闖關學具</title>
+<style>
+:root{--o:#f28a1e;--b:#1f5fa8;--g:#2e9e5b;--r:#d94040;--bg:#fff8ee}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:#222}
+header{background:var(--o);color:#fff;padding:12px 16px}
+header h1{margin:0;font-size:20px}header small{opacity:.9}
+main{max-width:860px;margin:0 auto;padding:12px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tab{border:2px solid var(--b);background:#fff;color:var(--b);border-radius:20px;padding:6px 14px;font-size:15px;cursor:pointer}
+.tab.on{background:var(--b);color:#fff}.tab:disabled{border-color:#bbb;color:#999;cursor:not-allowed}
+.sub .tab{border-color:var(--o);color:#b55f00;font-size:14px}.sub .tab.on{background:var(--o);color:#fff}
+.sub .tab:disabled{border-color:#ccc;color:#aaa}
+.box{background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 6px #0002;margin-top:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.card{border:2px solid var(--o);border-radius:12px;padding:12px;min-height:110px;cursor:pointer;text-align:center;background:#fffdf7}
+.card b{font-size:26px;color:var(--b);display:block}
+.card .bk{display:none;font-size:17px;color:#333}.card.f .fr{display:none}.card.f .bk{display:block}
+.card small{color:#666;font-size:13px}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:10px 14px;font-size:17px;border:2px solid #ccc;border-radius:10px;background:#fff;cursor:pointer;color:#222;font-family:inherit}
+.opt:hover:not(:disabled){border-color:var(--b)}.ok{background:#dff5e7!important;border-color:var(--g)!important}
+.no{background:#fde3e3!important;border-color:var(--r)!important}
+.btn{background:var(--g);color:#fff;border:0;border-radius:10px;padding:10px 20px;font-size:16px;cursor:pointer;margin-top:10px;font-family:inherit}
+.btn.alt{background:var(--b)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:10px 30px}
+.m{padding:12px;border:2px solid #ccc;border-radius:10px;background:#fff;font-size:17px;text-align:center;cursor:pointer}
+.m.sel{border-color:var(--b);background:#e6f0fb}.m.dn{border-color:var(--g);background:#dff5e7;cursor:default}
+.st{padding:8px 12px;margin:6px 0;border-left:5px solid var(--b);background:#e6f0fb;border-radius:0 10px 10px 0;font-size:17px}
+input[type=text]{font-size:17px;width:100px;padding:5px;border:2px solid #aaa;border-radius:8px;text-align:center}
+.q{margin:12px 0;font-size:17px}.fb{font-size:15px;margin-left:8px}
+.prog{color:#666;font-size:14px}.res{text-align:center;padding:10px}.res h2{margin:6px 0}
+.info{background:#e6f0fb;border-radius:10px;padding:8px 14px;margin:8px 0;font-size:16px;line-height:1.9}
+sup{font-size:.7em;line-height:0}
+.fr2{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25;margin:0 2px}
+.fr2 i{font-style:normal;padding:0 3px}.fr2 i:first-child{border-bottom:1.5px solid currentColor}
+.rad{display:inline-flex;align-items:stretch;vertical-align:middle;margin:0 2px;line-height:1.25}
+.rad .ix{font-size:.62em;align-self:flex-start;margin-right:-.3em;margin-top:.1em;position:relative;z-index:1}
+.rad svg{width:.85em;flex:none;margin-top:.75px;overflow:visible}
+.rad .rc{border-top:1.5px solid currentColor;padding:.1em .2em 0 .08em}
+footer{max-width:860px;margin:10px auto;padding:0 12px 20px;font-size:12px;color:#777}
+</style></head><body>
+<header><h1>🔑 指數闖關學具</h1><small>職數 AIII 2-1.1～2-1.4｜依序通過 正整數指數→零與負整數指數→分數指數→實數指數（每關須全對）</small></header>
+<main><div id="nav"></div><div id="body"></div></main>
+<footer>內容依教材 2-1.1～2-1.4（第56–64頁）。本學具只做定義與指數律的基礎認識；實數指數的證明教材未討論，這裡只練習熟習指數律。題目每次都會隨機變化。</footer>
+<script>
+/* 顯示格式：^{x} 上標、^x 單字元上標、~{分子|分母} 分數、⟦n|內容⟧ n 次根號（n 空白表示平方根） */
+const SG='<svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.4 12.2L1.8 11L5 19L9.8 0" fill="none" stroke="currentColor" stroke-width="1.3" vector-effect="non-scaling-stroke" stroke-linejoin="miter"/></svg>';
+const fmt=s=>s
+ .replace(/⟦([^|⟧]*)\|([^⟧]*)⟧/g,(_,n,c)=>'<span class="rad">'+(n?'<span class="ix">'+n+'</span>':'')+SG+'<span class="rc">'+c+'</span></span>')
+ .replace(/~\{([^|}]*)\|([^}]*)\}/g,'<span class="fr2"><i>$1</i><i>$2</i></span>')
+ .replace(/\^\{([^}]*)\}/g,'<sup>$1</sup>')
+ .replace(/\^([A-Za-z0-9□])/g,'<sup>$1</sup>');
+const $=s=>document.querySelector(s);
+const sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pk=a=>a[Math.floor(Math.random()*a.length)];
+const rt=(n,c)=>`⟦${n==2?'':n}|${c}⟧`;
+const E=x=>`a^{${x}}`;
+const pw=(b,e)=>e==1?`${b}`:`${b}^{${e}}`;
+const mkq=(q,c,cands,w)=>{const o=[c];for(const x of cands)if(!o.includes(x)&&o.length<4)o.push(x);return{q,o,a:0,w}};
+const tf=(q,ok,w)=>({q:'判斷對錯：'+q,o:['對','錯'],a:ok?0:1,w});
+
+const L=[
+/* ───────── 2-1.1 ───────── */
+{k:'2-1.1 正整數指數',ic:'🧫',
+info:'a^{n} 表示 a 自乘 n 次的乘積，讀作「a 的 n 次方」。a 稱為<b>底數</b>，n 稱為<b>指數</b>。指數律（m、n 為正整數）：(1) a^{m}×a^{n} = a^{m+n}　(2) (a^{m})^{n} = a^{mn}　(3) a^{n}×b^{n} = (ab)^{n}。',
+cards:[['a^{n}','a 自乘 n 次的乘積，讀作「a 的 n 次方」'],['底數','a^{n} 中的 a'],['指數','a^{n} 中的 n'],['a^{2}','讀作「a 的平方」'],['a^{3}','讀作「a 的立方」'],['指數律 (1)','a^{m}×a^{n} = a^{m+n}（同底相乘，指數相加）'],['指數律 (2)','(a^{m})^{n} = a^{mn}'],['指數律 (3)','a^{n}×b^{n} = (ab)^{n}']],
+ch:[
+()=>{let b,e;do{b=pk([3,5,7,9,12]);e=pk([2,4,5,6])}while(b===e);return mkq(`在 ${b}^{${e}} 中，底數是？`,`${b}`,[`${e}`,`${b*e}`,`${b**e}`],`${b}^{${e}} 中，${b} 是底數，${e} 是指數。`)},
+()=>{let b,e;do{b=pk([3,5,7,9,12]);e=pk([2,4,5,6])}while(b===e);return mkq(`在 ${b}^{${e}} 中，指數是？`,`${e}`,[`${b}`,`${b*e}`,`${b**e}`],`${b}^{${e}} 中，${b} 是底數，${e} 是指數。`)},
+()=>{const b=pk([2,3,5,7]),k=pk([3,4,5,6]);return mkq(`${Array(k).fill(b).join('×')} 用指數表示為？`,`${b}^{${k}}`,[`${k}^{${b}}`,`${b}×${k}`,`${b}^{${k-1}}`],`${k} 個 ${b} 相乘，記為 ${b}^{${k}}。`)},
+()=>{const x=pk([2,3,4,5,6]),n=pk([2,3]),c=n==2?'平方':'立方',d=n==2?'立方':'平方';return mkq(`${x}^{${n}} 習慣上讀作？`,`${x} 的${c}`,[`${x} 的${d}`,`${x} 的 ${n} 倍`,`${x} 加 ${n} 次`],`a^{2} 讀作平方，a^{3} 讀作立方。`)},
+{q:'a^{n} 表示什麼？',o:['n 個 a 相乘','a 乘以 n','n 個 a 相加','a 加 n'],a:0,w:'a^{n} 是 a 自乘 n 次的乘積，即 n 個 a 相乘。'}],
+mt:[['2^{5}','2 的 5 次方'],['3^{2}','3 的平方'],['5^{3}','5 的立方'],['a^{n}','a 的 n 次方'],['7×7×7×7','7^{4}'],['4^{3}','4 的立方'],['6^{2}','6 的平方'],['2^{4}','2 的 4 次方']],
+fl:[
+()=>{const b=pk([2,3,5,7]),m=ri(1,5),n=ri(1,5),p=ri(1,5);return{q:`${pw(b,m)}×${pw(b,n)}×${pw(b,p)} = ${b}^{□}`,a:String(m+n+p),w:`同底相乘，指數相加：${m}+${n}+${p} = ${m+n+p}（${b} 可看成 ${b}^{1}）。`}},
+()=>{const b=pk([2,3,5,7]),m=ri(2,4),n=ri(2,4);return{q:`(${b}^{${m}})^{${n}} = ${b}^{□}`,a:String(m*n),w:`指數相乘：${m}×${n} = ${m*n}。`}},
+()=>{const [x,y]=pk([[2,5],[3,4],[2,3]]),m=ri(2,4);return{q:`${x}^{${m}}×${y}^{${m}} = ${x*y}^{□}`,a:String(m),w:`a^{n}×b^{n} = (ab)^{n}，所以 (${x}×${y})^{${m}} = ${x*y}^{${m}}。`}},
+()=>{const b=pk([2,3,4,5,10]),k=pk([2,3,4]);return{q:`${b}^{${k}} = □`,a:String(b**k),w:`${b}^{${k}} 是 ${k} 個 ${b} 相乘，等於 ${b**k}。`}}],
+od:[
+{title:'證明：a^{m}×a^{n} = a^{m+n}',steps:['a^{m}×a^{n}','= (a×a×…×a)[m 個 a] × (a×a×…×a)[n 個 a]','= a×a×…×a [共 (m+n) 個 a]','= a^{m+n}']},
+{title:'證明：(a^{m})^{n} = a^{mn}',steps:['(a^{m})^{n}','= a^{m}×a^{m}×…×a^{m} [n 個 a^{m}]','= (a×…×a)×(a×…×a)×…×(a×…×a) [n 組，每組 m 個 a]','= a×a×…×a [共 m×n 個 a]','= a^{mn}']},
+{title:'證明：a^{n}×b^{n} = (ab)^{n}',steps:['a^{n}×b^{n}','= (a×a×…×a)[n 個] × (b×b×…×b)[n 個]','= (a×b)×(a×b)×…×(a×b) [n 組]','= (ab)^{n}']}]},
+/* ───────── 2-1.2 ───────── */
+{k:'2-1.2 零與負整數指數',ic:'⚖️',
+info:'為了讓指數推廣到所有整數，必須替 a^{0}、a^{-n} 下定義，使指數律仍然成立，此時 a ≠ 0。設 a ≠ 0，n 為正整數：(1) a^{0} = 1　(2) a^{-n} = ~{1|a^n}。0^{0} 與 0^{-n} 均為無意義。',
+cards:[['a^{0}','a ≠ 0 時，a^{0} = 1'],['a^{-n}','a ≠ 0 時，a^{-n} = ~{1|a^n}'],['0^{0}、0^{-n}','均為無意義'],['為什麼 a ≠ 0？','推導時要兩邊同除以 a^{n}，所以 a^{n} 必須不為 0'],['a^{0} 的由來','a^{0}×a^{n} = a^{n}，兩邊同除以 a^{n}，得 a^{0} = 1'],['整數指數律','m、n 為整數時，三條指數律仍成立'],['同底相除','~{a^n|a^m} = a^{n}×a^{-m} = a^{n−m}']],
+ch:[
+()=>{const b=pk([9999,25,7,100,-8,12]),s=b<0?'−'+(-b):''+b;return mkq(`(${s})^{0} = ？`,'1',['0',s,'無意義'],'底數不為 0 時，a^{0} = 1。')},
+()=>{let b,n;do{b=pk([2,3,5,10]);n=pk([2,3])}while(b*n===b**n);const v=b**n;return mkq(`${b}^{-${n}} = ？`,`~{1|${v}}`,[`−${v}`,`${v}`,`~{1|${b*n}}`],`${b}^{-${n}} = ~{1|${b}^${n}} = ~{1|${v}}。`)},
+()=>{let b,n;do{b=pk([2,3,5,10]);n=pk([2,3])}while(b*n===b**n);const v=b**n;return mkq(`${b}^{-${n}} = ？`,`~{1|${v}}`,[`−${v}`,`${v}`,`~{1|${b*n}}`],`${b}^{-${n}} = ~{1|${b}^${n}} = ~{1|${v}}。`)},
+{q:'0^{0} 的情形是？',o:['等於 1','等於 0','無意義','等於 ~{1|0}'],a:2,w:'教材指出 0^{0} 與 0^{-n} 均為無意義，所以定義時要求 a ≠ 0。'},
+()=>{let p,q;do{p=ri(1,4);q=ri(1,4)}while(p===q);return mkq(`a^{${p}}÷a^{${q}} = ？（a ≠ 0）`,E(p-q),[E(p+q),E(q-p),E(p*q)],`同底相除，指數相減（分子減分母）：${p}−${q} = ${p-q}。`)},
+{q:'設 a ≠ 0，n 為正整數，a^{-n} 等於？',o:['~{1|a^n}','−a^{n}','a^{n}','~{a|n}'],a:0,w:'定義 a^{-n} = ~{1|a^n}。'}],
+mt:[['2^{-3}','~{1|8}'],['5^{-2}','~{1|25}'],['10^{-3}','~{1|1000}'],['3^{-2}','~{1|9}'],['4^{-2}','~{1|16}'],['10^{-2}','~{1|100}'],['2^{-1}','~{1|2}'],['6^{-2}','~{1|36}'],
+['3^{0}','1','z'],['(−7)^{0}','1','z'],['(9999)^{0}','1','z'],['12^{0}','1','z']],
+fl:[
+()=>{const b=pk([2,3,5,10]),p=ri(1,4),r=ri(1,3),q=p+r;return{q:`${b}^{-${p}}×${b}^{${q}} = ${b}^{□}`,a:String(r),w:`同底相乘，指數相加：−${p}+${q} = ${r}。`}},
+()=>{const b=pk([2,3,5]),p=ri(1,2),q=p+2;return{q:`${b}^{-${p}}×${b}^{${q}} = □`,a:String(b*b),w:`−${p}+${q} = 2，所以 ${b}^{2} = ${b*b}。`}},
+()=>{const b=pk([9999,12,25,-3]),s=b<0?'−'+(-b):''+b;return{q:`(${s})^{0} = □`,a:'1',w:'底數不為 0 時，a^{0} = 1。'}},
+()=>{const b=pk([2,3,5,10]),n=ri(2,4);return{q:`${b}^{-${n}} = ~{1|${b}^□}`,a:String(n),w:`a^{-n} = ~{1|a^n}，所以 ${b}^{-${n}} = ~{1|${b}^${n}}。`}},
+()=>{let p,q;do{p=ri(1,5);q=ri(1,5)}while(p===q);return{q:`10^{${p}}÷10^{${q}} = 10^{□}`,a:String(p-q),w:`同底相除，指數相減：${p}−${q} = ${p-q}。`}}],
+od:[
+{title:'推導：為什麼 a^{0} = 1？',steps:['假設指數律仍成立：a^{0}×a^{n} = a^{0+n} = a^{n}','因為 a ≠ 0，所以 a^{n} ≠ 0，兩邊同除以 a^{n}','得 a^{0} = 1']},
+{title:'推導：為什麼 a^{-n} = 1/a^{n}？',steps:['假設指數律仍成立：a^{-n}×a^{n} = a^{-n+n} = a^{0} = 1','因為 a ≠ 0，所以 a^{n} ≠ 0，兩邊同除以 a^{n}','得 a^{-n} = ~{1|a^n}']}]},
+/* ───────── 2-1.3 ───────── */
+{k:'2-1.3 分數指數',ic:'🔢',
+info:'設 a > 0，n 為正整數。(a^{1/n})^{n} = a，所以 a^{1/n} 是方程式 x^{n} = a 的根；x^{n} = a 恰有一正實數根 ⟦n|a⟧，因此定義 a^{1/n} = ⟦n|a⟧。設 a > 0，n 為正整數，m 為整數：a^{m/n} = (⟦n|a⟧)^{m} = ⟦n|a^{m}⟧。',
+cards:[['a^{1/n}','a > 0 時，a^{1/n} = ⟦n|a⟧'],['a^{m/n}','(⟦n|a⟧)^{m} = ⟦n|a^{m}⟧'],['為什麼這樣定義？','(a^{1/n})^{n} = a，所以 a^{1/n} 是 x^{n} = a 的正實數根'],['3^{1/2}','= ⟦|3⟧'],['5^{3/4}','= ⟦4|5^{3}⟧'],['2^{1/3}','= ⟦3|2⟧'],['底數的限制','定義分數指數時，a > 0']],
+ch:[
+{q:'定義分數指數時，底數 a 必須滿足？',o:['a > 0','a < 0','a ≠ 0 即可','任意實數'],a:0,w:'教材定義分數指數時設 a > 0。'},
+{q:'a^{m/n}（a > 0）等於下列何者？',o:['(⟦n|a⟧)^{m}','a^{m+n}','a^{m−n}','a^{mn}'],a:0,w:'a^{m/n} = (a^{1/n})^{m} = (⟦n|a⟧)^{m} = ⟦n|a^{m}⟧。'},
+{q:'(a^{m/n})^{n} = ？',o:['a^{m}','a^{n}','a','a^{m+n}'],a:0,w:'(a^{m/n})^{n} = a^{(m/n)×n} = a^{m}。'},
+{q:'a^{1/n}（a > 0）等於？',o:['⟦n|a⟧','a^{n}','~{a|n}','~{1|a^n}'],a:0,w:'定義 a^{1/n} = ⟦n|a⟧。'},
+()=>{const b=pk([2,3,5,7]),p=pk([2,3,5]),q=pk([3,4,5]);return mkq(`${b}^{${p}/${q}} 化成根式是？`,rt(q,`${b}^{${p}}`),[rt(p,`${b}^{${q}}`),rt(q,`${b}×${p}`),rt(p+q,`${b}`)],`a^{m/n} = ⟦n|a^{m}⟧，這裡 m = ${p}、n = ${q}。`)},
+()=>{const b=pk([2,3,5,7]),p=pk([2,3,5]),q=pk([3,4,5]);return mkq(`${b}^{${p}/${q}} 化成根式是？`,rt(q,`${b}^{${p}}`),[rt(p,`${b}^{${q}}`),rt(q,`${b}×${p}`),rt(p+q,`${b}`)],`a^{m/n} = ⟦n|a^{m}⟧，這裡 m = ${p}、n = ${q}。`)},
+()=>{const n=pk([2,3,4,5]),b=pk([3,5,7]);return mkq(`${rt(n,b)} 用分數指數表示為？`,`${b}^{1/${n}}`,[`${b}^{${n}}`,`${b}^{-${n}}`,`${n}^{${b}}`],`a^{1/n} = ⟦n|a⟧，所以 ${rt(n,b)} = ${b}^{1/${n}}。`)},
+()=>{const n=pk([2,3,4,5]),b=pk([3,5,7]);return mkq(`${rt(n,b)} 用分數指數表示為？`,`${b}^{1/${n}}`,[`${b}^{${n}}`,`${b}^{-${n}}`,`${n}^{${b}}`],`a^{1/n} = ⟦n|a⟧，所以 ${rt(n,b)} = ${b}^{1/${n}}。`)}],
+mt:[['3^{1/2}','⟦|3⟧'],['2^{1/3}','⟦3|2⟧'],['5^{3/4}','⟦4|5^{3}⟧'],['7^{1/2}','⟦|7⟧'],['5^{1/3}','⟦3|5⟧'],['2^{3/5}','⟦5|2^{3}⟧'],['9^{1/2}','3'],['8^{1/3}','2'],['25^{1/2}','5'],['16^{1/4}','2']],
+fl:[
+()=>{const [b,n,r]=pk([[4,2,2],[9,2,3],[16,2,4],[25,2,5],[8,3,2],[27,3,3],[64,3,4],[16,4,2],[81,4,3]]);return{q:`${b}^{1/${n}} = □`,a:String(r),w:`${b}^{1/${n}} = ${rt(n,b)} = ${r}。`}},
+()=>{const [b,m,n]=pk([[4,3,2],[9,3,2],[8,2,3],[27,2,3],[16,3,4],[25,3,2]]);const r=Math.round(b**(1/n));return{q:`${b}^{${m}/${n}} = □`,a:String(r**m),w:`${b}^{${m}/${n}} = (${rt(n,b)})^{${m}} = ${r}^{${m}} = ${r**m}。`}},
+()=>{const m=ri(2,5),n=ri(2,4);return{q:`(a^{${m}/${n}})^{${n}} = a^{□}`,a:String(m),w:`指數相乘：(${m}/${n})×${n} = ${m}。`}},
+()=>{const n=pk([3,4,5]);return{q:`${rt(n,'a')} = a^{1/□}`,a:String(n),w:`a^{1/n} = ⟦n|a⟧，這裡 n = ${n}。`}}],
+od:[
+{title:'推導：定義 a^{1/n}',steps:['由指數律：(a^{1/n})^{n} = a^{(1/n)×n}','= a^{1} = a','所以 a^{1/n} 是方程式 x^{n} = a 的根，而 x^{n} = a 恰有一正實數根 ⟦n|a⟧','因此定義 a^{1/n} = ⟦n|a⟧']},
+{title:'推導：定義 a^{m/n}',steps:['(a^{m/n})^{n} = a^{(m/n)×n}','= a^{m}','所以 a^{m/n} 為 a^{m} 的正 n 次方根','即 a^{m/n} = ⟦n|a^{m}⟧']}]},
+/* ───────── 2-1.4 ───────── */
+{k:'2-1.4 實數指數',ic:'🏆',
+info:'當 a > 0，x 為實數時，a^{x} 都可定義，且都滿足指數律（證明超出教材範圍，這一單元只要熟習指數律）。設 a、b 為正實數，m、n 為實數：(1) a^{m}×a^{n} = a^{m+n}　(2) a^{m}÷a^{n} = a^{m−n}　(3) (a^{m})^{n} = a^{mn}　(4) (ab)^{n} = a^{n}×b^{n}　(5) (a/b)^{n} = ~{a^n|b^n}。',
+cards:[['指數律 (1)','a^{m}×a^{n} = a^{m+n}'],['指數律 (2)','a^{m}÷a^{n} = a^{m−n}'],['指數律 (3)','(a^{m})^{n} = a^{mn}'],['指數律 (4)','(ab)^{n} = a^{n}×b^{n}'],['指數律 (5)','(a/b)^{n} = ~{a^n|b^n}'],['適用範圍','a、b 為正實數，m、n 為實數']],
+ch:[
+()=>{let m,n;do{m=ri(2,6);n=ri(2,6)}while(m===n);return mkq(`a^{${m}}×a^{${n}} = ？`,E(m+n),[E(m*n),E(Math.abs(m-n)),E(2*(m+n)),E(m*n+1)],`同底相乘，指數相加：${m}+${n} = ${m+n}。`)},
+()=>{const n=ri(1,4),m=n+ri(2,4);return mkq(`a^{${m}}÷a^{${n}} = ？`,E(m-n),[E(m+n),E(m*n),E(n-m),E(m-n+1)],`同底相除，指數相減：${m}−${n} = ${m-n}。`)},
+()=>{let m,n;do{m=ri(2,5);n=ri(2,5)}while(m===n);return mkq(`(a^{${m}})^{${n}} = ？`,E(m*n),[E(m+n),E(m**n),E(m*n+1)],`指數相乘：${m}×${n} = ${m*n}。`)},
+()=>{const n=ri(2,5);return mkq(`(ab)^{${n}} = ？`,`a^{${n}}×b^{${n}}`,[`a×b^{${n}}`,`a^{${n}}+b^{${n}}`,`a^{${n}}×b`],`(ab)^{n} = a^{n}×b^{n}。`)},
+tf('a^{m}+a^{n} = a^{m+n}',false,'指數律是「相乘」才指數相加，加法不能這樣合併。'),
+()=>{const [x,y]=pk([[2,3],[2,5],[3,4]]),m=ri(2,4);return tf(`${x}^{${m}}×${y}^{${m}} = ${x*y}^{${m}}`,true,`a^{n}×b^{n} = (ab)^{n}，(${x}×${y})^{${m}} = ${x*y}^{${m}}。`)},
+()=>{const m=ri(2,4),n=ri(2,4);return tf(`(2^{${m}})^{${n}} = 2^{${m+n}}`,false,`(a^{m})^{n} = a^{mn}，應為 2^{${m*n}}。`)},
+tf('5^{-2} = −25',false,'5^{-2} = ~{1|25}，負指數不是負數。'),
+tf('(−3)^{0} = 1',true,'底數不為 0 時，a^{0} = 1。'),
+tf('0^{0} = 1',false,'教材指出 0^{0} 為無意義。')],
+mt:[['a^{m}×a^{n}','a^{m+n}'],['a^{m}÷a^{n}','a^{m−n}'],['(a^{m})^{n}','a^{mn}'],['(ab)^{n}','a^{n}×b^{n}'],['(a/b)^{n}','~{a^n|b^n}']],
+fl:[
+()=>{const m=ri(1,6),n=ri(1,6);return{q:`a^{${m}}×a^{${n}} = a^{□}`,a:String(m+n),w:`${m}+${n} = ${m+n}。`}},
+()=>{const n=ri(1,5),m=n+ri(1,4);return{q:`a^{${m}}÷a^{${n}} = a^{□}`,a:String(m-n),w:`${m}−${n} = ${m-n}。`}},
+()=>{const m=ri(2,4),n=ri(2,4);return{q:`(a^{${m}})^{${n}} = a^{□}`,a:String(m*n),w:`${m}×${n} = ${m*n}。`}},
+()=>Math.random()<.5?(()=>{const b=pk([2,3,5,7]);return{q:`${b}^{1/2}×${b}^{1/2} = □`,a:String(b),w:`1/2+1/2 = 1，所以 ${b}^{1} = ${b}。`}})():{q:'a^{1/3}×a^{2/3} = a^{□}',a:'1',w:'1/3+2/3 = 1。'}],
+od:[]}
+];
+
+const $S=lv=>L[lv].od.length?['learn','order','choice','match','fill']:['learn','choice','match','fill'];
+const NM={learn:'📖 學習重點',order:'證明排序',choice:'選擇題',match:'配對',fill:'填充'};
+const full=i=>$S(i).length-1;
+let S={lv:0,st:0,done:[0,0,0,0]},g={};
+try{const d=JSON.parse(localStorage.getItem('eq2')||'null');if(d)S.done=d}catch(e){}
+const save=()=>{try{localStorage.setItem('eq2',JSON.stringify(S.done))}catch(e){}};
+const go=(lv,st)=>{S.lv=lv;S.st=st;g={};render()};
+const lock=i=>i>0&&S.done[i-1]<full(i-1);
+const NUM=['①','②','③','④'];
+function render(){
+ const ks=$S(S.lv);
+ $('#nav').innerHTML='<div class="tabs">'+L.map((l,i)=>`<button class="tab ${i==S.lv?'on':''}" ${lock(i)?'disabled':''} onclick="go(${i},0)">${lock(i)?'🔒':l.ic} ${l.k}${S.done[i]>=full(i)?' ✅':''}</button>`).join('')+'</div><div class="tabs sub">'+
+ ks.map((k,j)=>{const lk=j>0&&S.done[S.lv]<j-1;return `<button class="tab ${j==S.st?'on':''}" ${lk?'disabled':''} onclick="go(${S.lv},${j})">${lk?'🔒 ':''}${j?NUM[j-1]+' ':''}${NM[k]}${j>0&&S.done[S.lv]>=j?' ✔':''}</button>`}).join('')+'</div>';
+ ({learn,order,choice,match,fill})[ks[S.st]]();
+}
+const B=h=>$('#body').innerHTML='<div class="box">'+h+'</div>';
+function learn(){const lv=L[S.lv];
+ B(`<h3>${lv.ic} ${lv.k}：先讀重點，再點卡片翻面</h3><div class="info">${fmt(lv.info)}</div><div class="grid">`+lv.cards.map(c=>`<div class="card" onclick="this.classList.toggle('f')"><div class="fr"><b>${fmt(c[0])}</b><small>（點一下翻面）</small></div><div class="bk">${fmt(c[1])}</div></div>`).join('')+`</div><button class="btn" onclick="go(S.lv,1)">我記好了，開始闖關 ▶</button>`)}
+function res(ok,txt){const st=S.st;
+ if(ok){S.done[S.lv]=Math.max(S.done[S.lv],st);save()}
+ let nx='';
+ if(ok){nx=st<full(S.lv)?`<button class="btn" onclick="go(S.lv,${st+1})">下一關 ▶</button>`:S.lv<3?`<button class="btn" onclick="go(${S.lv+1},0)">解鎖下一單元：${L[S.lv+1].k} ▶</button>`:'<h3>🏆 全部通關！2-1.1 至 2-1.4 都學會了。</h3>'}
+ B(`<div class="res"><h2>${ok?'✅ 通過':'❌ 未通過'}</h2><p>${txt}</p>${nx}<button class="btn alt" onclick="go(S.lv,${st})">${ok?'再玩一次（題目會重新隨機）':'重新挑戰（題目會重新隨機）'}</button>${ok?'':`<button class="btn alt" onclick="go(S.lv,0)">回去複習</button>`}</div>`)}
+function choice(){const lv=L[S.lv];
+ if(!g.qs){g.qs=sh(lv.ch.map(x=>typeof x==='function'?x():x)).slice(0,5);g.i=0;g.c=0;g.a=null;g.cur=null}
+ const n=g.qs.length;
+ if(g.i>=n)return res(g.c===n,`答對 ${g.c} / ${n} 題（需全部答對）`);
+ const q=g.qs[g.i];if(!g.cur){const m=q.o.map((x,i)=>({x,c:i===q.a}));g.cur=q.o.length>2?sh(m):m}
+ B(`<div class="prog">第 ${g.i+1} / ${n} 題</div><div class="q">${fmt(q.q)}</div>`+
+ g.cur.map((z,j)=>{let c='';if(g.a!==null){if(z.c)c='ok';else if(j===g.a)c='no'}return `<button class="opt ${c}" ${g.a!==null?'disabled':''} onclick="pick(${j})">${fmt(z.x)}</button>`}).join('')+
+ (g.a!==null?`<p>${fmt(q.w)}</p><button class="btn" onclick="g.i++;g.a=null;g.cur=null;choice()">${g.i+1<n?'下一題':'看結果'} ▶</button>`:''))}
+function pick(j){g.a=j;if(g.cur[j].c)g.c++;choice()}
+function pickPairs(pool,k){const out=[],rs=new Set(),gs=new Set();
+ for(const p of sh(pool)){if(out.length>=k)break;if(rs.has(p[1]))continue;if(p[2]&&gs.has(p[2]))continue;out.push(p);rs.add(p[1]);if(p[2])gs.add(p[2])}return out}
+function match(){const lv=L[S.lv];
+ if(!g.p){g.p=pickPairs(lv.mt,S.lv===3?4:5);g.r=sh(g.p.map((_,i)=>i));g.s=null;g.dn=[];g.e=0}
+ if(g.dn.length===g.p.length)return res(g.e===0,`全部配對完成，錯誤 ${g.e} 次（需 0 次錯誤）`);
+ B(`<div class="q">把左邊配到意思相同的右邊：先點左邊，再點右邊。　<span class="prog">錯誤 ${g.e} 次</span></div><div class="cols"><div>`+
+ g.p.map((u,i)=>`<div class="m ${g.dn.includes(i)?'dn':''} ${g.s===i?'sel':''}" style="margin:6px 0" onclick="ml(${i})">${fmt(u[0])}</div>`).join('')+'</div><div>'+
+ g.r.map(i=>`<div class="m ${g.dn.includes(i)?'dn':''}" style="margin:6px 0" onclick="mr(${i})">${fmt(g.p[i][1])}</div>`).join('')+'</div></div>')}
+function ml(i){if(g.dn.includes(i))return;g.s=i;match()}
+function mr(i){if(g.s===null||g.dn.includes(i))return;
+ if(g.s===i){g.dn.push(i);g.s=null;match()}else{g.e++;g.s=null;match()}}
+function fill(){const lv=L[S.lv];
+ if(!g.qs){g.qs=sh(lv.fl).slice(0,4).map(f=>f());g.ck=false}
+ B(`<div class="q">填入答案（請輸入數字，負數請加負號，例：−3）。</div>`+g.qs.map((x,i)=>`<div class="q">${i+1}. ${fmt(x.q)}　<input type="text" id="f${i}" inputmode="text" autocomplete="off" ${g.ck?'disabled':''} value="${g.v?g.v[i]:''}"><span class="fb" id="b${i}"></span></div>`).join('')+
+ (g.ck?`<button class="btn" onclick="fin()">看結果 ▶</button>`:`<button class="btn" onclick="chk()">送出</button>`));
+ if(g.ck)g.qs.forEach((x,i)=>{$('#b'+i).innerHTML=g.o[i]?'✅':`❌ 正確：${x.a}（${fmt(x.w)}）`})}
+const num=s=>{s=String(s).replace(/−/g,'-').replace(/[,，\s]/g,'');let m;if(m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/))return +m[1]/+m[2];if(/^-?\d+(\.\d+)?$/.test(s))return +s;return NaN};
+function chk(){g.v=g.qs.map((_,i)=>$('#f'+i).value);
+ g.o=g.qs.map((x,i)=>{const v=num(g.v[i]);return !isNaN(v)&&Math.abs(v-num(x.a))<1e-9});
+ g.ck=true;fill()}
+function fin(){const n=g.qs.length,c=g.o.filter(Boolean).length;res(c===n,`答對 ${c} / ${n} 題（需全部答對）`)}
+function shufNot(steps){let a;do{a=sh(steps.map((x,i)=>({x,i})))}while(a.every((z,i)=>z.i===i));return a}
+function order(){const lv=L[S.lv];
+ if(g.t===undefined){g.t=0;g.e=0;g.n=0;g.od=lv.od;g.items=null}
+ if(g.t>=g.od.length)return res(g.e<=3,`完成全部步驟排序，錯誤 ${g.e} 次（需 3 次以內）`);
+ const t=g.od[g.t];if(!g.items)g.items=shufNot(t.steps);
+ const done=g.n===t.steps.length;
+ B(`<div class="prog">第 ${g.t+1} / ${g.od.length} 題　錯誤 ${g.e} 次</div><div class="q"><b>${fmt(t.title)}</b><br>依序點選，排出正確的步驟（由上到下）：</div>`+
+ t.steps.slice(0,g.n).map(s=>`<div class="st">${fmt(s)}</div>`).join('')+
+ (done?`<p>✅ 完成！</p><button class="btn" onclick="g.t++;g.n=0;g.items=null;order()">${g.t+1<g.od.length?'下一題':'看結果'} ▶</button>`:g.items.map(z=>`<button class="opt" onclick="op(${z.i})">${fmt(z.x)}</button>`).join('')))}
+function op(i){if(i===g.n){g.n++;g.items=g.items.filter(z=>z.i!==i)}else g.e++;order()}
+render();
+</script></body></html>

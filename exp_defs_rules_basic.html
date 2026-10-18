@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>指數魔幻冒險世界 (iPad 隨機題庫版)</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --border: #cbd5e1;
+            --gray-bg: #f1f5f9;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1e293b 100%);
+            min-height: 100vh;
+            color: #334155;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1020px;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 20px 26px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        h1 {
+            color: var(--dark);
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 0.88rem;
+        }
+
+        .stage-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .stage-btn {
+            flex: 1;
+            padding: 11px 8px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+
+        .stage-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .stage-btn.completed {
+            background: #ecfdf5;
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .stage-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.45;
+            background: #f1f5f9;
+        }
+
+        .stage-content {
+            display: none;
+        }
+
+        .stage-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .banner {
+            background: #f0f9ff;
+            border-left: 5px solid var(--primary);
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            color: #1e3a8a;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .task-card {
+            background: #ffffff;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 14px;
+            transition: all 0.25s ease;
+        }
+
+        .task-card.locked {
+            background: #f8fafc;
+            opacity: 0.5;
+            pointer-events: none;
+            border-style: dashed;
+        }
+
+        .task-card.completed {
+            border-color: #a7f3d0;
+            background: #fafdfc;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .task-title {
+            font-size: 0.98rem;
+            font-weight: bold;
+            color: var(--dark);
+        }
+
+        .task-status {
+            font-size: 0.8rem;
+            padding: 2px 10px;
+            border-radius: 15px;
+            background: var(--gray-bg);
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .task-card.completed .task-status {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        /* CSS 彈性頂線標準根號渲染 */
+        .rad-wrap {
+            display: inline-flex;
+            align-items: flex-start;
+            vertical-align: middle;
+            font-style: italic;
+            margin: 0 2px;
+            line-height: 1;
+        }
+
+        .rad-deg {
+            font-size: 0.65em;
+            font-style: normal;
+            margin-right: -2px;
+            margin-top: -2px;
+        }
+
+        .rad-sym {
+            font-style: normal;
+            font-size: 1.15em;
+            line-height: 0.9;
+        }
+
+        .rad-line {
+            border-top: 1.8px solid currentColor;
+            padding-top: 1px;
+            margin-left: -1px;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        .math {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.05em;
+            color: #0f172a;
+            padding: 0 2px;
+        }
+
+        .math sup { font-size: 0.75em; vertical-align: super; font-style: normal; }
+        .math sub { font-size: 0.75em; vertical-align: sub; font-style: normal; }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .memory-card {
+            height: 75px;
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 6px;
+            font-weight: bold;
+            font-size: 0.88rem;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+
+        .memory-card.flipped {
+            background: #ffffff;
+            color: var(--dark);
+            border: 2px solid var(--primary);
+        }
+
+        .memory-card.matched {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+            cursor: default;
+        }
+
+        .match-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 10px 0;
+        }
+
+        .match-col { display: flex; flex-direction: column; gap: 8px; }
+
+        .match-item {
+            padding: 10px 12px;
+            background: #ffffff;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .match-item:hover { border-color: var(--primary); background: #f0f7ff; }
+        .match-item.selected { border-color: var(--warning); background: #fffbe3; font-weight: bold; }
+        .match-item.matched { border-color: var(--success); background: #ecfdf5; color: #065f46; cursor: default; pointer-events: none; }
+
+        .quiz-item {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+        }
+
+        .quiz-q { font-size: 0.92rem; font-weight: 600; margin-bottom: 6px; color: var(--dark); }
+
+        .options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+        .opt-btn {
+            padding: 8px 10px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.88rem;
+            transition: all 0.2s;
+        }
+
+        .opt-btn:hover { background: #f1f5f9; }
+        .opt-btn.correct { background: var(--success) !important; color: white !important; border-color: var(--success) !important; }
+        .opt-btn.wrong { background: var(--danger) !important; color: white !important; border-color: var(--danger) !important; }
+
+        .input-fill {
+            width: 90px;
+            padding: 5px 8px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+            outline: none;
+        }
+
+        .select-fill {
+            padding: 5px 8px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.88rem;
+            outline: none;
+            background: white;
+        }
+
+        .btn-task-verify {
+            padding: 10px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.92rem;
+            cursor: pointer;
+            margin-top: 6px;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .btn-task-verify:hover { background: var(--primary-dark); }
+
+        .alert-mini {
+            display: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-top: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .alert-mini.success { display: block; background: #d1fae5; color: #065f46; }
+        .alert-mini.error { display: block; background: #fee2e2; color: #991b1b; }
+
+        .btn-next-stage {
+            display: none;
+            width: 100%;
+            padding: 12px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.98rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .cert-card {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background: #fffbeb;
+            border: 3px solid #f59e0b;
+            border-radius: 14px;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>📐 指數魔幻冒險世界 (iPad 隨機題庫版)</h1>
+        <div class="subtitle">2-1.1 至 2-1.4 循序漸進認識指數定義與指數律 (數字開頁隨機產生)</div>
+    </header>
+
+    <!-- 關卡導覽 -->
+    <div class="stage-nav">
+        <button class="stage-btn active" id="btn-s1" onclick="switchStage(1)">
+            <span id="ic-s1">🔓</span> 2-1.1 正整數指數
+        </button>
+        <button class="stage-btn" id="btn-s2" onclick="switchStage(2)" disabled>
+            <span id="ic-s2">🔒</span> 2-1.2 零與負整數指數
+        </button>
+        <button class="stage-btn" id="btn-s3" onclick="switchStage(3)" disabled>
+            <span id="ic-s3">🔒</span> 2-1.3 分數指數
+        </button>
+        <button class="stage-btn" id="btn-s4" onclick="switchStage(4)" disabled>
+            <span id="ic-s4">🔒</span> 2-1.4 實數指數律
+        </button>
+    </div>
+
+    <!-- ================= 關卡 1 ================= -->
+    <div class="stage-content active" id="stage1">
+        <div class="banner">
+            <strong>第一關：2-1.1 正整數指數與指數律</strong><br>
+            請依序完成 4 個任務：認識歷史與部位 $\rightarrow$ 證明邏輯配對 $\rightarrow$ 部位與讀法辨識 $\rightarrow$ 基礎法則練習。
+        </div>
+
+        <!-- 任務 1-1 -->
+        <div class="task-card" id="s1-t1">
+            <div class="task-header">
+                <div class="task-title">任務 1：翻卡記憶 (歷史背景與部位概念)</div>
+                <div class="task-status" id="st-s1-t1">進行中</div>
+            </div>
+            <div class="card-grid" id="memory-grid-1"></div>
+            <div class="alert-mini" id="msg-s1-t1"></div>
+            <button class="btn-task-verify" onclick="verify_S1_T1()">驗證任務 1</button>
+        </div>
+
+        <!-- 任務 1-2 -->
+        <div class="task-card locked" id="s1-t2">
+            <div class="task-header">
+                <div class="task-title">任務 2：正整數指數律證明邏輯連連看</div>
+                <div class="task-status" id="st-s1-t2">🔒 待解鎖</div>
+            </div>
+            <p style="font-size:0.85rem; color:#64748b; margin-bottom:6px;">點擊左側公式，配對右側正確的連乘展開推理：</p>
+            <div class="match-group">
+                <div class="match-col" id="proof-left">
+                    <div class="match-item" data-id="p1" onclick="clickMatch('proofL', 'p1', this)"><span class="math">a<sup>m</sup> × a<sup>n</sup> = a<sup>m+n</sup></span></div>
+                    <div class="match-item" data-id="p2" onclick="clickMatch('proofL', 'p2', this)"><span class="math">(a<sup>m</sup>)<sup>n</sup> = a<sup>mn</sup></span></div>
+                    <div class="match-item" data-id="p3" onclick="clickMatch('proofL', 'p3', this)"><span class="math">a<sup>n</sup> × b<sup>n</sup> = (ab)<sup>n</sup></span></div>
+                </div>
+                <div class="match-col" id="proof-right">
+                    <div class="match-item" data-id="p2" onclick="clickMatch('proofR', 'p2', this)">n 個 <span class="math">a<sup>m</sup></span> 相乘，共 m×n 個 a 連乘</div>
+                    <div class="match-item" data-id="p3" onclick="clickMatch('proofR', 'p3', this)">n 個 a 與 n 個 b 相乘，組合成 n 個 (ab)</div>
+                    <div class="match-item" data-id="p1" onclick="clickMatch('proofR', 'p1', this)">m 個 a 與 n 個 a 連乘，共 m+n 個 a</div>
+                </div>
+            </div>
+            <div class="alert-mini" id="msg-s1-t2"></div>
+            <button class="btn-task-verify" onclick="verify_S1_T2()">驗證任務 2</button>
+        </div>
+
+        <!-- 任務 1-3 -->
+        <div class="task-card locked" id="s1-t3">
+            <div class="task-header">
+                <div class="task-title">任務 3：部位名稱與口語讀法辨識</div>
+                <div class="task-status" id="st-s1-t3">🔒 待解鎖</div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q">1. 在符號 <span class="math">x<sup>y</sup></span> 中，下方被連乘的主體 <span class="math">x</span> 與右上角表次數的 <span class="math">y</span> 分別稱作？</div>
+                <div class="options-grid">
+                    <button class="opt-btn" onclick="selectMCQ(this, true, 's1-q1')">x 為底數，y 為指數</button>
+                    <button class="opt-btn" onclick="selectMCQ(this, false, 's1-q1')">x 為指數，y 為底數</button>
+                    <button class="opt-btn" onclick="selectMCQ(this, false, 's1-q1')">x 為係數，y 為次數</button>
+                </div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q" id="dyn-s1-q2-q">2. 載入中...</div>
+                <div class="options-grid" id="dyn-s1-q2-opts"></div>
+            </div>
+            <div class="alert-mini" id="msg-s1-t3"></div>
+            <button class="btn-task-verify" onclick="verify_S1_T3()">驗證任務 3</button>
+        </div>
+
+        <!-- 任務 1-4 -->
+        <div class="task-card locked" id="s1-t4">
+            <div class="task-header">
+                <div class="task-title">任務 4：正整數指數律基礎化簡 (隨機題)</div>
+                <div class="task-status" id="st-s1-t4">🔒 待解鎖</div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q" id="dyn-s1-q3-q">1. 載入中...</div>
+                <div class="options-grid" id="dyn-s1-q3-opts"></div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q" id="dyn-s1-q4-q">2. 載入中...</div>
+                <div class="options-grid" id="dyn-s1-q4-opts"></div>
+            </div>
+            <div class="alert-mini" id="msg-s1-t4"></div>
+            <button class="btn-task-verify" onclick="verify_S1_T4()">驗證任務 4並通過關卡 1</button>
+        </div>
+
+        <button class="btn-next-stage" id="btn-pass-s1" onclick="unlockStage(2)">🎉 通關關卡 1！開啟關卡 2 🔓</button>
+    </div>
+
+    <!-- ================= 關卡 2 ================= -->
+    <div class="stage-content" id="stage2">
+        <div class="banner">
+            <strong>第二關：2-1.2 零指數與負整數指數</strong><br>
+            請依序完成 3 個任務：理解定義由來推導 $\rightarrow$ 掌握無意義避坑 $\rightarrow$ 負整數指數與倒數概念。
+        </div>
+
+        <!-- 任務 2-1 -->
+        <div class="task-card" id="s2-t1">
+            <div class="task-header">
+                <div class="task-title">任務 1：指數定義由來邏輯推導</div>
+                <div class="task-status" id="st-s2-t1">進行中</div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q">
+                    (1) 零指數由來：欲使 <span class="math">a<sup>0</sup> × a<sup>n</sup> = a<sup>0+n</sup> = a<sup>n</sup></span> 成立，<br>
+                    當 <span class="math">a ≠ 0</span> 時，兩邊同除以 <span class="math">a<sup>n</sup></span> 可定義出 <span class="math">a<sup>0</sup> =</span> 
+                    <input type="text" class="input-fill" id="s2-t1-fill1" style="width:60px;">。
+                </div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q">
+                    (2) 負整數指數由來：欲使 <span class="math">a<sup>-n</sup> × a<sup>n</sup> = a<sup>-n+n</sup> = a<sup>0</sup> = 1</span> 成立，<br>
+                    當 <span class="math">a ≠ 0</span> 時，兩邊同除以 <span class="math">a<sup>n</sup></span> 可定義出 <span class="math">a<sup>-n</sup> =</span> 
+                    <select class="select-fill" id="s2-t1-fill2">
+                        <option value="">--請選擇--</option>
+                        <option value="1/a^n">1 / aⁿ</option>
+                        <option value="-a^n">-aⁿ</option>
+                        <option value="0">0</option>
+                    </select>。
+                </div>
+            </div>
+            <div class="alert-mini" id="msg-s2-t1"></div>
+            <button class="btn-task-verify" onclick="verify_S2_T1()">驗證任務 1</button>
+        </div>
+
+        <!-- 任務 2-2 -->
+        <div class="task-card locked" id="s2-t2">
+            <div class="task-header">
+                <div class="task-title">任務 2：觀念避坑判斷 (無意義情況與零次方)</div>
+                <div class="task-status" id="st-s2-t2">🔒 待解鎖</div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q">1. 關於 <span class="math">0<sup>0</sup></span> 與 <span class="math">0<sup>-3</sup></span> 的敘述，下列何者正確？</div>
+                <div class="options-grid">
+                    <button class="opt-btn" onclick="selectMCQ(this, false, 's2-q1')">均等於 1</button>
+                    <button class="opt-btn" onclick="selectMCQ(this, false, 's2-q1')">均等於 0</button>
+                    <button class="opt-btn" onclick="selectMCQ(this, true, 's2-q1')">均無意義</button>
+                </div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q" id="dyn-s2-q2-q">2. 載入中...</div>
+                <div class="options-grid" id="dyn-s2-q2-opts"></div>
+            </div>
+            <div class="alert-mini" id="msg-s2-t2"></div>
+            <button class="btn-task-verify" onclick="verify_S2_T2()">驗證任務 2</button>
+        </div>
+
+        <!-- 任務 2-3 -->
+        <div class="task-card locked" id="s2-t3">
+            <div class="task-header">
+                <div class="task-title">任務 3：負整數指數與相除律概念 (隨機題)</div>
+                <div class="task-status" id="st-s2-t3">🔒 待解鎖</div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q" id="dyn-s2-q3-q">1. 載入中...</div>
+                <div class="options-grid" id="dyn-s2-q3-opts"></div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q" id="dyn-s2-q4-q">2. 載入中...</div>
+                <div class="options-grid" id="dyn-s2-q4-opts"></div>
+            </div>
+            <div class="alert-mini" id="msg-s2-t3"></div>
+            <button class="btn-task-verify" onclick="verify_S2_T3()">驗證任務 3並通過關卡 2</button>
+        </div>
+
+        <button class="btn-next-stage" id="btn-pass-s2" onclick="unlockStage(3)">🎉 通關關卡 2！開啟關卡 3 🔓</button>
+    </div>
+
+    <!-- ================= 關卡 3 ================= -->
+    <div class="stage-content" id="stage3">
+        <div class="banner">
+            <strong>第三關：2-1.3 分數指數</strong><br>
+            當底數 <span class="math">a > 0</span> 時，由 <span class="math">(a<sup>1/n</sup>)<sup>n</sup> = a</span> 可知 
+            <span class="math"><span class="rad-wrap"><span class="rad-deg">n</span><span class="rad-sym">√</span><span class="rad-line">a</span></span> = a<sup>1/n</sup></span>。
+        </div>
+
+        <!-- 任務 3-1 -->
+        <div class="task-card" id="s3-t1">
+            <div class="task-header">
+                <div class="task-title">任務 1：分數指數與根號互換連連看</div>
+                <div class="task-status" id="st-s3-t1">進行中</div>
+            </div>
+            <p style="font-size:0.85rem; color:#64748b; margin-bottom:6px;">點擊左側帶橫線根號，配對右側對應的分數指數：</p>
+            <div class="match-group">
+                <div class="match-col" id="frac-left">
+                    <div class="match-item" data-id="f1" onclick="clickMatch('fracL', 'f1', this)">
+                        <span class="rad-wrap"><span class="rad-sym">√</span><span class="rad-line">a</span></span>
+                    </div>
+                    <div class="match-item" data-id="f2" onclick="clickMatch('fracL', 'f2', this)">
+                        <span class="rad-wrap"><span class="rad-deg">3</span><span class="rad-sym">√</span><span class="rad-line">a</span></span>
+                    </div>
+                    <div class="match-item" data-id="f3" onclick="clickMatch('fracL', 'f3', this)">
+                        <span class="rad-wrap"><span class="rad-deg">4</span><span class="rad-sym">√</span><span class="rad-line">a<sup>3</sup></span></span>
+                    </div>
+                </div>
+                <div class="match-col" id="frac-right">
+                    <div class="match-item" data-id="f2" onclick="clickMatch('fracR', 'f2', this)"><span class="math">a<sup>1/3</sup></span></div>
+                    <div class="match-item" data-id="f1" onclick="clickMatch('fracR', 'f1', this)"><span class="math">a<sup>1/2</sup></span></div>
+                    <div class="match-item" data-id="f3" onclick="clickMatch('fracR', 'f3', this)"><span class="math">a<sup>3/4</sup></span></div>
+                </div>
+            </div>
+            <div class="alert-mini" id="msg-s3-t1"></div>
+            <button class="btn-task-verify" onclick="verify_S3_T1()">驗證任務 1</button>
+        </div>
+
+        <!-- 任務 3-2 -->
+        <div class="task-card locked" id="s3-t2">
+            <div class="task-header">
+                <div class="task-title">任務 2：分數指數定義轉換與求值 (隨機題)</div>
+                <div class="task-status" id="st-s3-t2">🔒 待解鎖</div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q" id="dyn-s3-q1-q">1. 載入中...</div>
+                <div class="options-grid" id="dyn-s3-q1-opts"></div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q" id="dyn-s3-q2-q">2. 載入中...</div>
+                <div class="options-grid" id="dyn-s3-q2-opts"></div>
+            </div>
+            <div class="alert-mini" id="msg-s3-t2"></div>
+            <button class="btn-task-verify" onclick="verify_S3_T2()">驗證任務 2</button>
+        </div>
+
+        <!-- 任務 3-3 -->
+        <div class="task-card locked" id="s3-t3">
+            <div class="task-header">
+                <div class="task-title">任務 3：分數指數性質問答 (隨機題)</div>
+                <div class="task-status" id="st-s3-t3">🔒 待解鎖</div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q" id="dyn-s3-q3-q">1. 載入中...</div>
+                <div class="options-grid" id="dyn-s3-q3-opts"></div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q">2. 在分數指數 <span class="math">a<sup>m/n</sup></span> 中，分母 <span class="math">n</span> 代表根號的？</div>
+                <div class="options-grid">
+                    <button class="opt-btn" onclick="selectMCQ(this, true, 's3-q4')">次方根 (幾次方根)</button>
+                    <button class="opt-btn" onclick="selectMCQ(this, false, 's3-q4')">根號內的次方數</button>
+                    <button class="opt-btn" onclick="selectMCQ(this, false, 's3-q4')">項數</button>
+                </div>
+            </div>
+            <div class="alert-mini" id="msg-s3-t3"></div>
+            <button class="btn-task-verify" onclick="verify_S3_T3()">驗證任務 3並通過關卡 3</button>
+        </div>
+
+        <button class="btn-next-stage" id="btn-pass-s3" onclick="unlockStage(4)">🎉 通關關卡 3！開啟關卡 4 🔓</button>
+    </div>
+
+    <!-- ================= 關卡 4 ================= -->
+    <div class="stage-content" id="stage4">
+        <div class="banner">
+            <strong>第四關：2-1.4 實數指數律 (不證明推論，熟練指數律)</strong><br>
+            當底數 <span class="math">a, b > 0</span> 時，指數律適用於所有實數指數。
+        </div>
+
+        <!-- 任務 4-1 -->
+        <div class="task-card" id="s4-t1">
+            <div class="task-header">
+                <div class="task-title">任務 1：實數指數律定理辨識</div>
+                <div class="task-status" id="st-s4-t1">進行中</div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q">1. 下列關於指數律公式的敘述，何者正確？</div>
+                <div class="options-grid">
+                    <button class="opt-btn" onclick="selectMCQ(this, false, 's4-q1')">(aᵐ)ⁿ = aᵐ⁺ⁿ</button>
+                    <button class="opt-btn" onclick="selectMCQ(this, true, 's4-q1')">aᵐ × aⁿ = aᵐ⁺ⁿ</button>
+                    <button class="opt-btn" onclick="selectMCQ(this, false, 's4-q1')">aᵐ ÷ aⁿ = aᵐˣⁿ</button>
+                </div>
+            </div>
+            <div class="alert-mini" id="msg-s4-t1"></div>
+            <button class="btn-task-verify" onclick="verify_S4_T1()">驗證任務 1</button>
+        </div>
+
+        <!-- 任務 4-2 -->
+        <div class="task-card locked" id="s4-t2">
+            <div class="task-header">
+                <div class="task-title">任務 2：根號實數指數化簡 (隨機題)</div>
+                <div class="task-status" id="st-s4-t2">🔒 待解鎖</div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q" id="dyn-s4-q2-q">1. 載入中...</div>
+                <div class="options-grid" id="dyn-s4-q2-opts"></div>
+            </div>
+            <div class="alert-mini" id="msg-s4-t2"></div>
+            <button class="btn-task-verify" onclick="verify_S4_T2()">驗證任務 2</button>
+        </div>
+
+        <!-- 任務 4-3 -->
+        <div class="task-card locked" id="s4-t3">
+            <div class="task-header">
+                <div class="task-title">任務 3：實數指數限制條件與運算 (隨機題)</div>
+                <div class="task-status" id="st-s4-t3">🔒 待解鎖</div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q" id="dyn-s4-q3-q">1. 載入中...</div>
+                <div class="options-grid" id="dyn-s4-q3-opts"></div>
+            </div>
+            <div class="quiz-item">
+                <div class="quiz-q">2. 在討論實數指數時，為什麼底數通常限制 <span class="math">a > 0</span>？</div>
+                <div class="options-grid">
+                    <button class="opt-btn" onclick="selectMCQ(this, true, 's4-q4')">避免負數開偶次方根產生無意義或非實數</button>
+                    <button class="opt-btn" onclick="selectMCQ(this, false, 's4-q4')">因為負數不能相乘</button>
+                    <button class="opt-btn" onclick="selectMCQ(this, false, 's4-q4')">因為指數永遠只能是正數</button>
+                </div>
+            </div>
+            <div class="alert-mini" id="msg-s4-t3"></div>
+            <button class="btn-task-verify" onclick="verify_S4_T3()">驗證任務 3並完成挑戰</button>
+        </div>
+
+        <div class="cert-card" id="cert-card">
+            <h2>🏆 恭喜成為「指數觀念大師」！</h2>
+            <p style="margin-top:6px;">你已依序完成正整數、零、負整數、分數與實數指數的所有定義與指數律觀念探索！</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let unlockedStages = [1];
+    let cardMatches = 0;
+    let matchCounts = { proof: 0, frac: 0 };
+    let mcqState = {};
+
+    let selL = null, selR = null;
+    let selFracL = null, selFracR = null;
+
+    const cardsData = [
+        { id: 1, text: "笛卡兒 (1637年)" },
+        { id: 1, text: "提出指數符號簡化大數" },
+        { id: 2, text: "底數 a" },
+        { id: 2, text: "重複相乘的基底數字" },
+        { id: 3, text: "指數 n" },
+        { id: 3, text: "表示相乘的次數" },
+        { id: 4, text: "a² 與 a³" },
+        { id: 4, text: "讀作「a平方」與「a立方」" }
+    ];
+
+    /* 工具函式 */
+    function randInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function makeRadHtml(deg, val) {
+        let degPart = deg ? `<span class="rad-deg">${deg}</span>` : '';
+        return `<span class="rad-wrap">${degPart}<span class="rad-sym">√</span><span class="rad-line">${val}</span></span>`;
+    }
+
+    function renderOptions(containerId, optionsArr, key) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        // 隨機打亂選項順序
+        const shuffled = [...optionsArr].sort(() => Math.random() - 0.5);
+        shuffled.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerHTML = opt.text;
+            btn.onclick = function() { selectMCQ(btn, opt.isCorrect, key); };
+            container.appendChild(btn);
+        });
+    }
+
+    /* 隨機生成基礎題目 */
+    function initDynamicQuestions() {
+        // --- 1-3 Q2: a^x 讀法 ---
+        const rExp = randInt(2, 3);
+        const rText = rExp === 2 ? "a 的平方" : "a 的立方";
+        document.getElementById('dyn-s1-q2-q').innerHTML = `2. 符號 <span class="math">a<sup>${rExp}</sup></span> 的習慣口語讀法為下列何者？`;
+        renderOptions('dyn-s1-q2-opts', [
+            { text: rText, isCorrect: true },
+            { text: rExp === 2 ? "a 的立方" : "a 的平方", isCorrect: false },
+            { text: `${rExp} 的 a 次方`, isCorrect: false }
+        ], 's1-q2');
+
+        // --- 1-4 Q1: (x^m)^n = x^(mn) ---
+        const m1 = randInt(2, 4), n1 = randInt(2, 3);
+        document.getElementById('dyn-s1-q3-q').innerHTML = `1. 依據 <span class="math">(a<sup>m</sup>)<sup>n</sup> = a<sup>mn</sup></span>，化簡 <span class="math">(x<sup>${m1}</sup>)<sup>${n1}</sup> =</span> ？`;
+        renderOptions('dyn-s1-q3-opts', [
+            { text: `x<sup>${m1 * n1}</sup>`, isCorrect: true },
+            { text: `x<sup>${m1 + n1}</sup>`, isCorrect: false },
+            { text: `x<sup>${m1 - n1}</sup>`, isCorrect: false }
+        ], 's1-q3');
+
+        // --- 1-4 Q2: a^k * b^k = (ab)^k ---
+        const k1 = randInt(2, 5);
+        document.getElementById('dyn-s1-q4-q').innerHTML = `2. 式子 <span class="math">a<sup>${k1}</sup> × b<sup>${k1}</sup></span> 可依據指數律改寫為？`;
+        renderOptions('dyn-s1-q4-opts', [
+            { text: `(ab)<sup>${k1}</sup>`, isCorrect: true },
+            { text: `(ab)<sup>${k1 * 2}</sup>`, isCorrect: false },
+            { text: `a<sup>${k1}</sup>b`, isCorrect: false }
+        ], 's1-q4');
+
+        // --- 2-2 Q2: (K*x)^0 = 1 ---
+        const K2 = randInt(2, 9);
+        document.getElementById('dyn-s2-q2-q').innerHTML = `2. 若已知 <span class="math">x ≠ 0</span>，則非零實數的 0 次方 <span class="math">(${K2}x)<sup>0</sup> =</span> ？`;
+        renderOptions('dyn-s2-q2-opts', [
+            { text: '1', isCorrect: true },
+            { text: '0', isCorrect: false },
+            { text: `${K2}x`, isCorrect: false }
+        ], 's2-q2');
+
+        // --- 2-3 Q1: B^(-N) ---
+        const B2 = randInt(2, 6), N2 = randInt(2, 3);
+        document.getElementById('dyn-s2-q3-q').innerHTML = `1. 根據負整數指數定義，<span class="math">${B2}<sup>-${N2}</sup></span> 的意義等於下列何者？`;
+        renderOptions('dyn-s2-q3-opts', [
+            { text: `1 / ${B2}<sup>${N2}</sup>`, isCorrect: true },
+            { text: `-${B2}<sup>${N2}</sup>`, isCorrect: false },
+            { text: `-${B2 * N2}`, isCorrect: false }
+        ], 's2-q3');
+
+        // --- 2-3 Q2: a^P ÷ a^Q = a^(P-Q) ---
+        const Q2 = randInt(2, 4), diff2 = randInt(2, 4);
+        const P2 = Q2 + diff2;
+        document.getElementById('dyn-s2-q4-q').innerHTML = `2. 依據同底相除指數相減法則 <span class="math">a<sup>m</sup> ÷ a<sup>n</sup> = a<sup>m-n</sup></span>，<span class="math">a<sup>${P2}</sup> ÷ a<sup>${Q2}</sup> =</span> ？`;
+        renderOptions('dyn-s2-q4-opts', [
+            { text: `a<sup>${diff2}</sup>`, isCorrect: true },
+            { text: `a<sup>${P2 + Q2}</sup>`, isCorrect: false },
+            { text: `a<sup>${P2 * Q2}</sup>`, isCorrect: false }
+        ], 's2-q4');
+
+        // --- 3-2 Q1: Radical to frac exp ---
+        const N3 = randInt(3, 7), M3 = randInt(2, N3 - 1);
+        document.getElementById('dyn-s3-q1-q').innerHTML = `1. 將 ${makeRadHtml(N3, `a<sup>${M3}</sup>`)} 改寫成分數指數形式應為？`;
+        renderOptions('dyn-s3-q1-opts', [
+            { text: `a<sup>${M3}/${N3}</sup>`, isCorrect: true },
+            { text: `a<sup>${N3}/${M3}</sup>`, isCorrect: false },
+            { text: `a<sup>${M3 * N3}</sup>`, isCorrect: false }
+        ], 's3-q1');
+
+        // --- 3-2 Q2: Perfect square/cube root ---
+        const roots = [
+            { val: 9, ans: 3, exp: '1/2' },
+            { val: 16, ans: 4, exp: '1/2' },
+            { val: 25, ans: 5, exp: '1/2' },
+            { val: 36, ans: 6, exp: '1/2' },
+            { val: 8, ans: 2, exp: '1/3' },
+            { val: 27, ans: 3, exp: '1/3' }
+        ];
+        const rObj = roots[randInt(0, roots.length - 1)];
+        const radIcon = rObj.exp === '1/2' ? makeRadHtml('', rObj.val) : makeRadHtml('3', rObj.val);
+        document.getElementById('dyn-s3-q2-q').innerHTML = `2. 依據分數指數定義，<span class="math">${rObj.val}<sup>${rObj.exp}</sup> = ${radIcon}</span>，其值等於？`;
+        renderOptions('dyn-s3-q2-opts', [
+            { text: `${rObj.ans}`, isCorrect: true },
+            { text: `${rObj.ans + 2}`, isCorrect: false },
+            { text: `${Math.max(1, rObj.ans - 1)}`, isCorrect: false }
+        ], 's3-q2');
+
+        // --- 3-3 Q1: (a^(1/x))^y ---
+        const x3 = randInt(2, 3), mult3 = randInt(2, 4);
+        const y3 = x3 * mult3;
+        document.getElementById('dyn-s3-q3-q').innerHTML = `1. 依據指數律 <span class="math">(a<sup>m</sup>)<sup>n</sup> = a<sup>mn</sup></span>，化簡 <span class="math">(a<sup>1/${x3}</sup>)<sup>${y3}</sup> =</span> ？`;
+        renderOptions('dyn-s3-q3-opts', [
+            { text: `a<sup>${mult3}</sup>`, isCorrect: true },
+            { text: `a<sup>1/${x3 * y3}</sup>`, isCorrect: false },
+            { text: `a<sup>${y3 + 1}</sup>`, isCorrect: false }
+        ], 's3-q3');
+
+        // --- 4-2 Q1: Real exponent multiplication ---
+        const r4 = [2, 3, 5][randInt(0, 2)];
+        const x4 = randInt(1, 3), y4 = randInt(1, 3);
+        const radHtml = makeRadHtml('', r4);
+        const sumCoeff = x4 + y4;
+        document.getElementById('dyn-s4-q2-q').innerHTML = `1. 依據 <span class="math">a<sup>m</sup> × a<sup>n</sup> = a<sup>m+n</sup></span>，化簡 <span class="math">a<sup>${x4 === 1 ? '' : x4}${radHtml}</sup> × a<sup>${y4 === 1 ? '' : y4}${radHtml}</sup> = a<sup>k</sup></span>，求 k = ？`;
+        renderOptions('dyn-s4-q2-opts', [
+            { text: `${sumCoeff}${radHtml}`, isCorrect: true },
+            { text: `${x4 * y4}${radHtml}`, isCorrect: false },
+            { text: `${sumCoeff}`, isCorrect: false }
+        ], 's4-q2');
+
+        // --- 4-3 Q1: (a^sqrt(r))^sqrt(r) = a^r ---
+        const r4_2 = [2, 3, 5, 7][randInt(0, 3)];
+        const radHtml2 = makeRadHtml('', r4_2);
+        document.getElementById('dyn-s4-q3-q').innerHTML = `1. 化簡 <span class="math">(a<sup>${radHtml2}</sup>)<sup>${radHtml2}</sup> =</span> ？`;
+        renderOptions('dyn-s4-q3-opts', [
+            { text: `a<sup>${r4_2}</sup>`, isCorrect: true },
+            { text: `a<sup>2${radHtml2}</sup>`, isCorrect: false },
+            { text: `a<sup>${makeRadHtml('', r4_2 * 2)}</sup>`, isCorrect: false }
+        ], 's4-q3');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initMemoryGame();
+        initDynamicQuestions();
+    });
+
+    function initMemoryGame() {
+        const grid = document.getElementById('memory-grid-1');
+        if (!grid) return;
+        grid.innerHTML = '';
+        const shuffled = [...cardsData].sort(() => Math.random() - 0.5);
+
+        shuffled.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'memory-card';
+            card.dataset.id = item.id;
+            card.innerText = '❓ 點擊翻牌';
+            card.onclick = () => flipMemoryCard(card, item.text);
+            grid.appendChild(card);
+        });
+    }
+
+    let flippedList = [];
+    function flipMemoryCard(card, text) {
+        if (card.classList.contains('flipped') || card.classList.contains('matched') || flippedList.length >= 2) return;
+
+        card.classList.add('flipped');
+        card.innerText = text;
+        flippedList.push(card);
+
+        if (flippedList.length === 2) {
+            if (flippedList[0].dataset.id === flippedList[1].dataset.id) {
+                flippedList[0].classList.add('matched');
+                flippedList[1].classList.add('matched');
+                flippedList = [];
+                cardMatches++;
+            } else {
+                setTimeout(() => {
+                    flippedList.forEach(c => {
+                        c.classList.remove('flipped');
+                        c.innerText = '❓ 點擊翻牌';
+                    });
+                    flippedList = [];
+                }, 700);
+            }
+        }
+    }
+
+    function clickMatch(type, id, el) {
+        if (el.classList.contains('matched')) return;
+
+        if (type === 'proofL') {
+            document.querySelectorAll('#proof-left .match-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+            selL = { id: id, el: el };
+        } else if (type === 'proofR') {
+            document.querySelectorAll('#proof-right .match-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+            selR = { id: id, el: el };
+        } else if (type === 'fracL') {
+            document.querySelectorAll('#frac-left .match-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+            selFracL = { id: id, el: el };
+        } else if (type === 'fracR') {
+            document.querySelectorAll('#frac-right .match-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+            selFracR = { id: id, el: el };
+        }
+
+        if (selL && selR) {
+            if (selL.id === selR.id) {
+                selL.el.classList.add('matched');
+                selR.el.classList.add('matched');
+                matchCounts.proof++;
+            }
+            selL.el.classList.remove('selected');
+            selR.el.classList.remove('selected');
+            selL = null; selR = null;
+        }
+
+        if (selFracL && selFracR) {
+            if (selFracL.id === selFracR.id) {
+                selFracL.el.classList.add('matched');
+                selFracR.el.classList.add('matched');
+                matchCounts.frac++;
+            }
+            selFracL.el.classList.remove('selected');
+            selFracR.el.classList.remove('selected');
+            selFracL = null; selFracR = null;
+        }
+    }
+
+    function selectMCQ(btn, isCorrect, key) {
+        const parent = btn.parentElement;
+        parent.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('correct', 'wrong'));
+        if (isCorrect) {
+            btn.classList.add('correct');
+            mcqState[key] = true;
+        } else {
+            btn.classList.add('wrong');
+            mcqState[key] = false;
+        }
+    }
+
+    function unlockTask(taskId) {
+        const taskCard = document.getElementById(taskId);
+        if (taskCard) {
+            taskCard.classList.remove('locked');
+            const statusTag = taskCard.querySelector('.task-status');
+            if (statusTag) statusTag.innerText = '進行中';
+        }
+    }
+
+    function markTaskDone(taskId) {
+        const taskCard = document.getElementById(taskId);
+        if (taskCard) {
+            taskCard.classList.add('completed');
+            const statusTag = taskCard.querySelector('.task-status');
+            if (statusTag) statusTag.innerText = '✓ 已完成';
+        }
+    }
+
+    function switchStage(stageNum) {
+        if (!unlockedStages.includes(stageNum)) return;
+        for (let i = 1; i <= 4; i++) {
+            document.getElementById(`btn-s${i}`).classList.remove('active');
+            document.getElementById(`stage${i}`).classList.remove('active');
+        }
+        document.getElementById(`btn-s${stageNum}`).classList.add('active');
+        document.getElementById(`stage${stageNum}`).classList.add('active');
+    }
+
+    function unlockStage(nextNum) {
+        if (!unlockedStages.includes(nextNum)) {
+            unlockedStages.push(nextNum);
+            const btn = document.getElementById(`btn-s${nextNum}`);
+            btn.disabled = false;
+            document.getElementById(`ic-s${nextNum}`).innerText = '🔓';
+            document.getElementById(`btn-s${nextNum - 1}`).classList.add('completed');
+        }
+        switchStage(nextNum);
+    }
+
+    /* 關卡 1 任務驗證 */
+    function verify_S1_T1() {
+        const msg = document.getElementById('msg-s1-t1');
+        if (cardMatches < 4) {
+            showMsg(msg, 'error', '請完成所有 4 組翻卡配對！');
+        } else {
+            showMsg(msg, 'success', '任務 1 完成！已解鎖任務 2');
+            markTaskDone('s1-t1'); unlockTask('s1-t2');
+        }
+    }
+
+    function verify_S1_T2() {
+        const msg = document.getElementById('msg-s1-t2');
+        if (matchCounts.proof < 3) {
+            showMsg(msg, 'error', '請完成 3 組指數律證明連連看！');
+        } else {
+            showMsg(msg, 'success', '任務 2 完成！已解鎖任務 3');
+            markTaskDone('s1-t2'); unlockTask('s1-t3');
+        }
+    }
+
+    function verify_S1_T3() {
+        const msg = document.getElementById('msg-s1-t3');
+        if (mcqState['s1-q1'] !== true || mcqState['s1-q2'] !== true) {
+            showMsg(msg, 'error', '請選出正確的部位名稱與讀法！');
+            return;
+        }
+        showMsg(msg, 'success', '任務 3 完成！已解鎖任務 4');
+        markTaskDone('s1-t3'); unlockTask('s1-t4');
+    }
+
+    function verify_S1_T4() {
+        const msg = document.getElementById('msg-s1-t4');
+        if (mcqState['s1-q3'] !== true || mcqState['s1-q4'] !== true) {
+            showMsg(msg, 'error', '觀念題選擇有誤，請再檢查一下！');
+            return;
+        }
+        showMsg(msg, 'success', '恭喜通過關卡 1 所有任務！');
+        markTaskDone('s1-t4');
+        document.getElementById('btn-pass-s1').style.display = 'block';
+    }
+
+    /* 關卡 2 任務驗證 */
+    function verify_S2_T1() {
+        const msg = document.getElementById('msg-s2-t1');
+        const f1 = document.getElementById('s2-t1-fill1').value.trim();
+        const f2 = document.getElementById('s2-t1-fill2').value;
+
+        if (f1 !== '1' || f2 !== '1/a^n') {
+            showMsg(msg, 'error', '填空有誤！a⁰ = 1 ， a⁻ⁿ = 1/aⁿ');
+            return;
+        }
+        showMsg(msg, 'success', '任務 1 完成！已解鎖任務 2');
+        markTaskDone('s2-t1'); unlockTask('s2-t2');
+    }
+
+    function verify_S2_T2() {
+        const msg = document.getElementById('msg-s2-t2');
+        if (mcqState['s2-q1'] !== true || mcqState['s2-q2'] !== true) {
+            showMsg(msg, 'error', '觀念題有誤，請再檢查一下！');
+            return;
+        }
+        showMsg(msg, 'success', '任務 2 完成！已解鎖任務 3');
+        markTaskDone('s2-t2'); unlockTask('s2-t3');
+    }
+
+    function verify_S2_T3() {
+        const msg = document.getElementById('msg-s2-t3');
+        if (mcqState['s2-q3'] !== true || mcqState['s2-q4'] !== true) {
+            showMsg(msg, 'error', '選擇題有誤，請再檢查一下！');
+            return;
+        }
+        showMsg(msg, 'success', '恭喜通過關卡 2 所有任務！');
+        markTaskDone('s2-t3');
+        document.getElementById('btn-pass-s2').style.display = 'block';
+    }
+
+    /* 關卡 3 任務驗證 */
+    function verify_S3_T1() {
+        const msg = document.getElementById('msg-s3-t1');
+        if (matchCounts.frac < 3) {
+            showMsg(msg, 'error', '請完成所有根號與分數指數連連看！');
+            return;
+        }
+        showMsg(msg, 'success', '任務 1 完成！已解鎖任務 2');
+        markTaskDone('s3-t1'); unlockTask('s3-t2');
+    }
+
+    function verify_S3_T2() {
+        const msg = document.getElementById('msg-s3-t2');
+        if (mcqState['s3-q1'] !== true || mcqState['s3-q2'] !== true) {
+            showMsg(msg, 'error', '觀念轉換選擇有誤，請再檢查！');
+            return;
+        }
+        showMsg(msg, 'success', '任務 2 完成！已解鎖任務 3');
+        markTaskDone('s3-t2'); unlockTask('s3-t3');
+    }
+
+    function verify_S3_T3() {
+        const msg = document.getElementById('msg-s3-t3');
+        if (mcqState['s3-q3'] !== true || mcqState['s3-q4'] !== true) {
+            showMsg(msg, 'error', '答案有誤，請檢查一下！');
+            return;
+        }
+        showMsg(msg, 'success', '恭喜通過關卡 3 所有任務！');
+        markTaskDone('s3-t3');
+        document.getElementById('btn-pass-s3').style.display = 'block';
+    }
+
+    /* 關卡 4 任務驗證 */
+    function verify_S4_T1() {
+        const msg = document.getElementById('msg-s4-t1');
+        if (mcqState['s4-q1'] !== true) {
+            showMsg(msg, 'error', '公式選擇不正確！');
+            return;
+        }
+        showMsg(msg, 'success', '任務 1 完成！已解鎖任務 2');
+        markTaskDone('s4-t1'); unlockTask('s4-t2');
+    }
+
+    function verify_S4_T2() {
+        const msg = document.getElementById('msg-s4-t2');
+        if (mcqState['s4-q2'] !== true) {
+            showMsg(msg, 'error', '選擇題答案不正確！');
+            return;
+        }
+        showMsg(msg, 'success', '任務 2 完成！已解鎖任務 3');
+        markTaskDone('s4-t2'); unlockTask('s4-t3');
+    }
+
+    function verify_S4_T3() {
+        const msg = document.getElementById('msg-s4-t3');
+        if (mcqState['s4-q3'] !== true || mcqState['s4-q4'] !== true) {
+            showMsg(msg, 'error', '觀念或計算有誤，請再試一次！');
+            return;
+        }
+        showMsg(msg, 'success', '太棒了！已完全通關！');
+        markTaskDone('s4-t3');
+        document.getElementById('cert-card').style.display = 'block';
+        document.getElementById('btn-s4').classList.add('completed');
+    }
+
+    function showMsg(el, type, txt) {
+        el.className = `alert-mini ${type}`;
+        el.innerText = txt;
+    }
+</script>
+</body>
+</html>
