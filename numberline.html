@@ -33,85 +33,84 @@ input[type=text]{font-size:17px;width:110px;padding:5px;border:2px solid #aaa;bo
 .prog{color:#666;font-size:14px}.res{text-align:center;padding:10px}.res h2{margin:6px 0}
 footer{max-width:860px;margin:10px auto;padding:0 12px 20px;font-size:12px;color:#777}
 svg text{font-family:inherit}
+.fq{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.8em;line-height:1.15;margin:0 2px}
+.fq span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}
+.fi{display:inline-flex;align-items:center;gap:6px}.fi .w{width:70px}
+.fx{display:inline-flex;flex-direction:column;align-items:center}.fx input{width:64px;font-size:15px}
+.fx i{display:block;width:70px;border-top:2px solid #333;margin:2px 0}
+.sg{width:38px;height:38px;font-size:20px;border:2px solid var(--b);background:#fff;color:var(--b);border-radius:8px;cursor:pointer}
 </style></head><body>
 <header><h1>📏 數線闖關學具</h1><small>數學(Ⅰ) 3-1.1 數線｜依序通過 認識數線→標示與讀坐標→絕對值→兩點距離</small></header>
 <main><div id="nav"></div><div id="body"></div></main>
-<footer>內容依教材 3-1.1（第62–66頁、第75、77頁自我挑戰）。填充題可輸入小數或分數（例：3/5、-2 1/4）。通關條件：選擇題、填充題、標點全對；配對錯誤 1 次以內。</footer>
+<footer>內容依教材 3-1.1（第62–66頁、第75、77頁自我挑戰）。填充題：小數題直接輸入小數；分數題使用分數輸入框（正負、整數、分子、分母，數值相等即算對）。通關條件：選擇題、填充題、標點全對；配對錯誤 1 次以內。</footer>
 <script>
-const L=[
-{k:'認識數線',ic:'➖',demo:[0],
-c:[{n:'原點 O',m:'數線上的基準點',d:'代表 0，記為 O(0)'},
-{n:'正向與負向',m:'原點向右為正，以箭頭表示',d:'向左為負，不以箭頭表示'},
-{n:'單位長',m:'適當且固定的長度',d:'由原點往正向依序標示 1、2、3…；往負向標示 −1、−2、−3…'},
-{n:'大小比較',m:'水平數線：愈往右愈大',d:'愈往左所代表的數愈小'},
-{n:'坐標',m:'每個實數對應線上一點',d:'該實數稱為這個點的坐標，如 P(3/5)'}],
-ch:[{q:'數線上原點 O 所代表的數是？',o:['0','1','−1','不一定'],a:0},
-{q:'水平數線上，原點向哪個方向為正？',o:['向右','向左','向上','向下'],a:0},
-{q:'−2、−3、−1、−5 之中，何者最大？',o:['−1','−2','−3','−5'],a:0},
-{q:'要在數線上標示 3/5，應把 0～1 之間的長度分成幾等分？',o:['3 等分','5 等分','8 等分','10 等分'],a:1},
-{q:'要標示 −2.8，應把 −3～−2 之間的長度分成幾等分？',o:['5 等分','8 等分','9 等分','10 等分'],a:3},
-{q:'數線上 A 在 B 的左邊，C 在 B 的右邊，D 在 A 的左邊，四點所表示的數何者最大？',o:['A','B','C','D'],a:2}],
-mp:[['原點','基準點，坐標為 0'],['單位長','數線上固定的刻度長度'],['正向','原點向右（以箭頭表示）'],['坐標','點所對應的實數']],
-fl:[{q:'原點的坐標是？',a:0},{q:'−3 與 −2 之間分成 10 等分，由右而左第 8 個等分點代表的數是？',a:-2.8},
-{q:'0～1 之間分成 5 等分，由左而右第 3 個等分點代表的數是？（可用分數）',a:0.6},
-{q:'數線上與 −2 3/4 最接近的整數是？',a:-3},{q:'整數甲滿足 −27/4 ＜ 甲 ＜ 2 1/3，共有幾個？',a:9,u:'個'}]},
-{k:'標示與讀坐標',ic:'📍',demo:[{v:0.6,t:'P'},{v:-2.8,t:'Q'}],pl:1,
-c:[{n:'標示分數',m:'3/5 介於 0～1 之間',d:'將 0～1 分成 5 等分，由左數第 3 點即 P(3/5)'},
-{n:'標示小數',m:'−2.8 介於 −3～−2 之間',d:'分成 10 等分，由右而左第 8 點即 Q(−2.8)'},
-{n:'讀坐標',m:'先看點在哪兩個整數之間',d:'再看等分數，如 3 4/10 或 3 3/5'},
-{n:'負數位置',m:'−1 1/3 在 −2 與 −1 之間',d:'靠近 −1 一側'}],
-ch:[{q:'圖中點的坐標是？',v:1.5,o:['1 1/2','1 1/3','−1 1/2','1/2'],a:0},
-{q:'圖中點的坐標是？',v:-4/3,o:['−1 1/3','−1 2/3','1 1/3','−2 1/3'],a:0},
-{q:'圖中點的坐標是？',v:-3.4,o:['−3 4/10','−2 6/10','3 4/10','−4 4/10'],a:0},
-{q:'圖中點的坐標是？',v:3.6,o:['3 3/5','3 2/5','2 3/5','4 3/5'],a:0},
-{q:'圖中點的坐標是？',v:-2/3,o:['−2/3','−1/3','2/3','−1 2/3'],a:0}],
-mp:[['3/5','0 與 1 之間，5 等分的第 3 點'],['−2.8','−3 與 −2 之間，10 等分，由右數第 8 點'],['2 1/2','2 與 3 的正中間'],['−1.3','−2 與 −1 之間，從 −1 往左數 3 個 0.1']],
-fl:[{q:'寫出圖中點的坐標',v:[1.5],a:1.5},{q:'寫出圖中點的坐標',v:[-1.3],a:-1.3},{q:'寫出圖中點的坐標',v:[3.6],a:3.6},
-{q:'寫出圖中點的坐標',v:[-3.4],a:-3.4},{q:'寫出圖中點的坐標（可用分數）',v:[-2/3],a:-2/3}],
-pt:[['3/5',0.6],['−2.8',-2.8],['2 1/2',2.5],['−1.3',-1.3],['−2',-2],['4',4],['−3.4',-3.4]]},
-{k:'絕對值',ic:'｜｜',demo:[{v:-4,t:'−4'},{v:4,t:'4'}],
-c:[{n:'絕對值',m:'一個數的點與原點的距離',d:'以 | | 表示'},
-{n:'例子',m:'|4| = 4，|−2| = 2，|0| = 0',d:'只看數字部分，不看正負號'},
-{n:'互為相反數',m:'|a| = |−a| = a（以 a 為正數為例）',d:'P(a)、Q(−a) 與原點距離都是 a'},
-{n:'|x| = 7',m:'x = −7 或 7',d:'與原點距離為 7 的點有兩個'}],
-ch:[{q:'|−7| = ？',o:['7','−7','0','14'],a:0},{q:'|x| = 7，則 x = ？',o:['7','−7','−7 或 7','0'],a:2},
-{q:'|y| = 4.5，則 y = ？',o:['4.5','−4.5','−4.5 或 4.5','9'],a:2},
-{q:'整數 p 滿足 |p| ≤ 3，共有幾個？',o:['6 個','7 個','3 個','4 個'],a:1},
-{q:'−3/2、3/4、−4/5、6/5 四數中，何者最靠近原點？',o:['−3/2','3/4','−4/5','6/5'],a:1},
-{q:'|0| = ？',o:['0','1','−1','不存在'],a:0}],
-mp:[['|4|','4'],['|−2|','2'],['|0|','0'],['|x| = 7','x = −7 或 7']],
-fl:[{q:'|−4.5| = ？',a:4.5},{q:'整數 p 滿足 |p| ≤ 3，共有幾個？',a:7,u:'個'},{q:'整數 Q 滿足 |Q| ≤ 5，共有幾個？',a:11,u:'個'},
-{q:'整數 a 滿足 |a| ＜ 5 1/3，共有幾個？',a:11,u:'個'},{q:'|k| ＞ 7/5，k 的最小正整數是？',a:2}]},
-{k:'兩點距離',ic:'↔️',demo:[{v:-3,t:'A'},{v:6,t:'B'}],
-c:[{n:'距離公式',m:'P(a)、Q(b)：PQ = |a − b| 或 |b − a|',d:'兩種寫法結果相同'},
-{n:'例 1',m:'A(−3)、B(3)：AB = |3 − (−3)| = 6',d:'也可寫成 |−3 − 3| = 6'},
-{n:'例 2',m:'A(−3)、B(6)：AB = |6 − (−3)| = 9',d:'減去負數要變成加'},
-{n:'提醒',m:'距離不會是負數',d:'因為取了絕對值'}],
-ch:[{q:'A(−3)、B(6) 的距離 AB = ？',o:['9','3','−9','18'],a:0},{q:'P(a)、Q(b) 的距離 PQ 可以表示為？',o:['|a − b|','a − b','a + b','|a + b|'],a:0},
-{q:'A(−3)、B(3) 的距離 AB = ？',o:['6','0','3','−6'],a:0},
-{q:'甲第一天向東走 1 公里，第二天向西走 2 公里，第三天向東走 3 公里…每天以反方向多走 1 公里，共走 7 天，何者正確？',o:['最後在出發點東方 4 公里處','最後在出發點東方 28 公里處','一共走了 56 公里','一共走了 4 公里'],a:0},
-{q:'下列何者不可能是兩點的距離？',o:['−2','0','2.5','7'],a:0}],
-mp:[['A(−3)、B(6)','AB = 9'],['A(−3)、B(3)','AB = 6'],['P(1)、Q(−4)','PQ = 5'],['P(−3 1/3)、Q(2 1/2)','PQ = 5 5/6']],
-fl:[{q:'A(−3)、B(6)，AB = ？',v:[-3,6],a:9},{q:'A(−5)、B(2)，AB = ？',v:[-5,2],a:7},
-{q:'P(4.5)、Q(−1.5)，PQ = ？',v:[4.5,-1.5],a:6},{q:'A(−2.8)、B(−1.3)，AB = ？',v:[-2.8,-1.3],a:1.5},
-{q:'P(−3 1/3)、Q(2 1/2)，PQ = ？（可用分數）',a:35/6}]}
-];
+const L=[{"k":"認識數線","ic":"➖","demo":[0],"c":[{"n":"原點 O","m":"數線上的基準點","d":"代表 0，記為 O(0)"},{"n":"正向與負向","m":"原點向右為正，以箭頭表示","d":"向左為負，不以箭頭表示"},{"n":"單位長","m":"適當且固定的長度","d":"由原點往正向依序標示 1、2、3…；往負向標示 −1、−2、−3…"},{"n":"大小比較","m":"水平數線：愈往右愈大","d":"愈往左所代表的數愈小"},{"n":"坐標","m":"每個實數對應線上一點","d":"該實數稱為這個點的坐標，如 P(3/5)"}]},{"k":"標示與讀坐標","ic":"📍","demo":[{"v":0.6,"t":"P"}],"dv":5,"pl":1,"c":[{"n":"標示分數","m":"3/5 介於 0～1 之間","d":"將 0～1 分成 5 等分，由左數第 3 點即 P(3/5)"},{"n":"標示小數","m":"−2.8 介於 −3～−2 之間","d":"分成 10 等分，由右而左第 8 點即 Q(−2.8)"},{"n":"讀坐標","m":"先看點在哪兩個整數之間","d":"再看等分數，如 3 4/10 或 3 3/5"},{"n":"負數位置","m":"−1 1/3 在 −2 與 −1 之間","d":"靠近 −1 一側"}]},{"k":"絕對值","ic":"｜｜","demo":[{"v":-4,"t":"−4"},{"v":4,"t":"4"}],"c":[{"n":"絕對值","m":"一個數的點與原點的距離","d":"以 | | 表示"},{"n":"例子","m":"|4| = 4，|−2| = 2，|0| = 0","d":"只看數字部分，不看正負號"},{"n":"互為相反數","m":"|a| = |−a| = a（以 a 為正數為例）","d":"P(a)、Q(−a) 與原點距離都是 a"},{"n":"|x| = 7","m":"x = −7 或 7","d":"與原點距離為 7 的點有兩個"}]},{"k":"兩點距離","ic":"↔️","demo":[{"v":-3,"t":"A"},{"v":6,"t":"B"}],"c":[{"n":"距離公式","m":"P(a)、Q(b)：PQ = |a − b| 或 |b − a|","d":"兩種寫法結果相同"},{"n":"例 1","m":"A(−3)、B(3)：AB = |3 − (−3)| = 6","d":"也可寫成 |−3 − 3| = 6"},{"n":"例 2","m":"A(−3)、B(6)：AB = |6 − (−3)| = 9","d":"減去負數要變成加"},{"n":"提醒","m":"距離不會是負數","d":"因為取了絕對值"}]}];
 const $=s=>document.querySelector(s);
+const F=t=>String(t).replace(/([−-]?)(?:(\d+) )?(\d+)\/(\d+)/g,(m,g1,w,n,d)=>`${g1}${w||''}<span class="fq"><span>${n}</span><span>${d}</span></span>`);
 const sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
-const need=i=>L[i].pt?4:3;
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),pk=a=>a[ri(0,a.length-1)],ng=v=>v<0?'−'+(-v):''+v,r1=v=>Math.round(v*10)/10;
+const uq=a=>[...new Set(a)];
+const mkc=(q,ans,wr)=>({q,o:uq([ans,...wr]).slice(0,4),a:0});
+const mx=(sg,w,n,d)=>(sg<0?'−':'')+(w?w+' ':'')+n+'/'+d;
+const fr0=()=>pk([[1,2],[1,3],[2,3],[1,4]]);
+L[0].ch=[
+{q:'數線上原點 O 所代表的數是？',o:['0','1','−1','不一定'],a:0},
+{q:'水平數線上，原點向哪個方向為正？',o:['向右','向左','向上','向下'],a:0},
+()=>{const m=pk([1,2]);let a=[];while(a.length<4){const v=ri(-6,4);if(!a.includes(v))a.push(v)}const t=m==1?Math.max(...a):Math.min(...a);return mkc(`${a.map(ng).join('、')} 之中，何者${m==1?'最大':'最小'}？`,ng(t),a.filter(v=>v!=t).map(ng))},
+()=>{const n=ri(3,5),m=ri(1,n-1);return mkc(`要在數線上標示 ${m}/${n}，應把 0～1 之間的長度分成幾等分？`,n+' 等分',[(n+1)+' 等分',(n+2)+' 等分','10 等分'])},
+()=>{const k=ri(1,5),j=ri(1,9);return mkc(`要標示 −${k}.${j}，應把哪兩個整數之間的長度分成 10 等分？`,`−${k+1} 與 −${k}`,[`−${k} 與 ${k>1?'−'+(k-1):'0'}`,`${k} 與 ${k+1}`,`−${k+2} 與 −${k+1}`])},
+()=>{const p=sh(['A','B','C','D']);return mkc(`數線上有 A、B、C、D 四點，已知 ${p[1]} 在 ${p[2]} 的左邊，${p[3]} 在 ${p[2]} 的右邊，${p[0]} 在 ${p[1]} 的左邊，四點所表示的數何者最大？`,p[3],[p[0],p[1],p[2]])}];
+L[0].mp=[['原點','基準點，坐標為 0'],['單位長','數線上固定的刻度長度'],['正向','原點向右（以箭頭表示）'],['坐標','點所對應的實數']];
+L[0].fl=[{q:'原點的坐標是？',a:0},
+()=>{const k=ri(1,4),j=ri(1,9);return{q:`−${k+1} 與 −${k} 之間分成 10 等分，由右而左第 ${j} 個等分點代表的數是？`,a:r1(-(k+j/10))}},
+()=>{const n=ri(3,5),m=ri(1,n-1);return{q:`0～1 之間分成 ${n} 等分，由左而右第 ${m} 個等分點代表的數是？（請用分數）`,f:1,s:m+'/'+n,a:m/n}},
+()=>{const k=ri(1,5),f=pk([[1,4],[3,4],[1,3],[2,3],[1,5],[4,5]]);return{q:`數線上與 −${k} ${f[0]}/${f[1]} 最接近的整數是？`,a:f[0]/f[1]<.5?-k:-(k+1)}},
+()=>{const p=ri(1,5),r=ri(1,5),f1=fr0(),f2=fr0();return{q:`整數甲滿足 −${p} ${f1[0]}/${f1[1]} ＜ 甲 ＜ ${r} ${f2[0]}/${f2[1]}，共有幾個？`,u:'個',a:p+r+1}}];
+const rd=()=>{const d=pk([2,3,5]),n=ri(1,d-1),w=ri(0,3),sg=pk([1,-1]);const a=mx(sg,w,n,d);return{...mkc('圖中點 P 的坐標是？',a,[mx(-sg,w,n,d),mx(sg,w+1,n,d),mx(sg,w,d-n,d),mx(-sg,w+1,n,d)]),v:sg*(w+n/d),d}};
+L[1].ch=[rd,rd,rd,rd,rd];
+L[1].mp=()=>{const n=ri(3,5),m=ri(1,n-1),k=ri(1,4),j=ri(1,9),w=ri(1,4),k2=ri(1,4),j2=ri(1,9);return[[`${m}/${n}`,`0 與 1 之間，${n} 等分的第 ${m} 點`],[`−${k}.${j}`,`−${k+1} 與 −${k} 之間，從 −${k} 往左數 ${j} 個 0.1`],[`${w} 1/2`,`${w} 與 ${w+1} 的正中間`],[`${k2}.${j2}`,`${k2} 與 ${k2+1} 之間，從 ${k2} 往右數 ${j2} 個 0.1`]]};
+const dec=()=>{const w=ri(0,3),j=ri(1,9),v=r1(pk([1,-1])*(w+j/10));return{q:'寫出圖中點的坐標（用小數表示）',v:[v],d:10,a:v}};
+const frc=()=>{const d=pk([2,3,5]),n=ri(1,d-1),w=ri(0,3),sg=pk([1,-1]);return{q:'寫出圖中點的坐標（請用分數）',v:[sg*(w+n/d)],d,f:1,s:mx(sg,w,n,d),a:sg*(w+n/d)}};
+L[1].fl=[dec,dec,frc,frc,frc];
+L[1].pt=[()=>{const m=ri(1,4);return[`${m}/5`,r1(m/5)]},()=>{const k=ri(0,3),j=ri(1,9);return[`−${k}.${j}`,r1(-(k+j/10))]},()=>{const w=ri(1,4);return[`${w} 1/2`,w+.5]},()=>{const k=ri(0,3),j=ri(1,9);return[`${k}.${j}`,r1(k+j/10)]},()=>{const k=ri(1,4);return['−'+k,-k]},()=>{const k=ri(1,5);return[''+k,k]},()=>{const w=ri(1,4);return[`−${w} 1/2`,-(w+.5)]}];
+L[2].ch=[
+()=>{const a=ri(1,9),s=pk([1,-1]);return mkc(`|${ng(s*a)}| = ？`,''+a,[ng(-a),'0',''+2*a])},
+()=>{const a=ri(2,9);return mkc(`|x| = ${a}，則 x = ？`,`−${a} 或 ${a}`,[''+a,'−'+a,'0'])},
+()=>{const a=ri(1,9),b=ri(1,9),t=`${a}.${b}`;return mkc(`|y| = ${t}，則 y = ？`,`−${t} 或 ${t}`,[t,'−'+t,''+r1(2*(a+b/10))])},
+()=>{const n=ri(2,6);return mkc(`整數 p 滿足 |p| ≤ ${n}，共有幾個？`,(2*n+1)+' 個',[2*n+' 個',n+' 個',(n+1)+' 個'])},
+()=>{const ab=sh([0.5,1,1.5,2,2.5,3,4,5,6]).slice(0,4),vs=ab.map(x=>x*pk([1,-1])),t=Math.min(...ab),an=vs[ab.indexOf(t)];return mkc('下列四個數中，何者最靠近原點？',ng(an),vs.filter(v=>v!=an).map(ng))},
+{q:'|0| = ？',o:['0','1','−1','不存在'],a:0}];
+L[2].mp=()=>{const a=sh([1,2,3,4,5,6,7,8,9]),c=ri(2,9);return[[`|${ng(pk([1,-1])*a[0])}|`,''+a[0]],[`|${ng(pk([1,-1])*a[1])}|`,''+a[1]],['|0|','0'],[`|x| = ${c}`,`x = −${c} 或 ${c}`]]};
+L[2].fl=[()=>{const a=ri(1,9),b=ri(1,9);return{q:`|−${a}.${b}| = ？`,a:r1(a+b/10)}},
+()=>{const n=ri(2,8);return{q:`整數 p 滿足 |p| ≤ ${n}，共有幾個？`,u:'個',a:2*n+1}},
+()=>{const n=ri(2,6),f=fr0();return{q:`整數 a 滿足 |a| ＜ ${n} ${f[0]}/${f[1]}，共有幾個？`,u:'個',a:2*n+1}},
+()=>{const q=ri(2,5);let p;do{p=ri(q+1,3*q-1)}while(p%q==0);return{q:`|k| ＞ ${p}/${q}，k 的最小正整數是？`,a:Math.floor(p/q)+1}},
+()=>{const a=ri(1,9);return{q:`|${a}| + |−${a}| = ？`,a:2*a}}];
+L[3].ch=[
+{q:'P(a)、Q(b) 的距離 PQ 可以表示為？',o:['|a − b|','a − b','a + b','|a + b|'],a:0},
+{q:'下列何者不可能是兩點的距離？',o:['−2','0','2.5','7'],a:0},
+()=>{const a=-ri(1,6),b=ri(1,6),d=b-a;return mkc(`A(${ng(a)})、B(${b}) 的距離 AB = ？`,''+d,[''+Math.abs(a+b),''+(d+1),''+(d+2)])},
+()=>{const a=-ri(3,8),b=-ri(1,2),d=b-a;return mkc(`A(${ng(a)})、B(${ng(b)}) 的距離 AB = ？`,''+d,[''+(-a-b),''+(d+1),''+(d+3)])},
+()=>{const n=ri(3,7),e=n%2==1,x=e?(n+1)/2:n/2,t=n*(n+1)/2,D=e?'東':'西',O=e?'西':'東';return mkc(`甲第一天向東走 1 公里，第二天向西走 2 公里，第三天向東走 3 公里，如此每天都以反方向比前一天多走 1 公里，共走 ${n} 天，何者正確？`,`最後在出發點${D}方 ${x} 公里處`,[`最後在出發點${O}方 ${x} 公里處`,`最後在出發點${D}方 ${t} 公里處`,`最後在出發點${D}方 ${x+1} 公里處`])}];
+L[3].mp=()=>{const ds=new Set,o=[];while(o.length<3){const a=ri(-6,6),b=ri(-6,6),d=Math.abs(a-b);if(d&&!ds.has(d)){ds.add(d);o.push([`A(${ng(a)})、B(${ng(b)})`,`AB = ${d}`])}}const p=ri(1,3),r=ri(1,3);o.push([`P(−${p} 1/3)、Q(${r} 1/2)`,`PQ = ${p+r} 5/6`]);return o};
+const dd=()=>{let a,b;do{a=ri(-5,5);b=ri(-5,5)}while(a==b);return{q:`A(${ng(a)})、B(${ng(b)})，AB = ？`,v:[a,b],d:1,a:Math.abs(a-b)}};
+L[3].fl=[dd,dd,()=>{const a=ri(-4,4)+.5,b=ri(-4,4);return{q:`P(${ng(a)})、Q(${ng(b)})，PQ = ？`,v:[a,b],d:2,a:Math.abs(a-b)}},
+()=>{let a,b;do{a=ri(-40,40)/10;b=ri(-40,40)/10}while(a==b);return{q:`A(${ng(a)})、B(${ng(b)})，AB = ？`,v:[a,b],d:10,a:r1(Math.abs(a-b))}},
+()=>{const p=ri(1,3),r=ri(1,3);return{q:`P(−${p} 1/3)、Q(${r} 1/2)，PQ = ？（請用分數）`,v:[-(p+1/3),r+.5],d:6,f:1,s:`${p+r} 5/6`,a:p+r+5/6}}];
+const need=i=>L[i].pl?4:3;
 let S={lv:0,st:0,done:[0,0,0,0]},g={};
 try{const d=JSON.parse(localStorage.getItem('uq2')||'null');if(d)S.done=d}catch(e){}
 const save=()=>{try{localStorage.setItem('uq2',JSON.stringify(S.done))}catch(e){}};
 const go=(lv,st)=>{S.lv=lv;S.st=st;g={};render()};
 const lock=i=>i>0&&S.done[i-1]<need(i-1);
 const X=v=>380+v*70;
-function nl(pts,click,extra){
+function nl(pts,click,extra,dv){dv=dv||1;
  let s=`<svg id="nl" viewBox="0 0 760 100" style="width:100%;max-width:760px;background:#fff;border:1px solid #ddd;border-radius:8px;${click?'cursor:crosshair':''}" ${click?'onclick="sv(event)"':''}>`;
  s+='<line x1="15" y1="55" x2="738" y2="55" stroke="#333" stroke-width="2"/><polygon points="748,55 736,49 736,61" fill="#333"/>';
- for(let i=-50;i<=50;i++){const x=380+i*7,h=i%10==0?10:3;s+=`<line x1="${x}" y1="${55-h}" x2="${x}" y2="${55+h}" stroke="${i%10?'#aaa':'#333'}"/>`;
- if(i%10==0)s+=`<text x="${x}" y="84" text-anchor="middle" font-size="15">${i/10<0?'−'+(-i/10):i/10}</text>`}
+ for(let i=-5*dv;i<=5*dv;i++){const x=380+i*70/dv,M=i%dv==0,h=M?10:5;s+=`<line x1="${x}" y1="${55-h}" x2="${x}" y2="${55+h}" stroke="${M?'#333':'#888'}"/>`;
+ if(M){const k=i/dv;s+=`<text x="${x}" y="84" text-anchor="middle" font-size="15">${k<0?'−'+(-k):k}</text>`}}
  s+='<text x="380" y="30" text-anchor="middle" font-size="14" fill="#555">O</text>';
- (pts||[]).concat(extra||[]).forEach(p=>{if(typeof p=='number')p={v:p};s+=`<circle cx="${X(p.v)}" cy="55" r="6" fill="${p.c||'#d94040'}"/>`+(p.t?`<text x="${X(p.v)}" y="${p.c?20:38}" text-anchor="middle" font-size="15" fill="${p.c||'#d94040'}" font-weight="bold">${p.t}</text>`:'')});
+ (pts||[]).concat(extra||[]).forEach(p=>{if(typeof p=='number')p={v:p};s+=`<circle cx="${X(p.v)}" cy="55" r="3" fill="${p.c||'#d94040'}"/>`+(p.t?`<text x="${X(p.v)}" y="${p.c?20:40}" text-anchor="middle" font-size="15" fill="${p.c||'#d94040'}" font-weight="bold">${p.t}</text>`:'')});
  return s+'</svg>'}
 function render(){
  const lv=L[S.lv],n=need(S.lv);
@@ -120,46 +119,59 @@ function render(){
  [learn,choice,match,fill,place][S.st]()}
 const B=h=>$('#body').innerHTML='<div class="box">'+h+'</div>';
 function learn(){const lv=L[S.lv];
- B(`<h3>${lv.ic} ${lv.k}：點卡片翻面</h3>${nl(lv.demo)}<div class="grid" style="margin-top:12px">`+lv.c.map(u=>`<div class="card" onclick="this.classList.toggle('f')"><div class="fr"><b>${u.n}</b><small>（點一下翻面）</small></div><div class="bk"><b style="font-size:18px">${u.n}</b>${u.m}<br><small>${u.d}</small></div></div>`).join('')+`</div><button class="btn" onclick="go(S.lv,1)">我記好了，開始闖關 ▶</button>`)}
+ B(`<h3>${lv.ic} ${lv.k}：點卡片翻面</h3>${nl(lv.demo,false,null,lv.dv)}<div class="grid" style="margin-top:12px">`+lv.c.map(u=>`<div class="card" onclick="this.classList.toggle('f')"><div class="fr"><b>${F(u.n)}</b><small>（點一下翻面）</small></div><div class="bk"><b style="font-size:18px">${F(u.n)}</b>${F(u.m)}<br><small>${F(u.d)}</small></div></div>`).join('')+`</div><button class="btn" onclick="go(S.lv,1)">我記好了，開始闖關 ▶</button>`)}
 function res(ok,txt,st){
  if(ok){S.done[S.lv]=Math.max(S.done[S.lv],st);save()}
  let nx='';
  if(ok){nx=st<need(S.lv)?`<button class="btn" onclick="go(S.lv,${st+1})">下一關 ▶</button>`:S.lv<3?`<button class="btn" onclick="go(${S.lv+1},0)">解鎖下一單元：${L[S.lv+1].k} ▶</button>`:'<h3>🏆 全部通關！數線、坐標、絕對值與兩點距離都學會了。</h3>'}
  B(`<div class="res"><h2>${ok?'✅ 通過':'❌ 未通過'}</h2><p>${txt}</p>${nx}<button class="btn alt" onclick="go(S.lv,${st})">${ok?'再玩一次':'重新挑戰'}</button>${ok?'':`<button class="btn alt" onclick="go(S.lv,0)">回去複習</button>`}</div>`)}
 function choice(){const lv=L[S.lv];
- if(!g.qs){g.qs=sh(lv.ch).slice(0,5).map(x=>{const t=x.o[x.a],o=sh(x.o);return{...x,o,a:o.indexOf(t)}});g.i=0;g.c=0;g.p=null}
+ if(!g.qs){g.qs=sh(lv.ch.map(x=>typeof x=='function'?x():x)).slice(0,5).map(x=>{const t=x.o[x.a],o=sh(x.o);return{...x,o,a:o.indexOf(t)}});g.i=0;g.c=0;g.p=null}
  const n=g.qs.length;
  if(g.i>=n)return res(g.c>=n,`答對 ${g.c} / ${n} 題（需全部答對）`,1);
  const u=g.qs[g.i];
- B(`<div class="prog">第 ${g.i+1} / ${n} 題</div><div class="q">${u.q}</div>${u.v!==undefined?nl([{v:u.v,t:'P'}]):''}`+
- u.o.map((t,j)=>{let c='';if(g.p!==null){if(j===u.a)c='ok';else if(j===g.p)c='no'}return `<button class="opt ${c}" ${g.p!==null?'disabled':''} onclick="pick(${j})">${t}</button>`}).join('')+
+ B(`<div class="prog">第 ${g.i+1} / ${n} 題</div><div class="q">${F(u.q)}</div>${u.v!==undefined?nl([{v:u.v,t:'P'}],false,null,u.d):''}`+
+ u.o.map((t,j)=>{let c='';if(g.p!==null){if(j===u.a)c='ok';else if(j===g.p)c='no'}return `<button class="opt ${c}" ${g.p!==null?'disabled':''} onclick="pick(${j})">${F(t)}</button>`}).join('')+
  (g.p!==null?`<button class="btn" onclick="g.i++;g.p=null;choice()">${g.i+1<n?'下一題':'看結果'} ▶</button>`:''))}
 function pick(j){if(j===g.qs[g.i].a)g.c++;g.p=j;choice()}
 function match(){const lv=L[S.lv];
- if(!g.p){g.p=sh(lv.mp).slice(0,4);g.r=sh(g.p.map((_,i)=>i));g.s=null;g.dn=[];g.e=0}
+ if(!g.p){g.p=typeof lv.mp=='function'?lv.mp():sh(lv.mp).slice(0,4);g.r=sh(g.p.map((_,i)=>i));g.s=null;g.dn=[];g.e=0}
  if(g.dn.length===g.p.length)return res(g.e<=1,`全部配對完成，錯誤 ${g.e} 次（需 1 次以內）`,2);
  B(`<div class="q">左邊選一項，再點右邊配對。　<span class="prog">錯誤 ${g.e} 次</span></div><div class="cols"><div>`+
- g.p.map((u,i)=>`<div class="m ${g.dn.includes(i)?'dn':''} ${g.s===i?'sel':''}" onclick="ml(${i})">${u[0]}</div>`).join('')+'</div><div>'+
- g.r.map(i=>`<div class="m ${g.dn.includes(i)?'dn':''}" onclick="mr(${i})">${g.p[i][1]}</div>`).join('')+'</div></div>')}
+ g.p.map((u,i)=>`<div class="m ${g.dn.includes(i)?'dn':''} ${g.s===i?'sel':''}" onclick="ml(${i})">${F(u[0])}</div>`).join('')+'</div><div>'+
+ g.r.map(i=>`<div class="m ${g.dn.includes(i)?'dn':''}" onclick="mr(${i})">${F(g.p[i][1])}</div>`).join('')+'</div></div>')}
 function ml(i){if(g.dn.includes(i))return;g.s=i;match()}
 function mr(i){if(g.s===null||g.dn.includes(i))return;if(g.s===i)g.dn.push(i);else g.e++;g.s=null;match()}
 function parse(s){s=(s||'').trim().replace(/[−－]/g,'-').replace(/\s+/g,' ');
  const m=s.match(/^(-?)(?:(\d+) )?(\d+)\/(\d+)$/);if(m&&+m[4])return (m[1]?-1:1)*((+m[2]||0)+m[3]/m[4]);
  return /^-?\d+(\.\d+)?$/.test(s)?Number(s):NaN}
+const dr=x=>x.v&&x.v.length==1?nl([{v:x.v[0],t:'P'}],false,null,x.d):x.v?nl([{v:x.v[0],t:'A'},{v:x.v[1],t:'B'}],false,null,x.d):'';
+function inp(x,i){const v=(g.v&&g.v[i])||{},d=g.ck?'disabled':'';
+ if(x.f)return `<span class="fi"><button class="sg" ${d} id="s${i}" onclick="tg(${i})">${g.sg[i]<0?'−':'＋'}</button><input type="text" class="w" id="w${i}" placeholder="整數" ${d} value="${v.w||''}"><span class="fx"><input type="text" id="n${i}" placeholder="分子" ${d} value="${v.n||''}"><i></i><input type="text" id="d${i}" placeholder="分母" ${d} value="${v.d||''}"></span></span>`;
+ return `<input type="text" id="f${i}" ${d} value="${v.t||''}">`}
+function tg(i){g.sg[i]*=-1;$('#s'+i).textContent=g.sg[i]<0?'−':'＋'}
 function fill(){const lv=L[S.lv];
- if(!g.qs){g.qs=sh(lv.fl).slice(0,4);g.ck=false}
- B(`<div class="q">填入答案（可輸入小數或分數，如 3/5、-2 1/4）。</div>`+g.qs.map((x,i)=>`<div class="q">${i+1}. ${x.q}${x.v&&x.v.length==1?nl([{v:x.v[0],t:'P'}]):x.v?nl([{v:x.v[0],t:'A'},{v:x.v[1],t:'B'}]):''}<br><input type="text" id="f${i}" ${g.ck?'disabled':''} value="${g.v?g.v[i]:''}"> ${x.u||''}<span class="fb" id="b${i}"></span></div>`).join('')+
+ if(!g.qs){g.qs=sh(lv.fl.map(x=>typeof x=='function'?x():x)).slice(0,4);g.ck=false;g.sg=g.qs.map(()=>1)}
+ B(`<div class="q">小數題直接輸入小數（負數請輸入負號）。<b>分數題</b>請用分數輸入框：按 ＋／− 選正負，填整數部分、分子、分母（沒有整數部分就留空；數值相等的分數都算對）。</div>`+g.qs.map((x,i)=>`<div class="q">${i+1}. ${F(x.q)}${dr(x)}<br>${inp(x,i)} ${x.u||''}<span class="fb" id="b${i}"></span></div>`).join('')+
  (g.ck?`<button class="btn" onclick="fin()">看結果 ▶</button>`:`<button class="btn" onclick="chk()">送出</button>`));
- if(g.ck)g.qs.forEach((x,i)=>{$('#b'+i).innerHTML=g.o[i]?'✅':`❌ 正確：${+x.a.toFixed(4)}`})}
-function chk(){g.v=g.qs.map((_,i)=>$('#f'+i).value);g.o=g.qs.map((x,i)=>Math.abs(parse(g.v[i])-x.a)<=0.001);g.ck=true;fill()}
+ if(g.ck)g.qs.forEach((x,i)=>{$('#b'+i).innerHTML=g.o[i]?'✅':`❌ 正確：${x.s?F(x.s):+x.a.toFixed(4)}`})}
+function chk(){
+ g.v=g.qs.map((x,i)=>x.f?{w:$('#w'+i).value.trim(),n:$('#n'+i).value.trim(),d:$('#d'+i).value.trim()}:{t:$('#f'+i).value});
+ g.o=g.qs.map((x,i)=>{const v=g.v[i];let r;
+  if(x.f){if(v.n===''&&v.d==='')r=g.sg[i]*parse(v.w);
+   else if(!/^\d+$/.test(v.n)||!/^\d+$/.test(v.d)||+v.d==0||(v.w!==''&&!/^\d+$/.test(v.w)))r=NaN;
+   else r=g.sg[i]*((+v.w||0)+v.n/v.d)}
+  else r=parse(v.t);
+  return Math.abs(r-x.a)<=0.001});
+ g.ck=true;fill()}
 function fin(){const n=g.qs.length,c=g.o.filter(Boolean).length;res(c>=n,`答對 ${c} / ${n} 題（需全部答對）`,3)}
 function place(){const lv=L[S.lv];
- if(!g.qs){g.qs=sh(lv.pt).slice(0,4);g.i=0;g.c=0;g.v=null;g.fb=null}
+ if(!g.qs){g.qs=sh(lv.pt.map(x=>typeof x=='function'?x():x)).slice(0,4);g.i=0;g.c=0;g.v=null;g.fb=null}
  const n=g.qs.length;
  if(g.i>=n)return res(g.c>=n,`答對 ${g.c} / ${n} 題（需全部答對）`,4);
  const t=g.qs[g.i];
- B(`<div class="prog">第 ${g.i+1} / ${n} 題</div><div class="q">請在數線上標出 <b>${t[0]}</b>：點一下數線，再用 ◀ ▶ 微調（每次 0.1）。</div>`+
- nl(g.v===null?[]:[{v:g.v,t:g.v}],!g.fb,g.fb?[{v:t[1],t:'正確位置',c:'#2e9e5b'}]:[])+
+ B(`<div class="prog">第 ${g.i+1} / ${n} 題</div><div class="q">請在數線上標出 <b>${F(t[0])}</b>：點一下數線，再用 ◀ ▶ 微調（每次 0.1）。</div>`+
+ nl(g.v===null?[]:[{v:g.v,t:g.v}],!g.fb,g.fb?[{v:t[1],t:'正確位置',c:'#2e9e5b'}]:[],10)+
  (g.fb?`<p>${g.fb}</p><button class="btn" onclick="g.i++;g.v=null;g.fb=null;place()">${g.i+1<n?'下一題':'看結果'} ▶</button>`:
  `<button class="btn alt" onclick="mv(-0.1)">◀</button><button class="btn alt" onclick="mv(0.1)">▶</button><button class="btn" ${g.v===null?'disabled':''} onclick="ok()">確定</button>`))}
 function sv(e){const r=$('#nl').getBoundingClientRect();let v=((e.clientX-r.left)/r.width*760-380)/70;g.v=Math.max(-5,Math.min(5,Math.round(v*10)/10));place()}
