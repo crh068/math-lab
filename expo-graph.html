@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>指數函數闖關挑戰 (iPad版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f8fafc; overflow: hidden; user-select: none; -webkit-user-select: none; touch-action: none; }
+        
+        #portrait-toast { opacity: 0; pointer-events: none; transition: opacity 0.5s; transform: translateX(-50%); z-index: 100; }
+        @media (orientation: portrait) {
+            #portrait-toast { opacity: 1; }
+            #app-container { flex-direction: column; }
+            .left-panel { width: 100% !important; height: 50% !important; border-right: none; border-bottom: 2px solid #e2e8f0; }
+            .right-panel { width: 100% !important; height: 50% !important; }
+        }
+
+        .level-panel { display: none; height: 100%; animation: fade 0.3s ease-out; flex-direction: column; }
+        .level-active { display: flex; }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+        canvas { touch-action: none; background-color: #ffffff; width: 100%; height: 100%; cursor: crosshair; }
+        
+        .custom-checkbox input:checked + div { background-color: #475569; border-color: #475569; }
+        .custom-checkbox input:checked + div svg { display: block; }
+        .custom-radio input:checked + div { background-color: #4f46e5; border-color: #4f46e5; }
+        .custom-radio input:checked + div .inner-dot { display: block; }
+
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; height: 40px; cursor: pointer; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 28px; width: 28px; border-radius: 50%; background: #4f46e5; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); margin-top: -10px; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: #cbd5e1; border-radius: 4px; }
+        
+        input[type=text]:disabled { background-color: #e2e8f0; color: #334155; font-weight: bold; cursor: not-allowed; }
+        .msg-box { transition: all 0.3s; font-size: 0.95rem; line-height: 1.5; }
+        .msg-err { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .msg-succ { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .msg-warn { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+        
+        .left-panel-content { scroll-behavior: smooth; }
+
+        #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+        .sys-toast { padding: 10px 20px; border-radius: 999px; color: white; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: slideUp 0.3s ease-out, fadeOut 0.3s ease-in 2.7s forwards; }
+        .toast-err { background-color: #ef4444; }
+        .toast-succ { background-color: #10b981; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    </style>
+</head>
+<body class="w-screen h-screen">
+
+    <div id="portrait-toast" class="fixed top-4 left-1/2 bg-amber-100 text-amber-800 px-6 py-3 rounded-full shadow-lg font-bold border border-amber-300 flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        建議橫向操作以獲得最佳體驗
+    </div>
+
+    <div id="toast-container"></div>
+
+    <div id="app-container" class="flex w-full h-full p-2 gap-2 box-border">
+        <!-- Left Panel -->
+        <div class="left-panel w-5/12 bg-white rounded-xl shadow flex flex-col overflow-hidden border border-slate-200">
+            <header class="bg-indigo-900 text-white p-3 flex flex-col gap-2 shrink-0">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-lg font-bold">指數函數互動學具</h1>
+                </div>
+                <div class="flex items-center justify-between px-1" id="prog-bar"></div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-4 relative left-panel-content" id="level-scroll">
+                
+                <!-- Level 1 -->
+                <div id="lvl-1" class="level-panel level-active">
+                    <h2 class="text-xl font-bold mb-3 border-b pb-2 text-slate-800">第 1 關：指數函數條件</h2>
+                    <p class="mb-4 text-slate-700 font-medium">若 \( f(x) = a^x \) 為一「指數函數」，其底數 \( a \) 和指數 \( x \) 須滿足哪些定義與條件？（複選）</p>
+                    <div id="l1-opts" class="space-y-2 mb-4"></div>
+                    <div id="l1-msg" class="msg-box hidden p-3 rounded mt-auto mb-2"></div>
+                    <button onclick="checkL1()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-lg text-lg transition">驗證答案</button>
+                    <button id="btn-next-1" onclick="nextLvl(2)" class="hidden mt-2 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg text-lg transition">進入下一關 →</button>
+                </div>
+
+                <!-- Levels 2-5 -->
+                <div id="lvl-2" class="level-panel"></div>
+                <div id="lvl-3" class="level-panel"></div>
+                <div id="lvl-4" class="level-panel"></div>
+                <div id="lvl-5" class="level-panel"></div>
+
+                <!-- Level 6 -->
+                <div id="lvl-6" class="level-panel">
+                    <h2 class="text-xl font-bold mb-3 border-b pb-2 text-slate-800">第 6 關：大小判斷</h2>
+                    <div id="l6-status" class="flex justify-between bg-slate-100 p-2 rounded mb-3 font-bold text-slate-700 text-sm"></div>
+                    <div id="l6-q-container" class="bg-white p-4 rounded border mb-4 shadow-sm">
+                        <p class="font-bold mb-4 text-lg text-indigo-900" id="l6-q-title"></p>
+                        <div id="l6-opts" class="space-y-3"></div>
+                    </div>
+                    <div id="l6-msg" class="msg-box hidden p-3 rounded mt-auto mb-2"></div>
+                    <button id="btn-l6-sub" onclick="checkL6()" class="w-full bg-indigo-700 hover:bg-indigo-600 text-white font-bold py-3 rounded-lg text-lg transition">驗證答案</button>
+                    <button id="btn-l6-nxt" onclick="nextL6Q()" class="hidden w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-lg text-lg transition">下一題</button>
+                    <button id="btn-next-6" onclick="nextLvl(7)" class="hidden mt-2 w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg text-lg transition">進入最終關卡 →</button>
+                </div>
+
+                <!-- Level 7 -->
+                <div id="lvl-7" class="level-panel">
+                    <h2 class="text-xl font-bold mb-3 border-b pb-2 text-slate-800">第 7 關：總合複習</h2>
+                    <div id="l7-status" class="flex justify-between bg-slate-100 p-2 rounded mb-3 font-bold text-slate-700 text-sm"></div>
+                    <div class="bg-white p-4 rounded border mb-4 shadow-sm">
+                        <h3 id="l7-q-title" class="font-bold mb-4 text-indigo-900"></h3>
+                        <div id="l7-q-opts" class="space-y-2"></div>
+                    </div>
+                    <div id="l7-msg" class="msg-box hidden p-3 rounded mt-auto mb-2"></div>
+                    <button id="btn-l7-sub" onclick="checkL7()" class="w-full bg-indigo-700 hover:bg-indigo-600 text-white font-bold py-3 rounded-lg text-lg transition">送出答案</button>
+                    <button id="btn-l7-nxt" onclick="nextL7()" class="hidden w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-lg text-lg transition">下一題</button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Right Panel (Canvas) -->
+        <div class="right-panel w-7/12 relative h-full bg-white rounded-xl shadow border border-slate-200 overflow-hidden">
+            <canvas id="cvs"></canvas>
+            <div id="victory" class="absolute inset-0 bg-white/95 backdrop-blur hidden flex-col items-center justify-center z-50">
+                <div class="text-7xl mb-4">🏆</div>
+                <h1 class="text-4xl font-black mb-2 text-indigo-900">完全通關！</h1>
+                <p class="text-lg text-slate-600 mb-6 font-bold">您已充分掌握指數函數的定義與特徵</p>
+                <button onclick="location.reload()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105">重新挑戰</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const TOTAL_LVL = 7;
+    let curLvl = 1;
+    let maxUnlocked = 1;
+    let cvs, ctx, cw, ch, unit, ox, oy, dpr;
+    
+    // Core Data
+    let lData = {
+        2: { step: 1, targets: [], plotted: [], trace: [], funcStr: '2^x', func: x=>Math.pow(2,x), isChallenge: false },
+        3: { step: 1, targets: [], plotted: [], path: [], funcStr: '3^x', func: x=>Math.pow(3,x), isChallenge: true },
+        4: { step: 1, targets: [], plotted: [], trace: [], funcStr: '(1/2)^x', func: x=>Math.pow(0.5,x), isChallenge: false },
+        5: { step: 1, targets: [], plotted: [], path: [], funcStr: '(1/3)^x', func: x=>Math.pow(1/3,x), isChallenge: true }
+    };
+    let isDrawing = false, curPath = [];
+
+    // L1 Data
+    const l1Opts = [
+        { id:'l1a', t:'\\( a \\gt 0 \\)', c:true }, 
+        { id:'l1b', t:'\\( a \\neq 1 \\)', c:true }, 
+        { id:'l1c', t:'\\( a \\ge 0 \\)', c:false }, 
+        { id:'l1d', t:'\\( x \\in \\mathbb{R} \\) (為任意實數)', c:true }, 
+        { id:'l1e', t:'\\( x \\gt 0 \\)', c:false }, 
+        { id:'l1f', t:'\\( y \\gt 0 \\)', c:false, isRes: true }
+    ];
+    
+    // Characteristics
+    const featOpts = {
+        2: [ {t:'過 \\( (0, 1) \\)', c:true}, {t:'恆在 \\( x \\) 軸上方', c:true}, {t:'為遞增函數', c:true}, {t:'過 \\( (1, 0) \\)', c:false}, {t:'會與 \\( x \\) 軸相交', c:false}, {t:'為遞減函數', c:false} ],
+        4: [ {t:'過 \\( (0, 1) \\)', c:true}, {t:'恆在 \\( x \\) 軸上方', c:true}, {t:'為遞減函數', c:true}, {t:'為遞增函數', c:false}, {t:'會與 \\( x \\) 軸相交', c:false}, {t:'過 \\( (-1, 0) \\)', c:false} ]
+    };
+
+    // Level 6 Data (Using \lt for KaTeX compatibility)
+    const l6Pool = [
+        { type:'inc', t:'請判斷下列數值的大小關係：', items:['2^{-1}', '2^{0.5}', '2^3'], sorted:['2^{-1}', '2^{0.5}', '2^3'], exp:'底數 \\( 2 \\gt 1 \\) (遞增)，指數越大，其值越大。' },
+        { type:'inc', t:'請判斷下列數值的大小關係：', items:['3^{-2}', '3^{1}', '3^{1.5}'], sorted:['3^{-2}', '3^{1}', '3^{1.5}'], exp:'底數 \\( 3 \\gt 1 \\) (遞增)，指數越大，其值越大。' },
+        { type:'inc', t:'請判斷下列數值的大小關係：', items:['5^{-0.5}', '5^{0}', '5^{2}'], sorted:['5^{-0.5}', '5^{0}', '5^{2}'], exp:'底數 \\( 5 \\gt 1 \\) (遞增)，指數越大，其值越大。' },
+        { type:'dec', t:'請判斷下列數值的大小關係：', items:['(1/2)^{-2}', '(1/2)^{1}', '(1/2)^{3}'], sorted:['(1/2)^{3}', '(1/2)^{1}', '(1/2)^{-2}'], exp:'底數 \\( 0 \\lt 1/2 \\lt 1 \\) (遞減)，指數越大，其值反而越小。' },
+        { type:'dec', t:'請判斷下列數值的大小關係：', items:['(1/3)^{-1}', '(1/3)^{0}', '(1/3)^{2}'], sorted:['(1/3)^{2}', '(1/3)^{0}', '(1/3)^{-1}'], exp:'底數 \\( 0 \\lt 1/3 \\lt 1 \\) (遞減)，指數越大，其值反而越小。' },
+        { type:'dec', t:'請判斷下列數值的大小關係：', items:['0.2^{-3}', '0.2^{1}', '0.2^{4}'], sorted:['0.2^{4}', '0.2^{1}', '0.2^{-3}'], exp:'底數 \\( 0 \\lt 0.2 \\lt 1 \\) (遞減)，指數越大，其值反而越小。' }
+    ];
+    let l6Qs = [], l6Idx = 0, l6Mistakes = 0;
+
+    // Level 7 Data
+    const l7Pool = [
+        { type:'s', q:'\\( y=a^x \\) 的底數條件為何？', opts:[{t:'\\( a \\gt 0 \\) 且 \\( a \\neq 1 \\)', c:true}, {t:'\\( a \\ge 0 \\)', c:false}, {t:'為任意實數', c:false}] },
+        { type:'s', q:'指數函數圖形必過哪一個定點？', opts:[{t:'\\( (0, 1) \\)', c:true}, {t:'\\( (1, 0) \\)', c:false}, {t:'\\( (0, 0) \\)', c:false}] },
+        { type:'s', q:'\\( y=3^x \\) 為遞增或遞減函數？', opts:[{t:'遞增函數', c:true}, {t:'遞減函數', c:false}] },
+        { type:'s', q:'\\( y=(1/3)^x \\) 為遞增或遞減函數？', opts:[{t:'遞減函數', c:true}, {t:'遞增函數', c:false}] },
+        { type:'m', q:'下列哪些函數為「遞減」函數？', opts:[{t:'\\( y=(1/2)^x \\)', c:true}, {t:'\\( y=0.3^x \\)', c:true}, {t:'\\( y=3^x \\)', c:false}] },
+        { type:'m', q:'關於指數函數 \\( y=a^x \\) 的圖形特徵，下列何者正確？', opts:[{t:'圖形恆在 x 軸上方', c:true}, {t:'定義域(即 x 的範圍)為任意實數', c:true}, {t:'圖形會與 x 軸交於一點', c:false}] },
+        { type:'s', q:'已知 \\( 0 \\lt a \\lt 1 \\) 且 \\( a^x \\gt a^y \\)，則 x 與 y 的關係為：', opts:[{t:'\\( x \\lt y \\)', c:true}, {t:'\\( x \\gt y \\)', c:false}, {t:'無法判斷', c:false}] },
+        { type:'s', q:'若一指數函數圖形由左至右呈現下降趨勢，其底數 \\( a \\) 之範圍應為？', opts:[{t:'\\( 0 \\lt a \\lt 1 \\)', c:true}, {t:'\\( a \\gt 1 \\)', c:false}, {t:'\\( a \\gt 0 \\)', c:false}] },
+        { type:'s', q:'已知 \\( a \\gt 1 \\) 且 \\( a^x \\lt a^y \\)，則 x 與 y 的關係為：', opts:[{t:'\\( x \\lt y \\)', c:true}, {t:'\\( x \\gt y \\)', c:false}, {t:'無法判斷', c:false}] },
+        { type:'m', q:'下列哪些為合法的指數函數？', opts:[{t:'\\( y=(\\sqrt{2})^x \\)', c:true}, {t:'\\( y=(-2)^x \\)', c:false}, {t:'\\( y=1^x \\)', c:false}, {t:'\\( y=(0.5)^x \\)', c:true}] }
+    ];
+    let l7Qs = [], l7Idx = 0, l7Score = 0;
+
+    // Utils
+    const shuf = arr => arr.sort(() => Math.random() - 0.5);
+    const msg = (id, txt, type) => {
+        let el = document.getElementById(id);
+        el.innerHTML = txt;
+        renderMath(el);
+        el.className = `msg-box p-3 rounded mt-auto mb-2 font-medium msg-${type}`;
+    };
+    const showToast = (txt, type='err') => {
+        let box = document.createElement('div');
+        box.className = `sys-toast toast-${type}`;
+        box.innerText = txt;
+        let container = document.getElementById('toast-container');
+        container.appendChild(box);
+        setTimeout(() => { if(box.parentNode) box.parentNode.removeChild(box); }, 3000);
+    };
+    const renderMath = (el=document.body) => {
+        if(window.renderMathInElement) renderMathInElement(el, {delimiters: [{left: "\\(", right: "\\)", display: false}]});
+    };
+
+    // Init
+    window.onload = () => {
+        buildLvlHTML(); initUI(); initCvs();
+        genL1(); renderMath();
+        window.addEventListener('resize', initCvs);
+        cvs.addEventListener('pointerdown', pDown);
+        cvs.addEventListener('pointermove', pMove);
+        window.addEventListener('pointerup', pUp);
+        cvs.addEventListener('pointercancel', pUp);
+        cvs.addEventListener('pointerleave', pUp);
+    };
+
+    // UI & Nav
+    function initUI() { updateProg(); }
+    function updateProg() {
+        let pb = document.getElementById('prog-bar'); pb.innerHTML = '';
+        for(let i=1; i<=TOTAL_LVL; i++) {
+            let isUnl = i <= maxUnlocked, isCur = i === curLvl;
+            let bg = isCur ? 'bg-indigo-600 ring-2 ring-indigo-300 transform scale-110 cursor-pointer shadow-md' : (isUnl ? 'bg-green-500 cursor-pointer hover:bg-green-400' : 'bg-slate-200 text-slate-400');
+            let txt = (isUnl && !isCur) ? '✓' : i;
+            let tc = (isUnl || isCur) ? 'text-white' : 'text-slate-500';
+            pb.innerHTML += `
+                <div onclick="if(${isUnl}) gotoLvl(${i})" class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all ${bg} ${tc}">${txt}</div>
+                ${i<TOTAL_LVL ? `<div class="flex-1 h-1 mx-1 rounded ${i<maxUnlocked?'bg-green-500':'bg-slate-200'}"></div>` : ''}`;
+        }
+    }
+    function gotoLvl(l) {
+        if(l <= maxUnlocked) {
+            document.querySelectorAll('.level-panel').forEach(e => e.classList.remove('level-active'));
+            document.getElementById(`lvl-${l}`).classList.add('level-active');
+            curLvl = l; updateProg(); draw();
+            document.getElementById('level-scroll').scrollTop = 0;
+            if(l===6 && l6Qs.length===0) genL6();
+            if(l===7 && l7Qs.length===0) genL7();
+        }
+    }
+    function nextLvl(l) {
+        if(l > maxUnlocked) maxUnlocked = l;
+        gotoLvl(l);
+    }
+
+    // Build Levels 2-5 HTML
+    function buildLvlHTML() {
+        [2,3,4,5].forEach(l => {
+            let d = lData[l];
+            let xs = d.isChallenge ? [-2,-1,0,1,2] : [-3,-2,-1,0,1,2,3];
+            let titleTag = d.isChallenge ? '動手描點挑戰' : (l<4 ? '\\( a \\gt 1 \\) 圖形' : '\\( 0 \\lt a \\lt 1 \\) 圖形');
+            
+            let html = `
+                <h2 class="text-xl font-bold mb-3 border-b pb-2 text-slate-800">第 ${l} 關：${titleTag}</h2>
+                <p class="font-bold mb-3 text-indigo-700 text-lg">任務目標：\\( y = ${d.funcStr} \\)</p>
+                
+                <div class="mb-4">
+                    <p class="font-bold text-sm mb-2 text-slate-700">1. 計算並完成對應表格 (正確將自動鎖定)</p>
+                    <div class="grid grid-cols-${xs.length+1} gap-1 text-center bg-slate-100 p-2 rounded border border-slate-200 shadow-sm text-sm">
+                        <div class="font-bold p-1 border-r border-b border-slate-300 flex items-center justify-center">\\( x \\)</div>
+                        ${xs.map(x=>`<div class="p-1 font-bold border-b border-slate-300 flex items-center justify-center">\\( ${x} \\)</div>`).join('')}
+                        <div class="font-bold p-1 border-r border-slate-300 flex items-center justify-center">\\( y \\)</div>
+                        ${xs.map((x,i)=>`<input type="text" id="l${l}i${i}" class="text-center border border-slate-300 rounded focus:ring-2 focus:ring-indigo-400 outline-none" onblur="checkCell(${l}, ${i}, ${x})" placeholder="?">`).join('')}
+                    </div>
+                </div>
+
+                <div id="l${l}s2" class="hidden mb-4 p-4 bg-indigo-50 border border-indigo-200 shadow-sm rounded">
+                    <p class="font-bold text-indigo-900 mb-1">2. 座標點位繪製</p>
+                    <p class="text-indigo-700 text-sm">請在右方直角坐標系中，點擊精準描出剛才計算出的點。</p>
+                    <p class="text-indigo-600 font-bold mt-2 text-sm bg-indigo-100 py-1 px-3 rounded inline-block">完成進度：<span id="l${l}cnt">0</span> / ${xs.length}</p>
+                </div>
+            `;
+            
+            if(d.isChallenge) {
+                html += `
+                <div id="l${l}s3" class="hidden mb-4 p-4 bg-amber-50 border border-amber-200 shadow-sm rounded">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="font-bold text-amber-900">3. 手繪平滑曲線</p>
+                            <p class="text-amber-700 text-sm mt-1">請在右方圖表由左至右拖曳手指，連貫畫出該指數函數圖形。</p>
+                        </div>
+                        <button onclick="clearCurve(${l})" class="bg-amber-200 hover:bg-amber-300 text-amber-900 px-3 py-1.5 rounded text-xs font-bold transition shadow-sm">清除重畫</button>
+                    </div>
+                </div>`;
+            } else {
+                html += `
+                <div id="l${l}s3" class="hidden mb-4 p-4 bg-slate-50 border border-slate-200 shadow-sm rounded">
+                    <p class="font-bold text-slate-800 mb-1">3. 拖曳滑桿觀察連續軌跡</p>
+                    <p class="text-xs text-slate-500 mb-3">軌跡點極小，請觀察它是否會碰到 x 軸</p>
+                    <input type="range" min="-10" max="10" step="0.05" value="-10" oninput="doTrace(this.value, ${l})">
+                    <button onclick="finishTrace(${l})" class="w-full mt-4 bg-slate-700 hover:bg-slate-600 transition text-white font-bold rounded py-2 shadow-sm">軌跡觀察完畢</button>
+                </div>
+                <div id="l${l}s4" class="hidden mb-4">
+                    <p class="font-bold mb-3 text-indigo-900">4. 根據圖形勾選正確特徵 (複選)</p>
+                    <div id="l${l}opts" class="space-y-2 text-sm mb-3"></div>
+                    <button onclick="checkFeat(${l})" class="w-full bg-indigo-700 hover:bg-indigo-600 transition text-white font-bold rounded-lg py-3 text-lg shadow-sm">驗證特徵</button>
+                </div>`;
+            }
+            html += `<div id="l${l}-msg" class="msg-box hidden text-center"></div>
+                     <button id="btn-next-${l}" onclick="nextLvl(${l+1})" class="hidden w-full bg-green-600 hover:bg-green-500 transition shadow-sm text-white font-bold py-3 rounded-lg text-lg mt-2">進入下一關 →</button>`;
+            
+            document.getElementById(`lvl-${l}`).innerHTML = html;
+        });
+    }
+
+    // Canvas Core
+    function initCvs() {
+        cvs = document.getElementById('cvs');
+        let rect = cvs.parentElement.getBoundingClientRect();
+        dpr = window.devicePixelRatio || 1;
+        cvs.width = rect.width * dpr; cvs.height = rect.height * dpr;
+        ctx = cvs.getContext('2d'); ctx.scale(dpr, dpr);
+        cw = rect.width; ch = rect.height;
+        // 1:1 Fixed Plane: [-10, 10] means 20 units total. Div by 22 for padding.
+        unit = Math.min(cw, ch) / 22; 
+        ox = cw / 2; oy = ch / 2;
+        draw();
+    }
+    const px = lx => ox + lx * unit; const py = ly => oy - ly * unit;
+    const lx = x => (x - ox) / unit; const ly = y => (oy - y) / unit;
+
+    function draw() {
+        ctx.clearRect(0,0,cw,ch);
+        
+        // Grid lines
+        ctx.lineWidth=1; ctx.strokeStyle='#f1f5f9'; ctx.fillStyle='#94a3b8'; ctx.font='11px sans-serif';
+        ctx.textAlign="center"; ctx.textBaseline="middle";
+        for(let i=-10; i<=10; i++) {
+            if(i!==0) {
+                ctx.beginPath(); ctx.moveTo(px(i), py(-10)); ctx.lineTo(px(i), py(10)); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(px(-10), py(i)); ctx.lineTo(px(10), py(i)); ctx.stroke();
+                if(i%2===0) { ctx.fillText(i, px(i), py(0)+12); ctx.fillText(i, px(0)-12, py(i)); }
+            }
+        }
+        
+        // Axes and Arrows
+        ctx.lineWidth=2; ctx.strokeStyle='#0f172a'; ctx.fillStyle='#0f172a';
+        // X-Axis
+        ctx.beginPath(); ctx.moveTo(px(-10.5), py(0)); ctx.lineTo(px(10.5), py(0)); ctx.stroke(); 
+        ctx.beginPath(); ctx.moveTo(px(10.5), py(0)); ctx.lineTo(px(10.5)-8, py(0)-4); ctx.lineTo(px(10.5)-8, py(0)+4); ctx.fill();
+        // Y-Axis
+        ctx.beginPath(); ctx.moveTo(px(0), py(-10.5)); ctx.lineTo(px(0), py(10.5)); ctx.stroke(); 
+        ctx.beginPath(); ctx.moveTo(px(0), py(10.5)); ctx.lineTo(px(0)-4, py(10.5)+8); ctx.lineTo(px(0)+4, py(10.5)+8); ctx.fill();
+        
+        ctx.font='italic bold 16px serif'; ctx.fillText('x', px(10.5)-10, py(0)+18); ctx.fillText('y', px(0)-18, py(10.5)+10); ctx.fillText('O', px(0)-12, py(0)+12);
+
+        let d = lData[curLvl];
+        if(!d) return;
+        
+        // Traced dots (very tiny: radius 1)
+        if(d.trace) d.trace.forEach(p => drawPt(p.x, p.y, '#3b82f6', 1));
+        
+        // Target points (radius 3)
+        d.plotted.forEach(p => drawPt(p.x, p.y, '#ef4444', 3));
+        
+        // Freehand path
+        if(d.path && d.path.length) drawLine(d.path, '#8b5cf6', 2.5);
+        if(isDrawing && curPath.length) drawLine(curPath, '#8b5cf6', 2.5);
+    }
+    
+    function drawPt(x, y, c, r) {
+        if(x<-10.5||x>10.5||y<-10.5||y>10.5) return;
+        ctx.beginPath(); ctx.arc(px(x), py(y), r, 0, Math.PI*2); ctx.fillStyle=c; ctx.fill();
+    }
+    function drawLine(pts, c, w) {
+        ctx.beginPath(); ctx.strokeStyle=c; ctx.lineWidth=w; ctx.lineJoin='round'; ctx.lineCap='round';
+        let started = false;
+        for(let i=0; i<pts.length; i++) {
+            if(pts[i].x<-10.5||pts[i].x>10.5||pts[i].y<-10.5||pts[i].y>10.5) continue;
+            if(!started) { ctx.moveTo(px(pts[i].x), py(pts[i].y)); started = true; } 
+            else ctx.lineTo(px(pts[i].x), py(pts[i].y));
+        }
+        ctx.stroke();
+    }
+
+    // Pointer Events
+    function pDown(e) {
+        let d = lData[curLvl]; if(!d) return;
+        let rect = cvs.getBoundingClientRect();
+        let cx = lx(e.clientX - rect.left), cy = ly(e.clientY - rect.top);
+
+        if(d.step === 2) {
+            // Strict 0.25 coordinate tolerance plotting
+            let hit = d.targets.find(t => !d.plotted.some(p=>p.id===t.id) && Math.hypot(cx-t.x, cy-t.y) <= 0.25);
+            if(hit) {
+                d.plotted.push({...hit});
+                document.getElementById(`l${curLvl}cnt`).innerText = d.plotted.length;
+                draw();
+                if(d.plotted.length === d.targets.length) {
+                    d.step = 3; 
+                    document.getElementById(`l${curLvl}s3`).classList.remove('hidden');
+                    msg(`l${curLvl}-msg`, '座標描點完成！請進行下一步。', 'succ');
+                    document.getElementById('level-scroll').scrollTop = 9999;
+                }
+            } else {
+                showToast("點擊位置誤差過大，請對準正確座標！", "err");
+            }
+        } else if(d.step === 3 && d.isChallenge) {
+            isDrawing = true; curPath = [{x:cx, y:cy}];
+        }
+    }
+    function pMove(e) {
+        if(!isDrawing) return;
+        let rect = cvs.getBoundingClientRect();
+        curPath.push({x: lx(e.clientX - rect.left), y: ly(e.clientY - rect.top)});
+        draw();
+    }
+    function pUp() {
+        if(!isDrawing) return;
+        isDrawing = false;
+        if(curPath.length < 5) { curPath=[]; draw(); return; } // prevent tiny taps
+        
+        let fb = validateCurve(curLvl, curPath);
+        if(fb !== true) {
+            msg(`l${curLvl}-msg`, `❌ 繪製錯誤：${fb}<br><span class="text-sm font-normal text-red-700">請按「清除重畫」再試一次。</span>`, 'err');
+        } else {
+            msg(`l${curLvl}-msg`, '✅ 完美的平滑曲線！', 'succ');
+            lData[curLvl].path = [...curPath]; 
+            document.getElementById(`btn-next-${curLvl}`).classList.remove('hidden');
+        }
+        draw();
+    }
+
+    // Strict Freehand Validation
+    function validateCurve(lvl, path) {
+        let pts = lData[lvl].targets; 
+        let isInc = (lvl === 3);
+
+        // 1. Must draw left to right (strict, no moving backward > 0.05 units)
+        for(let i = 1; i < path.length; i++) {
+            if(path[i].x < path[i-1].x - 0.05) return "不可往回畫！請由左至右平滑描繪。";
+        }
+
+        // 2. Strict Anti-Distortion / Monotonicity (allow 0.1 units for hand tremor noise)
+        for(let i = 1; i < path.length; i++) {
+            if(isInc && path[i].y < path[i-1].y - 0.1) return "圖形過度扭曲！此為遞增函數，曲線應平滑上升。";
+            if(!isInc && path[i].y > path[i-1].y + 0.1) return "圖形過度扭曲！此為遞減函數，曲線應平滑下降。";
+        }
+
+        // 3. Must stay above x-axis (y > 0)
+        if(path.some(p => p.y <= 0.05)) return "圖形不可與 x 軸相交或低於 x 軸！";
+        
+        // 4. Must extend beyond outermost target points
+        let minTargetX = Math.min(...pts.map(p=>p.x));
+        let maxTargetX = Math.max(...pts.map(p=>p.x)); 
+        let minPathX = Math.min(...path.map(p=>p.x));
+        let maxPathX = Math.max(...path.map(p=>p.x));
+        
+        if(minPathX >= minTargetX - 0.1 || maxPathX <= maxTargetX + 0.1) {
+            return "請將曲線向左右兩端延伸（需明確超出最左與最右的點）！";
+        }
+        
+        // 5. Must pass within 0.3 units of all 5 target points
+        let passAll = pts.every(pt => path.some(p => Math.hypot(p.x - pt.x, p.y - pt.y) <= 0.3));
+        if(!passAll) return "未準確通過所有的指定點！請確保曲線貼合你描出的 5 個點。";
+        
+        return true;
+    }
+    
+    function clearCurve(l) {
+        lData[l].path = []; curPath = []; draw();
+        msg(`l${l}-msg`, '已清除畫布，請重新描繪圖形。', 'warn');
+        document.getElementById(`btn-next-${l}`).classList.add('hidden');
+    }
+    
+    // Level 1 Logic
+    function genL1() {
+        document.getElementById('l1-opts').innerHTML = shuf([...l1Opts]).map(o => `
+            <label class="custom-checkbox flex items-center p-4 border rounded bg-white shadow-sm cursor-pointer hover:bg-slate-50 transition">
+                <input type="checkbox" id="${o.id}" class="hidden" data-c="${o.c}" data-res="${o.isRes?'1':'0'}">
+                <div class="w-6 h-6 border-2 border-slate-300 mr-4 shrink-0 rounded flex items-center justify-center transition-colors"><svg class="hidden w-4 h-4 text-white font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div>
+                <span class="text-lg">${o.t}</span>
+            </label>`).join('');
+    }
+    function checkL1() {
+        let allCorrect = true, pickedRes = false;
+        l1Opts.forEach(o => {
+            let el = document.getElementById(o.id);
+            if(el.checked !== (el.dataset.c === 'true')) allCorrect = false;
+            if(el.dataset.res === '1' && el.checked) pickedRes = true;
+        });
+
+        if(allCorrect) { 
+            msg('l1-msg', '✅ 觀念完全正確！', 'succ'); 
+            document.getElementById('btn-next-1').classList.remove('hidden'); 
+        } else {
+            let fb = '❌ 選擇有誤或遺漏。';
+            if(pickedRes) fb += '<br><span class="text-sm mt-1 inline-block text-red-700">提示：\\( y \\gt 0 \\) 是指數函數的性質(結果)，而非定義條件！</span>';
+            msg('l1-msg', fb, 'err');
+        }
+    }
+
+    // Levels 2-5 Helpers
+    function getFrac(f) {
+        if(Number.isInteger(f)) return f.toString();
+        const frs = [{v:1/2, s:'1/2'}, {v:1/4, s:'1/4'}, {v:1/8, s:'1/8'}, {v:1/3, s:'1/3'}, {v:1/9, s:'1/9'}, {v:1/27, s:'1/27'}];
+        for(let fr of frs) if(Math.abs(f - fr.v) < 0.001) return fr.s;
+        return f.toFixed(3);
+    }
+    function checkCell(l, i, x) {
+        let el = document.getElementById(`l${l}i${i}`);
+        if(el.disabled || el.value.trim()==='') return;
+        let v = el.value.includes('/') ? parseFloat(el.value.split('/')[0])/parseFloat(el.value.split('/')[1]) : parseFloat(el.value);
+        let f = lData[l].func(x);
+        
+        if(!isNaN(v) && Math.abs(v - f) < 0.01) {
+            el.value = getFrac(f); el.disabled = true;
+            lData[l].targets.push({id:i, x:x, y:f});
+            if(lData[l].targets.length === (lData[l].isChallenge ? 5 : 7)) {
+                msg(`l${l}-msg`, '✅ 表格計算全對！請在右側點擊完成精準描點。', 'succ');
+                document.getElementById(`l${l}s2`).classList.remove('hidden');
+                lData[l].step = 2;
+                if(!lData[l].isChallenge) genFeat(l); 
+            }
+        } else el.value = '';
+    }
+    function doTrace(v, l) { lData[l].trace.push({x:parseFloat(v), y: lData[l].func(parseFloat(v))}); draw(); }
+    function finishTrace(l) { document.getElementById(`l${l}s4`).classList.remove('hidden'); document.getElementById('level-scroll').scrollTop = 9999; }
+    
+    function genFeat(l) {
+        document.getElementById(`l${l}opts`).innerHTML = shuf([...featOpts[l]]).map((o,i) => `
+            <label class="custom-checkbox flex items-center p-3 border border-slate-200 rounded bg-white shadow-sm cursor-pointer hover:bg-slate-50 transition">
+                <input type="checkbox" id="f${l}i${i}" class="hidden" data-c="${o.c}">
+                <div class="w-5 h-5 border-2 border-slate-300 mr-3 shrink-0 rounded flex items-center justify-center transition-colors"><svg class="hidden w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div>
+                <span class="text-base text-slate-800">${o.t}</span>
+            </label>`).join('');
+        renderMath(document.getElementById(`l${l}opts`));
+    }
+    function checkFeat(l) {
+        let pass = true;
+        document.querySelectorAll(`#l${l}opts input`).forEach(el => { if(el.checked !== (el.dataset.c==='true')) pass=false; });
+        if(pass) { msg(`l${l}-msg`, '✅ 特徵觀察完全正確！', 'succ'); document.getElementById(`btn-next-${l}`).classList.remove('hidden'); }
+        else msg(`l${l}-msg`, '❌ 觀察有誤，請再仔細看看圖形的特徵表現。', 'err');
+    }
+
+    // Level 6
+    function genL6() {
+        let incs = shuf(l6Pool.filter(q=>q.type==='inc')).slice(0,2);
+        let decs = shuf(l6Pool.filter(q=>q.type==='dec')).slice(0,2);
+        l6Qs = shuf([...incs, ...decs]);
+        l6Idx = 0; l6Mistakes = 0;
+        showL6Q();
+    }
+    function showL6Q() {
+        let q = l6Qs[l6Idx];
+        document.getElementById('l6-status').innerHTML = `<span>進度: ${l6Idx+1} / 4</span><span class="${l6Mistakes>0?'text-red-600':''}">剩餘容錯: ${1-l6Mistakes} 次</span>`;
+        let tStr = q.items.map(x => `\\( ${x} \\)`).join(' , ');
+        document.getElementById('l6-q-title').innerHTML = q.t + `<div class="mt-2 text-2xl text-center tracking-widest">${tStr}</div>`;
+        
+        let cStr = '\\( ' + q.sorted.join(' \\lt ') + ' \\)';
+        let opts = [cStr, '\\( ' + [q.sorted[2], q.sorted[1], q.sorted[0]].join(' \\lt ') + ' \\)', '\\( ' + [q.sorted[1], q.sorted[0], q.sorted[2]].join(' \\lt ') + ' \\)', '\\( ' + [q.sorted[0], q.sorted[2], q.sorted[1]].join(' \\lt ') + ' \\)'];
+        
+        document.getElementById('l6-opts').innerHTML = shuf(opts).map((o, i) => `
+            <label class="custom-radio flex items-center p-4 border border-slate-200 rounded bg-white shadow-sm cursor-pointer hover:bg-slate-50 transition">
+                <input type="radio" name="l6o" value="${o === cStr}" class="hidden">
+                <div class="w-6 h-6 border-2 border-slate-300 rounded-full mr-4 shrink-0 flex items-center justify-center transition-colors"><div class="inner-dot hidden w-3 h-3 bg-white rounded-full"></div></div>
+                <span class="text-lg tracking-wider text-slate-800">${o}</span>
+            </label>`).join('');
+        
+        document.getElementById('l6-msg').classList.add('hidden');
+        document.getElementById('btn-l6-sub').classList.remove('hidden'); document.getElementById('btn-l6-nxt').classList.add('hidden');
+        renderMath(document.getElementById('l6-q-container'));
+    }
+    function checkL6() {
+        let sel = document.querySelector('input[name="l6o"]:checked');
+        if(!sel) { msg('l6-msg', '請先選擇一個選項才能驗證。', 'warn'); return; }
+        document.querySelectorAll('input[name="l6o"]').forEach(i=>i.disabled=true);
+        document.getElementById('btn-l6-sub').classList.add('hidden'); 
+        
+        let q = l6Qs[l6Idx];
+        if(sel.value === 'true') {
+            msg('l6-msg', `✅ 判斷正確！<br><span class="font-normal text-sm text-slate-700 mt-1 inline-block">${q.exp}</span>`, 'succ');
+            document.getElementById('btn-l6-nxt').classList.remove('hidden');
+        } else {
+            l6Mistakes++;
+            if(l6Mistakes > 1) {
+                msg('l6-msg', `❌ 答錯了！<br><span class="font-normal text-sm text-slate-700 mt-1 inline-block">${q.exp}</span><br><br><span class="text-red-700 font-bold">錯誤超過 1 次，關卡即將重新開始...</span>`, 'err');
+                setTimeout(genL6, 4000);
+            } else {
+                msg('l6-msg', `❌ 答錯了！<br><span class="font-normal text-sm text-slate-700 mt-1 inline-block">${q.exp}</span>`, 'err');
+                document.getElementById('btn-l6-nxt').classList.remove('hidden');
+            }
+        }
+    }
+    function nextL6Q() {
+        l6Idx++;
+        if(l6Idx < 4) showL6Q();
+        else { document.getElementById('btn-l6-nxt').classList.add('hidden'); msg('l6-msg', '🎉 恭喜順利通過大小判斷關卡！', 'succ'); document.getElementById('btn-next-6').classList.remove('hidden'); }
+    }
+
+    // Level 7
+    function genL7() { l7Qs = shuf([...l7Pool]).slice(0, 8); l7Idx = 0; l7Score = 0; showL7Q(); }
+    function showL7Q() {
+        let q = l7Qs[l7Idx];
+        document.getElementById('l7-status').innerHTML = `<span>題號: ${l7Idx+1} / 8</span><span class="text-indigo-700">目前答對: ${l7Score}</span>`;
+        let tag = q.type==='s' ? '<span class="text-blue-600 text-sm font-black mr-2 bg-blue-100 px-2 py-0.5 rounded">[單選]</span>' : '<span class="text-purple-600 text-sm font-black mr-2 bg-purple-100 px-2 py-0.5 rounded">[複選]</span>';
+        document.getElementById('l7-q-title').innerHTML = `${tag} ${q.q}`;
+        
+        document.getElementById('l7-q-opts').innerHTML = shuf([...q.opts]).map((o,i) => `
+            <label class="flex items-center p-3 border border-slate-200 rounded bg-white shadow-sm cursor-pointer hover:bg-slate-50 transition ${q.type==='s'?'custom-radio':'custom-checkbox'}">
+                <input type="${q.type==='s'?'radio':'checkbox'}" name="l7o" value="${o.c}" data-txt="${o.t}" class="hidden">
+                <div class="w-5 h-5 border-2 border-slate-300 ${q.type==='s'?'rounded-full':'rounded'} mr-3 shrink-0 flex items-center justify-center transition-colors">
+                    ${q.type==='m'?'<svg class="hidden w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M5 13l4 4L19 7"></path></svg>':'<div class="inner-dot hidden w-2.5 h-2.5 bg-white rounded-full"></div>'}
+                </div>
+                <span class="text-base text-slate-800">${o.t}</span>
+            </label>`).join('');
+        
+        document.getElementById('l7-msg').classList.add('hidden');
+        document.getElementById('btn-l7-sub').classList.remove('hidden'); document.getElementById('btn-l7-nxt').classList.add('hidden');
+        renderMath(document.getElementById('lvl-7'));
+    }
+    function checkL7() {
+        let ins = document.querySelectorAll('input[name="l7o"]'), missed = [], wrongSel = [], hasSelection = false;
+        ins.forEach(i => {
+            if(i.checked) hasSelection = true;
+            if(i.value === 'true' && !i.checked) missed.push(i.dataset.txt);
+            if(i.value === 'false' && i.checked) wrongSel.push(i.dataset.txt);
+        });
+        if(!hasSelection) { msg('l7-msg', '請作答後再送出驗證！', 'warn'); return; }
+        
+        ins.forEach(i=>i.disabled=true);
+        document.getElementById('btn-l7-sub').classList.add('hidden'); document.getElementById('btn-l7-nxt').classList.remove('hidden');
+        
+        if(!missed.length && !wrongSel.length) { l7Score++; msg('l7-msg', '✅ 答對了！', 'succ'); } 
+        else { 
+            let fb = "❌ 答錯了。<div class='text-left mt-3 pl-2 border-l-2 border-red-300 text-sm font-normal text-slate-700'>";
+            if(missed.length) fb += `<div class="mb-2"><span class="font-bold text-red-700">應選而未選 (漏掉的答案)：</span><br>${missed.join('<br>')}</div>`;
+            if(wrongSel.length) fb += `<div><span class="font-bold text-amber-700">不應選卻選 (錯誤的答案)：</span><br>${wrongSel.join('<br>')}</div>`;
+            msg('l7-msg', fb + "</div>", 'err');
+        }
+    }
+    function nextL7() {
+        l7Idx++;
+        if(l7Idx < 8) showL7Q();
+        else {
+            document.getElementById('btn-l7-nxt').classList.add('hidden');
+            let rate = l7Score / 8;
+            if(rate >= 0.875) { // 7/8 is 0.875
+                document.getElementById('victory').classList.remove('hidden'); document.getElementById('victory').classList.add('flex');
+            } else {
+                msg('l7-msg', `最終答對率：${(rate*100).toFixed(0)}% (答對 ${l7Score} 題)。<br>未達 7 題 的通關標準，系統即將重新洗牌測驗...`, 'warn');
+                setTimeout(genL7, 4500);
+            }
+        }
+    }
+</script>
+</body>
+</html>
