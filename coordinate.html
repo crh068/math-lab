@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>直角坐標闖關學具</title>
+<style>
+:root{--o:#7cb342;--b:#1f5fa8;--g:#2e9e5b;--r:#d94040;--bg:#f4faee}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:#222}
+header{background:var(--o);color:#fff;padding:12px 16px}header h1{margin:0;font-size:20px}header small{opacity:.95}
+main{max-width:860px;margin:0 auto;padding:12px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tab{border:2px solid var(--b);background:#fff;color:var(--b);border-radius:20px;padding:6px 14px;font-size:15px;cursor:pointer}
+.tab.on{background:var(--b);color:#fff}.tab:disabled{border-color:#bbb;color:#999;cursor:not-allowed}
+.sub .tab{border-color:var(--o);color:#4d7a1c;font-size:14px}.sub .tab.on{background:var(--o);color:#fff}.sub .tab:disabled{border-color:#ccc;color:#aaa}
+.box{background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 6px #0002;margin-top:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.card{border:2px solid var(--o);border-radius:12px;padding:12px;min-height:100px;cursor:pointer;text-align:center;background:#fbfff6}
+.card b{font-size:20px;color:var(--b);display:block;margin-bottom:6px}.card .bk{display:none;font-size:16px}.card.f .fr{display:none}.card.f .bk{display:block}.card small{color:#555;font-size:13px}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:10px 14px;font-size:17px;border:2px solid #ccc;border-radius:10px;background:#fff;cursor:pointer}
+.opt:hover{border-color:var(--b)}.ok{background:#dff5e7!important;border-color:var(--g)!important}.no{background:#fde3e3!important;border-color:var(--r)!important}
+.btn{background:var(--g);color:#fff;border:0;border-radius:10px;padding:10px 20px;font-size:16px;cursor:pointer;margin:10px 6px 0 0}.btn.alt{background:var(--b)}.btn:disabled{background:#bbb}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:10px 30px}
+.m{padding:12px;border:2px solid #ccc;border-radius:10px;background:#fff;font-size:16px;text-align:center;cursor:pointer;margin:6px 0}
+.m.sel{border-color:var(--b);background:#e6f0fb}.m.dn{border-color:var(--g);background:#dff5e7;cursor:default}
+input[type=text]{font-size:17px;width:70px;padding:5px;border:2px solid #aaa;border-radius:8px;text-align:center}
+.q{margin:12px 0;font-size:17px}.fb{font-size:15px;margin-left:8px}.prog{color:#666;font-size:14px}.res{text-align:center;padding:10px}
+footer{max-width:860px;margin:10px auto;padding:0 12px 20px;font-size:12px;color:#777}svg text{font-family:inherit}
+.ol{border-top:1.5px solid currentColor;padding:0 1px}.rt{white-space:nowrap}.rs{font-size:1.1em}.rb{border-top:1.5px solid currentColor;padding:0 3px;margin-left:1px}
+.fq{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.8em;line-height:1.15;margin:0 2px}.fq span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}
+</style></head><body>
+<header><h1>📐 直角坐標闖關學具</h1><small>數學(Ⅰ) 3-1.2 直角坐標｜依序通過 認識坐標平面→象限與坐標軸→點到軸與原點的距離→兩點距離與對稱</small></header>
+<main><div id="nav"></div><div id="body"></div></main>
+<footer>內容依教材 3-1.2（第67–74頁）。計算與判斷題每次重新挑戰都會重新出題。通關條件：選擇、填充、標點全對；配對錯誤 1 次以內。</footer>
+<script>
+const L=[
+{k:'認識坐標平面',ic:'🧭',sg:['ch','mp','fl','pt'],demo:[{v:[3,2],t:'P'}],c:[
+{n:'直角坐標平面',m:'兩條單位長相等、互相垂直且相交於一點的數線所形成的平面',d:''},
+{n:'x 軸（橫軸）',m:'水平的數線',d:'向右為正，向左為負'},
+{n:'y 軸（縱軸）',m:'鉛垂的數線',d:'向上為正，向下為負'},
+{n:'原點 O',m:'x 軸與 y 軸的交點',d:'坐標為 (0, 0)'},
+{n:'坐標 P(a, b)',m:'a 為橫坐標（x 坐標），b 為縱坐標（y 坐標）',d:'平面上任一點都可用一組數對表示'},
+{n:'別稱',m:'直角坐標平面系、平面坐標系、笛卡兒坐標系',d:'笛卡兒（René Descartes，1596～1650）'},
+{n:'座位 (排, 列)',m:'教材例：阿新 (5, 2)、小莉 (4, 3)',d:'阿貝 (3, 4)、小貞 (2, 5)'}]},
+{k:'象限與坐標軸',ic:'🔲',sg:['ch','mp','fl'],quad:1,demo:[{v:[2,3],t:'Ⅰ'},{v:[-2,3],t:'Ⅱ'}],c:[
+{n:'四個象限',m:'依逆時針方向稱為第一、二、三、四象限',d:'x 軸與 y 軸上的點不屬於任何象限'},
+{n:'第一、二象限',m:'第一象限 (+, +)',d:'第二象限 (−, +)'},
+{n:'第三、四象限',m:'第三象限 (−, −)',d:'第四象限 (+, −)'},
+{n:'軸上的點',m:'x 軸上的點 (x, 0)，y 坐標為 0',d:'y 軸上的點 (0, y)，x 坐標為 0'},
+{n:'原點',m:'坐標為 (0, 0)',d:''}]},
+{k:'點到軸與原點的距離',ic:'📏',sg:['py','ch','mp','fl'],pm:'o',c:[
+{n:'到兩軸的距離',m:'P(a, b) 到 x 軸的距離為 |b|',d:'到 y 軸的距離為 |a|'},
+{n:'到原點的距離',m:'OP = √(a² + b²)',d:'依據勾股定理（畢氏定理）'},
+{n:'教材例',m:'A 在第三象限，到 x 軸距離 3，到 y 軸距離 4',d:'A(−4, −3)，OA = 5'},
+{n:'解題想法',m:'先由象限決定正負號',d:'再由距離決定數字大小'},
+{n:'畫直角三角形',m:'O、(a, 0)、P(a, b) 構成直角三角形',d:'兩股長 |a|、|b|，斜邊 OP'}]},
+{k:'兩點距離與對稱',ic:'↔️',sg:['py','pt','mp','ch','fl'],pm:'ab',demo:[{v:[-2,-1],t:'A'},{v:[1,3],t:'B'}],c:[
+{n:'兩點距離公式',m:'A(x₁, y₁)、B(x₂, y₂)',d:'AB = √((x₁−x₂)² + (y₁−y₂)²)'},
+{n:'做法',m:'先求橫向差與縱向差',d:'再用勾股定理'},
+{n:'對 x 軸對稱',m:'A(a, b) 的對稱點為 (a, −b)',d:'教材例：A(4, 2) → C(4, −2)'},
+{n:'對 y 軸對稱',m:'A(a, b) 的對稱點為 (−a, b)',d:'（教材外的補充）'},
+{n:'撞球反射',m:'利用 A 對 x 軸的對稱點 C 與反射原理',d:'教材例：B(1, 3)、C(4, −2)，BC = √34'}]}];
+const $=s=>document.querySelector(s);
+const sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),pk=a=>a[ri(0,a.length-1)],ng=v=>v<0?'−'+(-v):''+v,uq=a=>[...new Set(a)];
+const F=t=>String(t).replace(/(^|[^A-Za-z])([A-Z]{2})(?![A-Za-z])/g,'$1<span class="ol">$2</span>').replace(/√\(((?:[^()]|\([^()]*\))*)\)|√(\d+)/g,(m,a,b)=>`<span class="rt"><span class="rs">√</span><span class="rb">${a||b}</span></span>`).replace(/([−-]?)(?:(\d+) )?(\d+)\/(\d+)/g,(m,s,w,n,d)=>`${s}${w||''}<span class="fq"><span>${n}</span><span>${d}</span></span>`);
+const mkc=(q,a,w)=>({q,o:uq([a,...w]).slice(0,4),a:0});
+const mkn=(q,a,w)=>{let o=uq([a,...w].map(String));for(let k=1;o.length<4;k++)o=uq([...o,''+(+a+k)]);return{q,o:o.slice(0,4),a:0}};
+const P=(x,y)=>`(${ng(x)}, ${ng(y)})`,A=Math.abs;
+const T=[[3,4,5],[5,12,13],[6,8,10]];
+const tri=()=>{const t=pk(T),s=pk([0,1]);return[t[s],t[1-s],t[2]]};
+const rp=()=>{let x,y;do{x=ri(-5,5);y=ri(-5,5)}while(!x||!y||A(x)==A(y));return[x,y]};
+const nz=r=>{let x,y;do{x=ri(-r,r);y=ri(-r,r)}while(!x||!y);return[x,y]};
+const ax=()=>{const t=pk([0,1,2]),v=ri(1,9)*pk([1,-1]);return t==0?[v,0]:t==1?[0,v]:[0,0]};
+const p9=()=>Math.random()<.35?ax():nz(9);
+const QN=['第一象限','第二象限','第三象限','第四象限'],ALL=[...QN,'x 軸','y 軸','原點'],CN='一二三四',SG=['(+, +)','(−, +)','(−, −)','(+, −)'];
+const qd=(x,y)=>!x&&!y?'原點':!y?'x 軸':!x?'y 軸':x>0?(y>0?QN[0]:QN[3]):(y>0?QN[1]:QN[2]);
+const qn=(x,y)=>QN.indexOf(qd(x,y))+1;
+const mq=(q,a)=>({...mkc(q,a,sh(ALL.filter(z=>z!=a)).slice(0,3))});
+const KS=[[1,1],[-1,1],[-1,-1],[1,-1]];
+const EX=[['a','b²',(a,b)=>[a,1]],['a²','−b',(a,b)=>[1,-b]],['ab','−a',(a,b)=>[a*b,-a]],['−a²','−b²',()=>[-1,-1]],['a','−b',(a,b)=>[a,-b]],['−a','b',(a,b)=>[-a,b]],['−a','−b',(a,b)=>[-a,-b]],['b','a',(a,b)=>[b,a]],['a²','b',(a,b)=>[1,b]],['−b','−a²',(a,b)=>[-b,-1]],['ab','b',(a,b)=>[a*b,b]],['−a','ab',(a,b)=>[-a,a*b]]];
+const sym=()=>{const sa=pk([-1,1]),sb=pk([-1,1]),e=pk(EX),s=e[2](sa,sb);return{c:`若 a ${sa<0?'＜':'＞'} 0，b ${sb<0?'＜':'＞'} 0，則點 (${e[0]}, ${e[1]})`,n:qn(s[0],s[1])}};
+const rdq=()=>{const[x,y]=rp();return{...mkc('圖中點 P 的坐標是？',P(x,y),[P(y,x),P(-x,y),P(x,-y)]),v:[{v:[x,y],t:'P'}]}};
+const rdf=()=>{const[x,y]=rp();return{q:'寫出圖中點 P 的坐標',xy:1,v:[{v:[x,y],t:'P'}],a:[x,y]}};
+const pS=()=>{let x=ri(-5,5),y=ri(-5,5);if(!x&&!y)x=3;return{t:`標出 P${P(x,y)}`,v:[x,y]}};
+L[0].ch=[{q:'直角坐標平面上，水平的數線稱為？',o:['x 軸（橫軸）','y 軸（縱軸）','原點','象限'],a:0},
+{q:'P(a, b) 中，b 稱為 P 點的？',o:['縱坐標（y 坐標）','橫坐標（x 坐標）','原點','象限'],a:0},
+{q:'y 軸上，向哪個方向為正？',o:['向上','向下','向右','向左'],a:0},
+{q:'直角坐標平面的原點，坐標為？',o:['(0, 0)','(1, 1)','(0, 1)','(1, 0)'],a:0},rdq,rdq,
+()=>{let r,c;do{r=ri(1,6);c=ri(1,5)}while(r==c);return mkc(`教室座位以（排, 列）表示。小明坐在第 ${r} 排第 ${c} 列，座位可表示為？`,P(r,c),[P(c,r),P(r+1,c),P(r,c+1)])}];
+L[0].mp=[['x 軸','水平的數線（橫軸）'],['y 軸','鉛垂的數線（縱軸）'],['橫坐標','P(a, b) 中的 a'],['縱坐標','P(a, b) 中的 b'],['原點','兩軸的交點，坐標 (0, 0)'],['笛卡兒坐標系','直角坐標平面系的又稱']];
+L[0].fl=[rdf,rdf,()=>{const[x,y]=nz(9),h=pk([0,1]);return{q:`點 P${P(x,y)} 的${h?'縱':'橫'}坐標是？`,a:h?y:x}},
+()=>{let r,c;do{r=ri(1,6);c=ri(1,5)}while(r==c);return{q:`教室座位以（排, 列）表示，第 ${r} 排第 ${c} 列的座位坐標是？`,xy:1,a:[r,c]}},{q:'原點的坐標是？',xy:1,a:[0,0]}];
+L[0].pt=[pS,pS,pS,pS,pS];
+L[1].ch=[()=>{const[x,y]=p9();return mq(`點 A${P(x,y)} 在哪一個象限或坐標軸上？`,qd(x,y))},()=>{const[x,y]=p9();return mq(`點 B${P(x,y)} 在哪一個象限或坐標軸上？`,qd(x,y))},
+()=>{const k=ri(1,4);return mkc(`在第${CN[k-1]}象限內，點坐標的正負符號必為？`,SG[k-1],SG.filter((_,i)=>i!=k-1))},
+{q:'x 軸上的點，坐標可表示為？',o:['(x, 0)','(0, y)','(x, y)','(0, 0)'],a:0},{q:'y 軸上的點，坐標可表示為？',o:['(0, y)','(x, 0)','(x, y)','(0, 0)'],a:0},
+()=>{const s=sym();return mkc(s.c+' 在哪一個象限？',QN[s.n-1],QN.filter((_,i)=>i!=s.n-1))},
+()=>{const e=pk([['0','b','y 軸'],['−a','0','x 軸'],['a','0','x 軸'],['0','−b','y 軸'],['0','a','y 軸']]);return mq(`若 a ＜ 0，b ＞ 0，則點 (${e[0]}, ${e[1]}) 在哪裡？`,e[2])}];
+L[1].mp=()=>sh(['第一象限','第二象限','第三象限','第四象限','x 軸','y 軸']).slice(0,4).map(c=>{const i=QN.indexOf(c),u=ri(1,9),v=ri(1,9);const p=i>=0?[KS[i][0]*u,KS[i][1]*v]:c=='x 軸'?[u*pk([1,-1]),0]:[0,v*pk([1,-1])];return[`(${ng(p[0])}, ${ng(p[1])})`,c]});
+const qf=()=>{const[x,y]=nz(9);return{q:`點 ${P(x,y)} 在第幾象限？`,u:'（填 1～4）',a:qn(x,y)}};
+L[1].fl=[qf,qf,qf,()=>{const s=sym();return{q:s.c+' 在第幾象限？',u:'（填 1～4）',a:s.n}},()=>{const n=ri(2,6);return{q:`x 軸上，橫坐標為整數且與原點距離 ≤ ${n} 的點共有幾個？`,a:2*n+1}}];
+L[2].ch=[()=>{const[x,y]=rp();return mkn(`點 A${P(x,y)} 到 x 軸的距離是？`,A(y),[A(x),A(x)+A(y),A(x)-1])},
+()=>{const[x,y]=rp();return mkn(`點 A${P(x,y)} 到 y 軸的距離是？`,A(x),[A(y),A(x)+A(y),A(y)-1])},
+()=>{const[a,b,h]=tri();return mkn(`點 P${P(a*pk([1,-1]),b*pk([1,-1]))} 到原點 O 的距離 OP = ？`,h,[a+b,h+1,A(a-b)])},
+()=>{let a,b;do{a=ri(1,6);b=ri(1,6)}while(a==b||Number.isInteger(Math.sqrt(a*a+b*b)));return mkc(`點 P${P(a*pk([1,-1]),b*pk([1,-1]))} 到原點 O 的距離 OP = ？`,`√${a*a+b*b}`,[''+(a+b),`√${a+b}`,''+(a*a+b*b)])},
+()=>{const k=ri(1,4),m=ri(1,6);let n;do{n=ri(1,6)}while(n==m);const[sx,sy]=KS[k-1];return mkc(`點 A 在第${CN[k-1]}象限，到 x 軸的距離為 ${m}，到 y 軸的距離為 ${n}，則 A 的坐標為？`,P(sx*n,sy*m),[P(sx*m,sy*n),P(-sx*n,sy*m),P(sx*n,-sy*m)])}];
+L[2].mp=()=>{const o=sh(T).map(t=>{const s=pk([0,1]);return[P(t[s]*pk([1,-1]),t[1-s]*pk([1,-1])),`OP = ${t[2]}`]});let a,b;do{a=ri(1,5);b=ri(1,5)}while(a==b||Number.isInteger(Math.sqrt(a*a+b*b)));o.push([P(a*pk([1,-1]),b*pk([1,-1])),`OP = √${a*a+b*b}`]);return sh(o)};
+L[2].fl=[()=>{const[x,y]=rp();return{q:`點 A${P(x,y)} 到 x 軸的距離是？`,a:A(y)}},()=>{const[x,y]=rp();return{q:`點 A${P(x,y)} 到 y 軸的距離是？`,a:A(x)}},
+()=>{const[a,b,h]=tri();return{q:`點 P${P(a*pk([1,-1]),b*pk([1,-1]))} 到原點的距離 OP = ？`,a:h}},
+()=>{const k=ri(1,4),m=ri(1,6),[sx,sy]=KS[k-1],h=pk([0,1]);let n;do{n=ri(1,6)}while(n==m);return{q:`點 A 在第${CN[k-1]}象限，到 x 軸距離 ${m}，到 y 軸距離 ${n}，則 A 的${h?'縱':'橫'}坐標是？`,a:h?sy*m:sx*n}},
+()=>{const[a,b,h]=tri(),k=pk([1,2,3,4]);return{q:`A 在第${CN[k-1]}象限，到 x 軸距離 ${a}，到 y 軸距離 ${b}，則 OA = ？`,a:h}}];
+const two=(a,b,sx,sy)=>{const x1=ri(-3,3),y1=ri(-3,3);return[x1,y1,x1+sx*a,y1+sy*b]};
+const gd=int=>{const p=pyP(int,true),pa=v=>v<0?`(${ng(v)})`:ng(v),[x1,y1]=p.A,[x2,y2]=p.B,a=p.a,b=p.b,n=p.n;
+ return{q:`A${P(x1,y1)}、B${P(x2,y2)}，求 AB（兩點的距離）。依圖中的直角三角形，分步驟解題：`,
+ v:[{v:p.A,t:'A'},{v:p.B,t:'B'},{v:p.C,t:'C',c:'#555'}],ln:[{a:p.A,b:p.C,c:'#1f5fa8',d:1},{a:p.C,b:p.B,c:'#1f5fa8',d:1},{a:p.A,b:p.B,c:'#d94040',o:1,t:'AB'}],
+ dn:[`橫向距離 = ${a}`,`縱向距離 = ${b}`,`AB² = ${a}² + ${b}² = ${n}`,int?`AB = √${n} = ${p.h}`:`AB = √${n}`],
+ steps:[mkn(`橫向距離（A 到 C）= |${ng(x1)} − ${pa(x2)}| = ？`,a,[b,a+b,Math.abs(x1+x2)]),mkn(`縱向距離（C 到 B）= |${ng(y1)} − ${pa(y2)}| = ？`,b,[a,a+b,Math.abs(y1+y2)]),
+ mkn(`AB² = ${a}² + ${b}² = ？`,n,[(a+b)*(a+b),a+b,Math.abs(a*a-b*b)]),
+ int?mkn(`AB² = ${n}，所以 AB = ？`,p.h,[a+b,n,p.h+1]):mkc(`AB² = ${n}，所以 AB = ？`,`√${n}`,[`${a+b}`,`√${a+b}`,`${n}`])]}};
+L[3].ch=[()=>gd(true),()=>gd(false),
+()=>{const[a,b]=rp();return mkc(`A${P(a,b)} 對 x 軸的對稱點坐標為？`,P(a,-b),[P(-a,b),P(-a,-b),P(b,a)])},
+()=>{const[a,b]=rp();return mkc(`A${P(a,b)} 對 y 軸的對稱點坐標為？`,P(-a,b),[P(a,-b),P(-a,-b),P(b,a)])},
+()=>{const[a,b]=rp();return{...mkc('圖中 A 點對 x 軸的對稱點坐標為？',P(a,-b),[P(-a,b),P(-a,-b),P(b,a)]),v:[{v:[a,b],t:'A'}]}},
+{q:'A(a, b) 對 x 軸的對稱點坐標為？',o:['(a, −b)','(−a, b)','(−a, −b)','(b, a)'],a:0}];
+L[3].mp=()=>sh([1,2,3,4,5,6]).slice(0,4).map(a=>{const b=ri(1,6)*pk([1,-1]),f=pk([0,1]);return[`A${P(a,b)} 對 ${f?'y':'x'} 軸對稱`,f?P(-a,b):P(a,-b)]});
+const xs=()=>{const[a,b]=rp(),f=pk([0,1]);return{q:`A${P(a,b)} 對 ${f?'y':'x'} 軸的對稱點坐標是？`,xy:1,a:f?[-a,b]:[a,-b]}};
+const cnt=()=>{const[m,n]=pk([[ri(1,6),ri(1,6)],[ri(1,6),ri(1,6)],[0,ri(1,6)],[ri(1,6),0]]);return{q:`與 x 軸距離為 ${m}、與 y 軸距離為 ${n} 的點共有幾個？`,a:m&&n?4:2}};
+L[3].fl=[xs,xs,cnt,cnt,()=>{const[a,b,h]=tri();return{q:`與 x 軸距離 ${a}、與 y 軸距離 ${b} 的所有點，到原點的距離是？`,a:h}},
+()=>{const dx=3,dy=4,x1=ri(-5,5-dx),y1=ri(-5,5-dy),s=pk([1,-1]);return{q:'圖中 A、B 兩點的距離 AB = ？',v:[{v:[s*x1,y1],t:'A'},{v:[s*(x1+dx),y1+dy],t:'B'}],a:5}}];
+const ps=()=>{const m=ri(1,5);let n;do{n=ri(1,5)}while(n==m);const k=ri(1,4),[sx,sy]=KS[k-1];return{t:`標出到 x 軸距離 ${m}、到 y 軸距離 ${n}，且在第${CN[k-1]}象限的點`,v:[sx*n,sy*m]}};
+const pr=()=>{const[a,b]=rp(),f=pk([0,1]);return{t:`標出 A${P(a,b)} 對 ${f?'y':'x'} 軸的對稱點`,v:f?[-a,b]:[a,-b],sh:[{v:[a,b],t:'A'}]}};
+L[3].pt=[ps,ps,pr,pr,pr];
+let S={lv:0,st:0,done:[0,0,0,0]},g={};
+try{const d=JSON.parse(localStorage.getItem('uq3b')||'null');if(d)S.done=d}catch(e){}
+const save=()=>{try{localStorage.setItem('uq3b',JSON.stringify(S.done))}catch(e){}};
+const need=i=>L[i].sg.length,lock=i=>i>0&&S.done[i-1]<need(i-1);
+const go=(lv,st)=>{S.lv=lv;S.st=st;g={};render()};
+const mk=a=>a.map(x=>typeof x=='function'?x():x);
+function pl(pts,click,quad,ln){
+ let s=`<svg id="pl" viewBox="0 0 440 440" style="width:100%;max-width:440px;background:#fff;border:1px solid #ddd;border-radius:8px;${click?'cursor:crosshair':''}" ${click?'onclick="sv(event)"':''}>`;
+ for(let i=-5;i<=5;i++){const p=220+i*40;s+=`<line x1="${p}" y1="20" x2="${p}" y2="420" stroke="#e5e5e5"/><line x1="20" y1="${p}" x2="420" y2="${p}" stroke="#e5e5e5"/>`;
+  if(i)s+=`<text x="${p}" y="236" text-anchor="middle" font-size="11">${ng(i)}</text><text x="212" y="${p+4}" text-anchor="end" font-size="11">${ng(-i)}</text>`}
+ s+='<line x1="10" y1="220" x2="425" y2="220" stroke="#333" stroke-width="2"/><polygon points="436,220 424,214 424,226"/><line x1="220" y1="430" x2="220" y2="15" stroke="#333" stroke-width="2"/><polygon points="220,4 214,16 226,16"/><text x="428" y="240" font-size="14">x</text><text x="228" y="14" font-size="14">y</text><text x="209" y="236" font-size="12">O</text>';
+ if(quad)s+=[['Ⅰ',380,60],['Ⅱ',60,60],['Ⅲ',60,400],['Ⅳ',380,400]].map(q=>`<text x="${q[1]}" y="${q[2]}" font-size="30" fill="#bbb" text-anchor="middle">${q[0]}</text>`).join('');
+ (ln||[]).forEach(l=>{const x1=220+l.a[0]*40,y1=220-l.a[1]*40,x2=220+l.b[0]*40,y2=220-l.b[1]*40;s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${l.c}" stroke-width="2.5" ${l.d?'stroke-dasharray="6 4"':''}/>`+(l.t!==''&&l.t!==undefined?`<text x="${(x1+x2)/2+8}" y="${(y1+y2)/2-8}" font-size="16" font-weight="bold" fill="${l.c}" ${l.o?'text-decoration="overline"':''}>${l.t}</text>`:'')});
+ (pts||[]).forEach(p=>{const x=220+p.v[0]*40,y=220-p.v[1]*40;s+=`<circle cx="${x}" cy="${y}" r="3" fill="${p.c||'#d94040'}"/>`+(p.t?`<text x="${x+6}" y="${y-6}" font-size="14" font-weight="bold" fill="${p.c||'#d94040'}">${p.t}</text>`:'')});
+ return s+'</svg>'}
+function render(){
+ const n=need(S.lv);
+ $('#nav').innerHTML='<div class="tabs">'+L.map((l,i)=>`<button class="tab ${i==S.lv?'on':''}" ${lock(i)?'disabled':''} onclick="go(${i},0)">${lock(i)?'🔒':l.ic} ${l.k}${S.done[i]>=need(i)?' ✅':''}</button>`).join('')+'</div><div class="tabs sub">'+
+ ['📖 認識',...L[S.lv].sg.map((k,j)=>'①②③④⑤'[j]+' '+NM[k])].map((t,j)=>`<button class="tab ${j==S.st?'on':''}" ${j>0&&S.done[S.lv]<j-1?'disabled':''} onclick="go(${S.lv},${j})">${j>0&&S.done[S.lv]<j-1?'🔒 ':''}${t}${j>0&&S.done[S.lv]>=j?' ✔':''}</button>`).join('')+'</div>';
+ [learn,...L[S.lv].sg.map(k=>FN[k])][S.st]()}
+const B=h=>$('#body').innerHTML='<div class="box">'+h+'</div>';
+function learn(){const lv=L[S.lv];
+ B(`<h3>${lv.ic} ${lv.k}：點卡片翻面</h3>${lv.demo?pl(lv.demo,false,lv.quad):''}<div class="grid" style="margin-top:12px">`+lv.c.map(u=>`<div class="card" onclick="this.classList.toggle('f')"><div class="fr"><b>${F(u.n)}</b><small>（點一下翻面）</small></div><div class="bk"><b style="font-size:17px">${F(u.n)}</b>${F(u.m)}<br><small>${F(u.d)}</small></div></div>`).join('')+`</div><button class="btn" onclick="go(S.lv,1)">我記好了，開始闖關 ▶</button>`)}
+function res(ok,txt,st){
+ if(ok){S.done[S.lv]=Math.max(S.done[S.lv],st);save()}
+ let nx='';
+ if(ok)nx=st<need(S.lv)?`<button class="btn" onclick="go(S.lv,${st+1})">下一關 ▶</button>`:S.lv<3?`<button class="btn" onclick="go(${S.lv+1},0)">解鎖下一單元：${L[S.lv+1].k} ▶</button>`:'<h3>🏆 全部通關！直角坐標、象限、距離與對稱都學會了。</h3>';
+ B(`<div class="res"><h2>${ok?'✅ 通過':'❌ 未通過'}</h2><p>${txt}</p>${nx}<button class="btn alt" onclick="go(S.lv,${st})">${ok?'再玩一次':'重新挑戰'}</button>${ok?'':`<button class="btn alt" onclick="go(S.lv,0)">回去複習</button>`}</div>`)}
+function choice(){const lv=L[S.lv];
+ if(!g.qs){const shf=x=>{const t=x.o[x.a],o=sh(x.o);return{...x,o,a:o.indexOf(t)}};g.qs=sh(mk(lv.ch)).slice(0,5).map(x=>x.steps?{...x,steps:x.steps.map(shf)}:shf(x));g.i=0;g.c=0;g.p=null;g.k=0;g.bad=false}
+ const n=g.qs.length;
+ if(g.i>=n)return res(g.c>=n,`答對 ${g.c} / ${n} 題（需全部答對；步驟題須每步都對）`,S.st);
+ const u=g.qs[g.i],c=u.steps?u.steps[g.k]:u,last=!u.steps||g.k+1>=u.steps.length;
+ B(`<div class="prog">第 ${g.i+1} / ${n} 題${u.steps?`　步驟 ${g.k+1} / ${u.steps.length}`:''}</div><div class="q">${F(u.q)}</div>${u.v?pl(u.v,false,false,u.ln):''}`+
+ (u.steps?`<div style="margin:8px 0">${F(u.dn.slice(0,g.k+(g.p!==null?1:0)).map(t=>'✔ '+t).join('<br>'))}</div><div class="q"><b>步驟 ${g.k+1}</b>：${F(c.q)}</div>`:'')+
+ c.o.map((t,j)=>{let k='';if(g.p!==null){if(j===c.a)k='ok';else if(j===g.p)k='no'}return `<button class="opt ${k}" ${g.p!==null?'disabled':''} onclick="pick(${j})">${F(t)}</button>`}).join('')+
+ (g.p!==null?`<button class="btn" onclick="nx()">${!last?'下一步':g.i+1<n?'下一題':'看結果'} ▶</button>`:''))}
+function pick(j){const u=g.qs[g.i],c=u.steps?u.steps[g.k]:u;if(j!==c.a)g.bad=true;g.p=j;choice()}
+function nx(){const u=g.qs[g.i];if(u.steps&&g.k+1<u.steps.length){g.k++;g.p=null}else{if(!g.bad)g.c++;g.i++;g.k=0;g.bad=false;g.p=null}choice()}
+function match(){const lv=L[S.lv];
+ if(!g.p){g.p=typeof lv.mp=='function'?lv.mp():sh(lv.mp).slice(0,4);g.r=sh(g.p.map((_,i)=>i));g.s=null;g.dn=[];g.e=0}
+ if(g.dn.length===g.p.length)return res(g.e<=1,`全部配對完成，錯誤 ${g.e} 次（需 1 次以內）`,S.st);
+ B(`<div class="q">左邊選一項，再點右邊配對。　<span class="prog">錯誤 ${g.e} 次</span></div><div class="cols"><div>`+
+ g.p.map((u,i)=>`<div class="m ${g.dn.includes(i)?'dn':''} ${g.s===i?'sel':''}" onclick="ml(${i})">${F(u[0])}</div>`).join('')+'</div><div>'+
+ g.r.map(i=>`<div class="m ${g.dn.includes(i)?'dn':''}" onclick="mr(${i})">${F(g.p[i][1])}</div>`).join('')+'</div></div>')}
+function ml(i){if(g.dn.includes(i))return;g.s=i;match()}
+function mr(i){if(g.s===null||g.dn.includes(i))return;if(g.s===i)g.dn.push(i);else g.e++;g.s=null;match()}
+const num=s=>{s=(s||'').trim().replace(/[−－]/g,'-');return /^-?\d+(\.\d+)?$/.test(s)?Number(s):NaN};
+function fill(){const lv=L[S.lv];
+ if(!g.qs){g.qs=sh(mk(lv.fl)).slice(0,4);g.ck=false}
+ const d=g.ck?'disabled':'';
+ B(`<div class="q">填入答案（負數請輸入負號）。</div>`+g.qs.map((x,i)=>{const v=g.v?g.v[i]:null;
+  return `<div class="q">${i+1}. ${F(x.q)}${x.v?pl(x.v):''}<br>`+(x.xy?`( <input type="text" id="x${i}" ${d} value="${v?v[0]:''}"> , <input type="text" id="y${i}" ${d} value="${v?v[1]:''}"> )`:`<input type="text" id="f${i}" ${d} value="${v||''}"> ${x.u||''}`)+`<span class="fb" id="b${i}"></span></div>`}).join('')+
+ (g.ck?`<button class="btn" onclick="fin()">看結果 ▶</button>`:`<button class="btn" onclick="chk()">送出</button>`));
+ if(g.ck)g.qs.forEach((x,i)=>{$('#b'+i).innerHTML=g.o[i]?'✅':`❌ 正確：${x.xy?P(...x.a):x.a}`})}
+function chk(){g.v=g.qs.map((x,i)=>x.xy?[$('#x'+i).value,$('#y'+i).value]:$('#f'+i).value);
+ g.o=g.qs.map((x,i)=>x.xy?num(g.v[i][0])===x.a[0]&&num(g.v[i][1])===x.a[1]:num(g.v[i])===x.a);g.ck=true;fill()}
+function fin(){const n=g.qs.length,c=g.o.filter(Boolean).length;res(c>=n,`答對 ${c} / ${n} 題（需全部答對）`,S.st)}
+function place(){const lv=L[S.lv];
+ if(!g.qs){g.qs=sh(mk(lv.pt)).slice(0,4);g.i=0;g.c=0;g.v=null;g.fb=null}
+ const n=g.qs.length;
+ if(g.i>=n)return res(g.c>=n,`答對 ${g.c} / ${n} 題（需全部答對）`,S.st);
+ const t=g.qs[g.i];
+ B(`<div class="prog">第 ${g.i+1} / ${n} 題</div><div class="q">${t.t}：點一下坐標平面上的格點，再用 ▲▼◀▶ 微調（每次 1 格）。</div>`+
+ pl([...(t.sh||[]),...(g.v?[{v:g.v,t:P(...g.v),c:'#1f5fa8'}]:[]),...(g.fb?[{v:t.v,t:'正確',c:'#2e9e5b'}]:[])],!g.fb)+
+ (g.fb?`<p>${g.fb}</p><button class="btn" onclick="g.i++;g.v=null;g.fb=null;place()">${g.i+1<n?'下一題':'看結果'} ▶</button>`:
+ `<div><button class="btn alt" onclick="mv(0,1)">▲</button><button class="btn alt" onclick="mv(0,-1)">▼</button><button class="btn alt" onclick="mv(-1,0)">◀</button><button class="btn alt" onclick="mv(1,0)">▶</button><button class="btn" ${g.v?'':'disabled'} onclick="ok()">確定</button></div>`))}
+
+const NM={py:'畢氏推演',ch:'選擇題',mp:'配對',fl:'填充',pt:'標點'};
+const pyP=(int,two)=>{let a,b;if(int)[a,b]=pk([[3,4],[4,3]]);else do{a=ri(1,5);b=ri(1,5)}while(a==b||Number.isInteger(Math.sqrt(a*a+b*b)));
+ let A0=[0,0],B0=[a,b];if(two){const x1=ri(-5,5-a),y1=ri(-5,5-b);A0=[x1,y1];B0=[x1+a,y1+b]}
+ const sx=pk([1,-1]),sy=pk([1,-1]),f=p=>[sx*p[0]||0,sy*p[1]||0];let A=f(A0),B=f(B0);if(two&&Math.random()<.5)[A,B]=[B,A];
+ return{A,B,C:[B[0],A[1]],a,b,n:a*a+b*b,int,h:Math.sqrt(a*a+b*b)}};
+function pyth(){const two=L[S.lv].pm=='ab',seg=two?'AB':'OP';
+ if(!g.ps){g.ps=[pyP(true,two),pyP(false,two)];g.i=0;g.s=0;g.e=0;g.r=null}
+ if(g.i>=g.ps.length)return res(g.e==0,`錯誤 ${g.e} 次（需全程一次答對）`,S.st);
+ const p=g.ps[g.i],d=g.s+(g.r?1:0),pa=v=>v<0?`(${ng(v)})`:ng(v),[x1,y1]=p.A,[x2,y2]=p.B;
+ const q0=two?`橫向距離（A 到 C）= |${ng(x1)} − ${pa(x2)}| = ？`:`從原點 O 沿 x 軸走到 (${ng(x2)}, 0)，橫向的長度 = |${ng(x2)}| = ？`;
+ const q1=two?`縱向距離（C 到 B）= |${ng(y1)} − ${pa(y2)}| = ？`:`再由 (${ng(x2)}, 0) 垂直走到 P，縱向的長度 = |${ng(y2)}| = ？`;
+ const st=[{q:q0,a:p.a},{q:q1,a:p.b},{q:`直角三角形兩股長為 ${p.a}、${p.b}，由畢氏定理 ${seg}² = ${p.a}² + ${p.b}² = ？`,a:p.n},
+ p.int?{q:`${seg} = √${p.n} = ？`,a:p.h}:{q:`${seg} = √(？)，根號內應填入的數是？`,a:p.n,rad:1}][g.s];
+ g.cur=st;
+ const dn=[`橫向長度 = ${p.a}`,`縱向長度 = ${p.b}`,`${seg}² = ${p.a}² + ${p.b}² = ${p.n}`,p.int?`${seg} = √${p.n} = ${p.h}`:`${seg} = √${p.n}`];
+ const fin=d>=4&&p.int,ln=[{a:p.A,b:p.C,c:'#1f5fa8',d:1,t:d>=1?p.a:''},{a:p.C,b:p.B,c:'#1f5fa8',d:1,t:d>=2?p.b:''},{a:p.A,b:p.B,c:'#d94040',o:fin?0:1,t:fin?p.h:seg}];
+ const pts=two?[{v:p.A,t:'A'},{v:p.B,t:'B'},{v:p.C,t:'C',c:'#555'}]:[{v:p.B,t:'P'}];
+ const title=two?`A${P(x1,y1)}、B${P(x2,y2)}，求 AB（兩點的距離）。依圖中的直角三角形，一步一步算：`:`點 P${P(x2,y2)}，求原點 O 到 P 的距離 OP。依圖中的直角三角形，一步一步算：`;
+ const inp=st.rad?`${F(seg)} = <span class="rt"><span class="rs">√</span><span class="rb"><input type="text" id="py"></span></span>`:`<input type="text" id="py">`;
+ B(`<div class="prog">第 ${g.i+1} / ${g.ps.length} 題　錯誤 ${g.e} 次</div><div class="q">${F(title)}</div>`+pl(pts,false,false,ln)+
+ `<div style="margin:8px 0">${F(dn.slice(0,d).map(t=>'✔ '+t).join('<br>'))}</div><div class="q"><b>步驟 ${g.s+1} / 4</b>：${F(st.q)}</div>`+
+ (g.r?`<p>${g.r.ok?'✅ 正確':'❌ 正確答案是 '+st.a}</p><button class="btn" onclick="g.r=null;g.s++;if(g.s>3){g.i++;g.s=0}pyth()">${g.s<3?'下一步':g.i+1<g.ps.length?'下一題':'看結果'} ▶</button>`:`<div class="q">${inp} <button class="btn" onclick="pyc()">確定</button></div>`))}
+function pyc(){const ok=num($('#py').value)===g.cur.a;if(!ok)g.e++;g.r={ok};pyth()}
+const FN={py:pyth,ch:choice,mp:match,fl:fill,pt:place};
+const cl=v=>Math.max(-5,Math.min(5,v));
+function sv(e){const r=$('#pl').getBoundingClientRect();g.v=[cl(Math.round(((e.clientX-r.left)/r.width*440-220)/40)),cl(Math.round((220-(e.clientY-r.top)/r.height*440)/40))];place()}
+function mv(dx,dy){const v=g.v||[0,0];g.v=[cl(v[0]+dx),cl(v[1]+dy)];place()}
+function ok(){const t=g.qs[g.i];if(g.v[0]===t.v[0]&&g.v[1]===t.v[1]){g.c++;g.fb='✅ 正確'}else g.fb=`❌ 你標的是 ${P(...g.v)}，正確為 ${P(...t.v)}（綠點）`;place()}
+render();
+</script></body></html>
