@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>指數律與定義 (基礎核心) - 大螢幕手寫挑戰</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            /* 避免長按觸發文字選取或選單 */
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text-main);
+        }
+
+        /* 主容器 (大螢幕優化) */
+        .app-container {
+            width: 100%;
+            max-width: 1100px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: var(--bg-color);
+            padding: 20px 30px;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        .progress-board {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+            background: #dbeafe;
+            padding: 8px 18px;
+            border-radius: 25px;
+        }
+
+        .main-workspace {
+            padding: 30px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .question-meta {
+            font-size: 1.35rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .question-desc {
+            font-size: 1.45rem;
+            color: var(--primary-dark);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        /* 題目顯示區 */
+        .equation-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 25px;
+            width: 100%;
+            min-height: 130px;
+            background: #f1f5f9;
+            border: 3px dashed var(--border);
+            border-radius: 16px;
+            padding: 20px 40px;
+        }
+
+        .eq-left {
+            font-size: 3.5rem; /* 大字體適合大螢幕 */
+            color: var(--text-main);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .eq-right-container {
+            position: relative;
+            min-width: 180px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .eq-right-hidden {
+            font-size: 3.5rem;
+            color: #94a3b8;
+            border-bottom: 5px solid #94a3b8;
+            padding: 0 30px;
+            font-family: sans-serif;
+        }
+
+        .eq-right-answer {
+            display: none;
+            font-size: 3.5rem;
+            color: var(--danger);
+            font-weight: bold;
+            border-bottom: 5px solid var(--danger);
+            padding: 0 30px;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* 手寫板區域 */
+        .canvas-container {
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 350px; /* 大面積書寫區 */
+            background: #fdfdfd;
+            border: 4px dashed var(--primary);
+            border-radius: 20px;
+            cursor: crosshair;
+            touch-action: none; /* 防止觸控螢幕拖曳網頁 */
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        .canvas-hint {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-size: 1.2rem;
+            color: var(--border);
+            font-weight: bold;
+            pointer-events: none; /* 讓文字不阻擋畫筆 */
+        }
+
+        /* 按鈕操作區 */
+        .action-row {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 18px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+
+        .btn-clear {
+            background: #94a3b8;
+            box-shadow: 0 4px 0 #64748b;
+            flex: 0.5;
+        }
+        .btn-clear:active { transform: translateY(4px); box-shadow: 0 0 0 #64748b; }
+
+        .btn-submit {
+            background: var(--primary);
+            box-shadow: 0 4px 0 var(--primary-dark);
+        }
+        .btn-submit:active { transform: translateY(4px); box-shadow: 0 0 0 var(--primary-dark); }
+
+        .btn-next {
+            background: var(--success);
+            box-shadow: 0 4px 0 #059669;
+            animation: pulse 1.5s infinite alternate;
+        }
+        .btn-next:active { transform: translateY(4px); box-shadow: 0 0 0 #059669; }
+
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.02); } }
+
+        /* === 數學渲染樣式 === */
+        .math { font-family: 'Georgia', serif; font-style: italic; padding: 0 4px; }
+        .math sup { font-size: 0.6em; vertical-align: super; font-style: normal; margin-left: 2px;}
+        
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            text-align: center;
+            font-size: 0.85em;
+            margin: 0 6px;
+            line-height: 1.1;
+        }
+        .frac span { padding: 0.1em 0.3em; }
+        .frac span.bottom { border-top: 4px solid currentColor; }
+
+        .rad-wrap { display: inline-flex; align-items: flex-start; vertical-align: middle; margin: 0 4px; line-height: 1; }
+        .rad-deg { font-size: 0.5em; margin-right: -4px; margin-top: -6px; font-weight: bold; font-family: sans-serif; font-style: normal; color:currentColor;}
+        .rad-sym { font-style: normal; font-size: 1.3em; line-height: 0.85; font-family: sans-serif; }
+        .rad-line { border-top: 4px solid currentColor; padding-top: 2px; margin-left: -1px; display: inline-block; line-height: 1; }
+
+        /* 完成畫面 */
+        #completion-screen {
+            display: none;
+            text-align: center;
+            padding: 60px 40px;
+        }
+        #completion-screen h1 { color: var(--warning); font-size: 3.5rem; margin-bottom: 20px; }
+        #completion-screen p { font-size: 1.6rem; color: var(--text-muted); line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header id="app-header">
+        <div class="title">📐 核心指數律與觀念 (大螢幕手寫特訓)</div>
+        <div class="progress-board">進度：<span id="progress">1 / 9</span></div>
+    </header>
+
+    <div class="main-workspace" id="workspace">
+        <div class="question-meta" id="q-category">載入中...</div>
+        <div class="question-desc" id="q-desc"></div>
+        
+        <!-- 題目對照區 -->
+        <div class="equation-box">
+            <div class="eq-left" id="q-left"></div>
+            <div class="eq-right-container">
+                <div class="eq-right-hidden" id="ans-placeholder" style="display:block;">⬚</div>
+                <div class="eq-right-answer" id="ans-reveal" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- 全版手寫畫布區 -->
+        <div class="canvas-container">
+            <div class="canvas-hint" id="canvas-hint">✍️ 請在此區域手寫構造右式公式...</div>
+            <canvas id="drawing-board"></canvas>
+        </div>
+
+        <!-- 操作按鈕 -->
+        <div class="action-row">
+            <button class="btn btn-clear" onclick="clearCanvas()">🧹 擦拭畫布</button>
+            <button class="btn btn-submit" id="btn-submit" onclick="revealAnswer()" style="display:block;">👀 核對標準解答</button>
+            <button class="btn btn-next" id="btn-next" onclick="nextQuestion()" style="display:none;">下一題 ➔</button>
+        </div>
+    </div>
+
+    <!-- 測驗完成畫面 -->
+    <div id="completion-screen">
+        <h1>🏆 滿分大師！</h1>
+        <p>全班表現非常棒！<br>你們已成功挑戰了包含乘除、次方的次方、積商分配、零與負指數、以及分數指數等 <strong>9 道基礎核心公式</strong>。</p>
+        <br>
+        <button class="btn btn-submit" style="margin-top: 20px; max-width: 300px;" onclick="location.reload()">🔄 重新開始測驗</button>
+    </div>
+</div>
+
+<script>
+    // --- 9道基礎核心指數律題庫 ---
+    const allQuestions = [
+        // 1. 五大基本指數律
+        { cat: "指數律 1 (同底相乘)", desc: "若底數相同，相乘時指數要...", left: "<span class='math'>a<sup>m</sup> × a<sup>n</sup> =</span>", ansHtml: "<span class='math'>a<sup>m+n</sup></span>" },
+        { cat: "指數律 2 (同底相除)", desc: "若底數相同，相除時指數要...", left: "<span class='math'>a<sup>m</sup> ÷ a<sup>n</sup> =</span>", ansHtml: "<span class='math'>a<sup>m-n</sup></span>" },
+        { cat: "指數律 3 (次方的次方)", desc: "遇到括號外的次方，指數要...", left: "<span class='math'>(a<sup>m</sup>)<sup>n</sup> =</span>", ansHtml: "<span class='math'>a<sup>mn</sup></span>" },
+        { cat: "指數律 4 (積的次方)", desc: "括號內兩數相乘，次方可個別分配", left: "<span class='math'>(ab)<sup>n</sup> =</span>", ansHtml: "<span class='math'>a<sup>n</sup>b<sup>n</sup></span>" },
+        { cat: "指數律 5 (商的次方)", desc: "括號內兩數相除，次方可分配給分子與分母", 
+          left: "<span class='math'>(</span> <div class='frac'><span><span class='math'>a</span></span><span class='bottom'><span class='math'>b</span></span></div> <span class='math'>)<sup>n</sup> =</span>", 
+          ansHtml: "<div class='frac'><span><span class='math'>a<sup>n</sup></span></span><span class='bottom'><span class='math'>b<sup>n</sup></span></span></div>" 
+        },
+
+        // 2. 零與負指數
+        { cat: "零整數指數定義", desc: "任何非零實數的 0 次方", left: "<span class='math'>a<sup>0</sup> =</span>", ansHtml: "<span class='math'>1</span>" },
+        { cat: "負整數指數定義", desc: "遇到負指數，表示取倒數變號", left: "<span class='math'>a<sup>-n</sup> =</span>", ansHtml: "<div class='frac'><span>1</span><span class='bottom'><span class='math'>a<sup>n</sup></span></span></div>" },
+
+        // 3. 分數指數
+        { cat: "分數指數定義 (單位)", desc: "分母代表開幾次方根", left: "<span class='math'>a<sup>1/n</sup> =</span>", ansHtml: "<span class='rad-wrap'><span class='rad-deg'>n</span><span class='rad-sym'>√</span><span class='rad-line'><span class='math'>a</span></span></span>" },
+        { cat: "分數指數定義 (一般)", desc: "分母為方根，分子為次方", left: "<span class='math'>a<sup>m/n</sup> =</span>", ansHtml: "<span class='rad-wrap'><span class='rad-deg'>n</span><span class='rad-sym'>√</span><span class='rad-line'><span class='math'>a<sup>m</sup></span></span></span>" }
+    ];
+
+    let questions = [];
+    let currentIdx = 0;
+
+    // --- Canvas 手寫板邏輯 ---
+    const canvas = document.getElementById('drawing-board');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let hasDrawn = false;
+
+    function resizeCanvas() {
+        // 設定 Canvas 內在解析度等於其 CSS 顯示大小，避免畫筆偏移
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 6; // 適合大螢幕的粗筆觸
+        ctx.strokeStyle = '#1e293b'; 
+    }
+
+    // 監聽視窗大小變化以重新校準畫布
+    window.addEventListener('resize', () => {
+        if(canvas.offsetParent !== null) { // 確保畫布是顯示狀態
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height); 
+            resizeCanvas();
+            ctx.putImageData(imgData, 0, 0); 
+        }
+    });
+
+    function getPointerPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        // 區分 touch 與滑鼠事件
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    }
+
+    function startDrawing(e) {
+        e.preventDefault();
+        isDrawing = true;
+        if(!hasDrawn) {
+            hasDrawn = true;
+            document.getElementById('canvas-hint').style.display = 'none';
+        }
+        const pos = getPointerPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const pos = getPointerPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+    }
+
+    function stopDrawing(e) {
+        if(e) e.preventDefault();
+        isDrawing = false;
+        ctx.closePath();
+    }
+
+    canvas.addEventListener('pointerdown', startDrawing);
+    canvas.addEventListener('pointermove', draw);
+    canvas.addEventListener('pointerup', stopDrawing);
+    canvas.addEventListener('pointerout', stopDrawing);
+    canvas.addEventListener('touchstart', startDrawing, {passive: false});
+    canvas.addEventListener('touchmove', draw, {passive: false});
+    canvas.addEventListener('touchend', stopDrawing);
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        hasDrawn = false;
+        document.getElementById('canvas-hint').style.display = 'block';
+    }
+
+    // --- 測驗流程控制 ---
+    window.onload = () => {
+        // 隨機打亂題目陣列
+        questions = [...allQuestions].sort(() => Math.random() - 0.5);
+        resizeCanvas(); 
+        loadQuestion();
+    };
+
+    function loadQuestion() {
+        const q = questions[currentIdx];
+        document.getElementById('progress').innerText = `${currentIdx + 1} / ${questions.length}`;
+        document.getElementById('q-category').innerText = `【 ${q.cat} 】`;
+        document.getElementById('q-desc').innerText = q.desc;
+        document.getElementById('q-left').innerHTML = q.left;
+        
+        // 隱藏解答，顯示空格
+        document.getElementById('ans-placeholder').style.display = 'block';
+        
+        const ansReveal = document.getElementById('ans-reveal');
+        ansReveal.style.display = 'none';
+        ansReveal.innerHTML = q.ansHtml;
+        ansReveal.style.animation = 'none'; // 重置動畫
+
+        // 按鈕切換
+        document.getElementById('btn-submit').style.display = 'block';
+        document.getElementById('btn-next').style.display = 'none';
+        
+        clearCanvas();
+    }
+
+    function revealAnswer() {
+        document.getElementById('ans-placeholder').style.display = 'none';
+        const ansReveal = document.getElementById('ans-reveal');
+        ansReveal.style.display = 'flex';
+        ansReveal.style.animation = 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+
+        document.getElementById('btn-submit').style.display = 'none';
+        document.getElementById('btn-next').style.display = 'block';
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx >= questions.length) {
+            document.getElementById('app-header').style.display = 'none';
+            document.getElementById('workspace').style.display = 'none';
+            document.getElementById('completion-screen').style.display = 'block';
+        } else {
+            loadQuestion();
+        }
+    }
+</script>
+</body>
+</html>
