@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>第5回 2-1 指數與指數函數 互動學具</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#1d2433;--mut:#5d6679;--ac:#2f5bea;--acl:#e6ecff;--ok:#1b8a4b;--okl:#e3f6ea;--bad:#c2410c;--badl:#fff0e6;--bd:#d5dbe8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141824;--card:#1f2535;--ink:#eef1f8;--mut:#9aa4bb;--ac:#7b9bff;--acl:#2a3558;--ok:#5fd58f;--okl:#173626;--bad:#ffa066;--badl:#3d2415;--bd:#39425a}}
+*{box-sizing:border-box}html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;font-size:max(2.4vh,13px);display:flex;flex-direction:column;padding:1.2vh 1.6vw;gap:1.2vh}
+html{height:100%}
+#tabs{display:flex;gap:.8vw;align-items:center;height:7vh;flex:none;overflow-x:auto}
+#tabs h1{font-size:1.15em;margin:0 1vw 0 0;white-space:nowrap}
+.tab{flex:none;min-width:6vh;height:6vh;padding:0 1.6vh;border-radius:3vh;border:2px solid var(--bd);background:var(--card);color:var(--ink);font-size:1em;font-weight:700}
+.tab.on{background:var(--ac);color:#fff;border-color:var(--ac)}.tab.dn{border-color:var(--ok);color:var(--ok)}.tab.on.dn{background:var(--ok);color:#fff}
+#main{flex:1;min-height:0;display:grid;grid-template-columns:1.05fr 1fr;gap:1.6vw}
+.col{display:flex;flex-direction:column;gap:1.2vh;min-height:0}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:1.6vh 1.4vw}
+.lab{font-size:.72em;color:var(--mut);font-weight:700;margin-bottom:.8vh}
+#prob{flex:none;font-size:1.25em;line-height:2.1;max-height:34vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#board{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;font-size:1.15em}#board.cp{font-size:.95em}#board .lab{position:sticky;top:-1.6vh;background:var(--card);padding:.4vh 0;margin:0;z-index:1}
+#board .ln{padding:.5vh 0;border-bottom:1px dashed var(--bd);line-height:2}
+#q .lab{margin-bottom:1.6vh}#q{flex:none;font-size:1.08em;line-height:1.8;min-height:13vh;max-height:27vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#act{flex:1;min-height:0;display:flex;flex-direction:column;gap:1vh;overflow-y:auto;-webkit-overflow-scrolling:touch}.col2{display:flex;flex-direction:column;gap:1.1vh}.opt.sel{border-color:var(--ac);background:var(--acl)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:1.2vh 1vw}
+.opt{border:2px solid var(--bd);background:var(--card);color:var(--ink);border-radius:12px;font-size:1.2em;min-height:8vh;padding:.6vh .6vw}
+.opt:active{background:var(--acl);border-color:var(--ac)}
+.opt:disabled{opacity:.5}
+.opt.good{background:var(--okl);border-color:var(--ok);opacity:1}
+#disp{border:2px solid var(--ac);border-radius:12px;font-size:1.5em;text-align:center;height:7vh;line-height:7vh;background:var(--card)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:.8vh .6vw}
+.pad button,.go{border:2px solid var(--bd);background:var(--card);color:var(--ink);border-radius:10px;font-size:1.3em;height:6.2vh}
+.go{background:var(--ac);color:#fff;border-color:var(--ac);font-size:1.05em;font-weight:700;width:100%}
+.go:disabled{opacity:.4}
+#fb{flex:none;min-height:9vh;border-radius:12px;padding:1vh 1vw;line-height:1.7;font-size:.95em}
+#fb.ok{background:var(--okl);color:var(--ink);border-left:5px solid var(--ok)}
+#fb.no{background:var(--badl);color:var(--ink);border-left:5px solid var(--bad)}
+#fb:empty{visibility:hidden}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+i{font-family:"Times New Roman","Noto Serif TC",serif;font-style:italic}
+sup{font-size:.62em;line-height:0;vertical-align:baseline;position:relative;top:-.7em;padding-left:.05em}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;margin:0 .1em}
+.fr>span:first-child{border-bottom:.09em solid currentColor;padding:0 .18em .06em}
+.fr>span:last-child{padding:.06em .18em 0}
+.pp{font-size:2em;font-weight:200;vertical-align:middle;line-height:0;display:inline-block;transform:scaleY(1.15)}
+sup.hi{top:-1.3em}
+.rt{display:inline-block;position:relative;padding:.34em .12em 0 .85em;margin:0 .06em;line-height:1.25}
+.rt>svg{position:absolute;left:0;top:0;width:.85em;height:100%;overflow:visible}
+.rt::before{content:'';position:absolute;left:.78em;right:0;top:0;height:1.5px;background:currentColor;transform:translateY(-50%)}
+.rt .ri{position:absolute;left:.04em;font-size:.55em;line-height:1;padding:0;margin:0;top:.26em}
+sup.exf{font-size:.68em;top:-1.3em;padding-left:.08em}
+sup.hi.exf{top:-1.95em}
+sup.exf .fr{font-size:1em;margin:0 .04em}
+.sm{font-size:.82em}
+.big{font-size:1.5em;font-weight:700;color:var(--ok)}
+.gl{stroke:var(--bd);stroke-width:1}.ga{stroke:var(--ink);stroke-width:1.8}.gf{fill:var(--ink)}.gt{fill:var(--mut);font-size:12px}.gd{fill:var(--mut);opacity:.45}
+.nvr{display:flex;justify-content:space-between;align-items:center;gap:1vw}.nv{border:1.5px solid var(--bd);background:var(--card);color:var(--ink);border-radius:8px;font-size:1.25em;font-weight:600;padding:.3vh 1vw;min-height:4.4vh;margin-left:.6vw;white-space:nowrap}.nv:disabled{opacity:.3}
+#cele{display:none}#cele.on{display:flex;position:fixed;inset:0;z-index:50;background:rgba(10,15,30,.55);align-items:center;justify-content:center;padding:3vh 3vw}
+#cele .box{background:var(--card);color:var(--ink);border:1px solid var(--bd);border-radius:18px;padding:3vh 3vw;max-width:78vw;max-height:92vh;overflow:auto;text-align:center}
+#cele h2{margin:0 0 1vh;font-size:2.1em;color:var(--ok)}#cele p{margin:.6vh 0 1.6vh;color:var(--mut)}
+#cele .gr{display:grid;grid-template-columns:1fr 1fr;gap:.9vh 1.2vw;text-align:left;margin-bottom:2vh}
+#cele .it{border:1px solid var(--bd);border-radius:10px;padding:.8vh 1vw;background:var(--okl)}
+#cele .bt{display:flex;gap:1.2vw}#cele .bt button{flex:1;border:2px solid var(--ac);background:var(--card);color:var(--ink);border-radius:12px;font-size:1.05em;min-height:6.4vh;font-weight:700}#cele .bt button.pri{background:var(--ac);color:#fff}
+</style></head>
+<body>
+<div id="tabs"></div>
+<div id="cele"></div>
+<div id="main">
+ <div class="col"><div class="card" id="prob"></div><div class="card" id="board"></div></div>
+ <div class="col"><div class="card" id="q"></div><div id="act"></div><div id="fb"></div></div>
+</div>
+<script>
+const F=(n,d)=>`<span class="fr"><span>${n}</span><span>${d}</span></span>`;
+const PS=(x,e)=>`<span class="pp">(</span>${x}<span class="pp">)</span><sup class="hi">${e}</sup>`;
+const R=(n,x)=>`<span class="rt">${n?`<span class="ri">${n}</span>`:''}<svg viewBox="0 0 12 20" preserveAspectRatio="none"><path d="M1.2,12.8 L3.2,11.4 L6.2,19.2 L11.8,0" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="miter" stroke-linecap="square"/></svg>${x}</span>`;
+const T=(b,e)=>`${b}<sup>${e}</sup>`;
+const X='<i>x</i>',Y='<i>y</i>',A='<i>a</i>',M='<i>m</i>',N='<i>n</i>';
+
+const P=[
+{t:'選1',e:`<i>y</i> = 3<sup><i>x</i></sup> 的圖形恆過下列哪一個定點？`,ans:'(B) (0, 1)',s:[
+ {q:`找指數函數恆過的定點，通常會代入 <i>x</i> = 0。請計算 3<sup>0</sup> = ?`,k:'f',a:'1',h:`任何不為 0 的實數，其 0 次方等於多少？`,l:`3<sup>0</sup> = 1，所以恆過 (0, 1)`},
+ {q:`所以圖形恆過哪一個點？`,k:'c',o:['(A) (1, 0)','(B) (0, 1)','(C) (1, 1)','(D) (3, 1)'],a:1,h:`剛剛算出的 <i>x</i> 和 <i>y</i> 坐標組合起來是哪一個選項？`,l:`答案：(B)`}
+]},
+{t:'選2',e:`化簡 (0.008)<sup>−1/3</sup> = ？`,ans:'(D) 5',s:[
+ {q:`先處理底數的小數。0.008 等於多少分之多少？`,k:'c',o:['8/100','8/1000','8/10000'],a:1,h:`小數點後有三位，分母應該是幾個 0？`,l:`0.008 = 8 / 1000`},
+ {q:`將 8 / 1000 約分至最簡分數，等於多少？`,k:'c',o:['1/125','1/250','1/500'],a:0,h:`分子分母同除以 8，請試著計算 1000 ÷ 8。`,l:`8 / 1000 = 1 / 125`},
+ {q:`將 1 / 125 化為以 5 為底的指數，1 / 125 = 5<sup>?</sup>，? 是多少？`,k:'f',a:'-3',h:`125 是 5 的幾次方？分數形式表示指數需要加上什麼符號？`,l:`1 / 125 = 5<sup>−3</sup>`},
+ {q:`原式變成 (5<sup>−3</sup>)<sup>−1/3</sup>。利用冪的乘方，指數應相乘，−3 × (−1/3) = ?`,k:'f',a:'1',h:`負負得正，請將兩個數字相乘。`,l:`指數相乘：−3 × (−1/3) = 1`},
+ {q:`所以結果為 5<sup>1</sup>。請選出最終答案：`,k:'c',o:['(A) −5','(B) −1/5','(C) 1/5','(D) 5'],a:3,h:`5 的 1 次方等於多少？`,l:`答案：(D) 5`}
+]},
+{t:'選3',e:`化簡 5<sup>−1/2</sup> = ？`,ans:'(A) √5 / 5',s:[
+ {q:`負指數代表取倒數。5<sup>−1/2</sup> 等於什麼？`,k:'c',o:['−(5<sup>1/2</sup>)',`1 / (5<sup>1/2</sup>)`,'−1 / 5'],a:1,h:`底數的負指數，等於將正指數形式放到分母。`,l:`5<sup>−1/2</sup> = 1 / (5<sup>1/2</sup>)`},
+ {q:`分數指數表示開根號。5<sup>1/2</sup> 寫成根號形式為？`,k:'c',o:['√5','∛5','5'],a:0,h:`1/2 次方代表開二次方根。`,l:`5<sup>1/2</sup> = √5`},
+ {q:`現在算式為 1 / √5。有理化分母，分子分母同乘 √5，結果為？`,k:'c',o:['(A) √5 / 5','(B) 1 / 25','(C) −√5','(D) −1 / √5'],a:0,h:`√5 × √5 會變成什麼？`,l:`答案：(A) √5 / 5`}
+]},
+{t:'選4',e:`下列各圖形，哪一個最有可能是 <i>y</i> = (1/3)<sup><i>x</i></sup> 的圖形？`,ans:'遞減曲線 (左上右下)',s:[
+ {q:`先判斷圖形趨勢。底數是 1/3，介於 0 和 1 之間，這是一個什麼樣的函數？`,k:'c',o:['遞增函數 (左下到右上)','遞減函數 (左上到右下)'],a:1,h:`底數小於 1 時，當 <i>x</i> 越大，乘出來的值會越來越小還是大？`,l:`底數 1/3 < 1，為遞減函數`},
+ {q:`代入 <i>x</i> = 0，<i>y</i> = (1/3)<sup>0</sup> = ?`,k:'f',a:'1',h:`任何不為 0 的實數的 0 次方是多少？`,l:`圖形過 (0, 1)`},
+ {q:`根據上述「遞減」且「過 (0,1)」的特徵，請描述正確圖形的長相。`,k:'c',o:['曲線由左下往右上，通過 (0,1)','曲線由左上往右下，通過 (0,1)','直線由左上往右下，通過原點'],a:1,h:`綜合前兩個步驟的結論。`,l:`答案：由左上向右下遞減的曲線`}
+]},
+{t:'選5',e:`若 (7/5)<sup>4<i>x</i>+3</sup> = (5/7)<sup>2<i>x</i>−9</sup>，則 <i>x</i> 的值為何？`,ans:'(A) 1',s:[
+ {q:`兩邊底數不同，先統一底數。右邊的 (5/7) 可寫作 (7/5) 的幾次方？`,k:'f',a:'-1',h:`分子分母顛倒，等於取什麼次方？`,l:`5/7 = (7/5)<sup>−1</sup>`},
+ {q:`右式變成 ((7/5)<sup>−1</sup>)<sup>2<i>x</i>−9</sup>，指數相乘展開後為？`,k:'c',o:['2<i>x</i> − 9','−2<i>x</i> + 9','−2<i>x</i> − 9'],a:1,h:`請將 −1 乘上 (2<i>x</i> − 9)，記得利用分配律。`,l:`右式指數變為 −2<i>x</i> + 9`},
+ {q:`底數相同，則兩邊指數相等：4<i>x</i> + 3 = −2<i>x</i> + 9。移項後可得 6<i>x</i> = ?`,k:'f',a:'6',h:`將 +3 移到等號右邊，變成 9 - 3。`,l:`6<i>x</i> = 6`},
+ {q:`解出 <i>x</i> 的值為何？`,k:'c',o:['(A) 1','(B) −1','(C) 2','(D) −2'],a:0,h:`6 乘以多少等於 6？`,l:`答案：(A) <i>x</i> = 1`}
+]},
+{t:'填1',e:`設 5<sup><i>x</i>−3</sup> = 1/125，則 <i>x</i> = ？`,ans:'0',s:[
+ {q:`先將 1/125 化為 5 的次方。1/125 = 5<sup>?</sup>，? 是多少？`,k:'f',a:'-3',h:`125 是 5 的 3 次方，在分母則要加上負號。`,l:`1/125 = 5<sup>−3</sup>`},
+ {q:`底數相同，指數相等：<i>x</i> − 3 = −3。將 −3 移項後，得 <i>x</i> = ?`,k:'f',a:'0',h:`等號兩邊同時加上 3。`,l:`答案：<i>x</i> = 0`}
+]},
+{t:'填2',e:`若 9<sup>1−<i>x</i></sup> = (1/3)<sup>5<i>x</i>+1</sup>，則 <i>x</i> = ？`,ans:'−1',s:[
+ {q:`先統一化為底數 3。左邊的 9 是 3 的幾次方？`,k:'f',a:'2',h:`3 乘以 3 等於多少？`,l:`9 = 3<sup>2</sup>`},
+ {q:`左式變為 (3<sup>2</sup>)<sup>1−<i>x</i></sup>。指數相乘後，左式指數為？`,k:'c',o:['2 − <i>x</i>','2 − 2<i>x</i>','1 − 2<i>x</i>'],a:1,h:`利用分配律：2 乘上 (1 − <i>x</i>)。`,l:`左式指數為 2 − 2<i>x</i>`},
+ {q:`右邊的 (1/3) 寫成 3<sup>−1</sup>。右式變為 (3<sup>−1</sup>)<sup>5<i>x</i>+1</sup>，指數相乘後為？`,k:'c',o:['−5<i>x</i> + 1','−5<i>x</i> − 1','5<i>x</i> − 1'],a:1,h:`利用分配律：−1 乘上 (5<i>x</i> + 1)。`,l:`右式指數為 −5<i>x</i> − 1`},
+ {q:`兩邊指數相等：2 − 2<i>x</i> = −5<i>x</i> − 1。移項整理後，3<i>x</i> = ?`,k:'f',a:'-3',h:`把 −5<i>x</i> 移到左邊，把 2 移到右邊計算。`,l:`3<i>x</i> = −3`},
+ {q:`解出 <i>x</i> 的值：`,k:'f',a:'-1',h:`−3 除以 3。`,l:`答案：<i>x</i> = −1`}
+]},
+{t:'填4',e:`化簡 (√3)<sup>2</sup> × (√3)<sup>4</sup> = ？`,ans:'27',s:[
+ {q:`底數相同，相乘時指數要怎麼運算？`,k:'c',o:['相加','相減','相乘'],a:0,h:`同底數相乘，指數相加。`,l:`指數相加`},
+ {q:`指數相加：2 + 4 = ?`,k:'f',a:'6',h:`請算出 2 + 4。`,l:`原式 = (√3)<sup>6</sup>`},
+ {q:`將 (√3)<sup>6</sup> 化簡，√3 是 3 的 1/2 次方，所以 (3<sup>1/2</sup>)<sup>6</sup> = 3<sup>?</sup>，? 是多少？`,k:'f',a:'3',h:`指數相乘：1/2 × 6 = ?`,l:`等於 3<sup>3</sup>`},
+ {q:`請計算 3<sup>3</sup> 的值。`,k:'f',a:'27',h:`3 × 3 × 3 = ?`,l:`答案：27`}
+]},
+{t:'填5',e:`化簡 1/125 × 5<sup>4</sup> × 5<sup>−1</sup> = ？`,ans:'1',s:[
+ {q:`將 1/125 化為 5 的次方。1/125 = 5<sup>?</sup>，? 是多少？`,k:'f',a:'-3',h:`125 是 5 的 3 次方，在分母則加負號。`,l:`1/125 = 5<sup>−3</sup>`},
+ {q:`原式 = 5<sup>−3</sup> × 5<sup>4</sup> × 5<sup>−1</sup>。底數相同相乘，指數相加。請計算 −3 + 4 + (−1) = ?`,k:'f',a:'0',h:`請確實相加這三個數字。`,l:`指數總和為 0`},
+ {q:`所以原式 = 5<sup>0</sup>，任何非零數的 0 次方等於多少？`,k:'f',a:'1',h:`請回想指數律的基本定義。`,l:`答案：1`}
+]},
+{t:'填6',e:`方程式 (0.01)<sup>3<i>x</i>−1</sup> = (0.1)<sup><i>x</i>+5</sup> 的解為 <i>x</i> = ？`,ans:'7/5',s:[
+ {q:`統一底數為 0.1。0.01 是 0.1 的幾次方？`,k:'f',a:'2',h:`0.1 × 0.1 = ?`,l:`0.01 = 0.1<sup>2</sup>`},
+ {q:`左式變為 (0.1<sup>2</sup>)<sup>3<i>x</i>−1</sup>。指數相乘後，左式指數為？`,k:'c',o:['6<i>x</i> − 1','6<i>x</i> − 2','3<i>x</i> − 2'],a:1,h:`利用分配律：2 乘上 (3<i>x</i> − 1)。`,l:`左式指數為 6<i>x</i> − 2`},
+ {q:`兩邊指數相等：6<i>x</i> − 2 = <i>x</i> + 5。移項整理，5<i>x</i> = ?`,k:'f',a:'7',h:`把 −2 移到等號右邊，變成 5 + 2。`,l:`5<i>x</i> = 7`},
+ {q:`解出 <i>x</i> 的值：`,k:'c',o:['5/7','7/5','12/5'],a:1,h:`等號兩邊同時除以 5。`,l:`答案：<i>x</i> = 7/5`}
+]},
+{t:'填7',e:`設 <i>a</i> = ∛9、<i>b</i> = √3、<i>c</i> = 1/9，則其大小順序為？`,ans:'c < b < a',s:[
+ {q:`全部統一化為底數 3。<i>a</i> = ∛(3<sup>2</sup>)，化為分數指數為 3<sup>?</sup>，? 是多少？`,k:'c',o:['1/3','2/3','3/2'],a:1,h:`根號外的次方放分母，根號內的次方放分子。`,l:`<i>a</i> = 3<sup>2/3</sup>`},
+ {q:`<i>b</i> = √3，化為分數指數為 3<sup>?</sup>，? 是多少？`,k:'c',o:['1/2','2','1/3'],a:0,h:`沒有寫出數字的根號，代表開 2 次方。`,l:`<i>b</i> = 3<sup>1/2</sup>`},
+ {q:`<i>c</i> = 1/9，化為指數為 3<sup>?</sup>，? 是多少？`,k:'f',a:'-2',h:`9 是 3 的 2 次方，在分母則加負號。`,l:`<i>c</i> = 3<sup>−2</sup>`},
+ {q:`現在比較指數的大小：2/3、1/2、−2。底數 3 > 1，指數越小其值越小。請排列由小到大的順序。`,k:'o',o:{a:'a',b:'b',c:'c'},a:['c','b','a'],h:`−2 是唯一的負數，最小；接著比較 1/2 和 2/3 誰比較大。`,l:`答案：c < b < a`}
+]},
+{t:'填8',e:`若 1728 = 2<sup>2<i>x</i></sup> × 3<sup><i>y</i>+1</sup>，則 <i>x</i>+<i>y</i> = ？`,ans:'5',s:[
+ {q:`先將 1728 作質因數分解。1728 是 12 的幾次方？`,k:'f',a:'3',h:`試著用 12 去除 1728。12 × 12 = 144，144 × 12 = ?`,l:`1728 = 12<sup>3</sup>`},
+ {q:`將 12 拆成質因數：12 = 2<sup>2</sup> × 3。所以 12<sup>3</sup> = (2<sup>2</sup> × 3)<sup>3</sup>。展開後，2 的指數是多少？`,k:'f',a:'6',h:`冪的乘方，指數相乘：2 × 3。`,l:`2 的指數為 6`},
+ {q:`展開後，3 的指數是多少？`,k:'f',a:'3',h:`3 的 1 次方再乘上外面的 3。`,l:`3 的指數為 3，即 1728 = 2<sup>6</sup> × 3<sup>3</sup>`},
+ {q:`對應方程式 2<sup>2<i>x</i></sup> × 3<sup><i>y</i>+1</sup>。首先 2<i>x</i> = 6，解得 <i>x</i> = ?`,k:'f',a:'3',h:`6 除以 2。`,l:`<i>x</i> = 3`},
+ {q:`對應 3 的指數：<i>y</i> + 1 = 3，解得 <i>y</i> = ?`,k:'f',a:'2',h:`3 減去 1。`,l:`<i>y</i> = 2`},
+ {q:`最後求 <i>x</i> + <i>y</i> = ?`,k:'f',a:'5',h:`請將剛算出的 x 和 y 相加。`,l:`答案：5`}
+]},
+{t:'計1',e:`化簡 (8<sup>2</sup> + 5<sup>3</sup> + 999)<sup>0</sup> 的值為何？`,ans:'1',s:[
+ {q:`底數 (8<sup>2</sup> + 5<sup>3</sup> + 999) 是不是 0？`,k:'c',o:['是','不是'],a:1,h:`全部都是正數相加，結果不會是 0。`,l:`底數不為 0`},
+ {q:`任何不為 0 的數，其 0 次方等於多少？`,k:'f',a:'1',h:`請回想指數律的基本定義。`,l:`答案：1`}
+]},
+{t:'計2',e:`化簡 (<i>x</i><sup><i>m</i></sup> / <i>x</i><sup><i>n</i></sup>)<sup><i>m</i>+<i>n</i></sup> × (<i>x</i><sup><i>n</i></sup> / <i>x</i><sup><i>p</i></sup>)<sup><i>n</i>+<i>p</i></sup> × (<i>x</i><sup><i>p</i></sup> / <i>x</i><sup><i>m</i></sup>)<sup><i>p</i>+<i>m</i></sup> 的值為何？`,ans:'1',s:[
+ {q:`先看括號內部。同底數相除，指數要如何運算？`,k:'c',o:['相加','相減','相乘'],a:1,h:`商的指數律。`,l:`相除指數相減：<i>x</i><sup><i>m</i></sup> / <i>x</i><sup><i>n</i></sup> = <i>x</i><sup><i>m</i>−<i>n</i></sup>`},
+ {q:`第一項變成 (<i>x</i><sup><i>m</i>−<i>n</i></sup>)<sup><i>m</i>+<i>n</i></sup>。指數相乘 (<i>m</i>−<i>n</i>)(<i>m</i>+<i>n</i>)，利用平方差公式，結果為？`,k:'c',o:['<i>m</i><sup>2</sup> + <i>n</i><sup>2</sup>','<i>m</i><sup>2</sup> − <i>n</i><sup>2</sup>','2<i>m</i> − 2<i>n</i>'],a:1,h:`(a-b)(a+b) 會展開成什麼？`,l:`第一項的指數為 <i>m</i><sup>2</sup> − <i>n</i><sup>2</sup>`},
+ {q:`同理，三項乘在一起後，底數都是 <i>x</i>，指數全部相加：(<i>m</i><sup>2</sup> − <i>n</i><sup>2</sup>) + (<i>n</i><sup>2</sup> − <i>p</i><sup>2</sup>) + (<i>p</i><sup>2</sup> − <i>m</i><sup>2</sup>)。相加的結果是多少？`,k:'f',a:'0',h:`觀察各項正負號，全部互相抵消。`,l:`總指數為 0`},
+ {q:`原式 = <i>x</i><sup>0</sup>，化簡結果為？`,k:'f',a:'1',h:`任何非零數的 0 次方是多少？`,l:`答案：1`}
+]},
+{t:'計4',e:`若 2<sup><i>x</i><sup>2</sup>−7</sup> = (1/8)<sup><i>x</i>+1</sup>，試求 <i>x</i> 的值。`,ans:'−4 或 1',s:[
+ {q:`先統一底數。右邊的 1/8 可化為 2 的幾次方？`,k:'f',a:'-3',h:`8 是 2 的 3 次方，在分母加負號。`,l:`1/8 = 2<sup>−3</sup>`},
+ {q:`右式變為 (2<sup>−3</sup>)<sup><i>x</i>+1</sup>，指數相乘後為？`,k:'c',o:['−3<i>x</i> + 1','−3<i>x</i> − 3','3<i>x</i> + 3'],a:1,h:`請用 −3 乘上 (<i>x</i> + 1)。`,l:`右式指數為 −3<i>x</i> − 3`},
+ {q:`兩邊底數都是 2，所以指數相等：<i>x</i><sup>2</sup> − 7 = −3<i>x</i> − 3。將所有項移到等號左邊，變成一元二次方程式 <i>x</i><sup>2</sup> + 3<i>x</i> + ? = 0。? 是多少？`,k:'f',a:'-4',h:`計算 −7 + 3。`,l:`方程式為 <i>x</i><sup>2</sup> + 3<i>x</i> − 4 = 0`},
+ {q:`將 <i>x</i><sup>2</sup> + 3<i>x</i> − 4 = 0 十字交乘因式分解，可得 (<i>x</i> + 4)(<i>x</i> - ?) = 0。? 是多少？`,k:'f',a:'1',h:`找兩個數相乘為 -4，相加為 3。`,l:`因式分解：(<i>x</i> + 4)(<i>x</i> − 1) = 0`},
+ {q:`由上式解出 <i>x</i> 的值有哪些？`,k:'c',o:['4 或 −1','−4 或 1','−4 或 −1'],a:1,h:`令每個括號等於 0，求出 <i>x</i>。`,l:`答案：<i>x</i> = −4 或 1`}
+]}
+];
+
+const nG=()=>({pts:[],cv:[]});
+const mkS=()=>P.map(()=>({v:null,snap:{},ord:[],i:0,L:[],d:0,fb:'',cls:'',ok:0,buf:'',pn:0,mt:null,pr:{},G:nG()}));
+let S=mkS(),cele=0;
+let p=0;
+const $=id=>document.getElementById(id);
+const fcur=()=>{const s=S[p];return s.d?P[p].s.length:s.i};
+function NAV(label){const s=S[p],bk=(s.v==null?fcur():s.v)<=0;return `<div class="lab nvr"><span>${label}</span><span><button class="nv" ${bk?'disabled':''} onclick="back()">‹ 上一步</button><button class="nv" ${s.v==null?'disabled':''} onclick="fwd()">下一步 ›</button></span></div>`}
+function back(){const s=S[p],v=(s.v==null?fcur():s.v)-1;if(v>=0){s.v=v;render()}}
+function fwd(){const s=S[p];if(s.v==null)return;const v=s.v+1;s.v=v>=fcur()?null:v;render()}
+function toCur(){S[p].v=null;render()}
+const GSV=sn=>gsvg(JSON.parse(sn),0);
+function rev(s,st,j){let a='';
+ if(st.k=='c')a=`<div class="opts">${st.o.map((o,k)=>`<button class="opt${k==st.a?' good':''}" disabled>${o}</button>`).join('')}</div>`;
+ if(st.k=='f')a=`<div id="disp">${st.a.replace('-','−')}</div>`;
+ if(st.k=='o')a=`<div id="disp" style="font-size:1.05em">${st.a.map(k=>st.o[k]).join(st.sep||' &lt; ')}</div>`;
+ if(st.k=='m')a=`<div class="opts" style="align-items:start"><div class="col2">${st.L.map(o=>`<button class="opt good" disabled>${o}</button>`).join('')}</div><div class="col2">${st.R.map(o=>`<button class="opt good" disabled>${o}</button>`).join('')}</div></div>`;
+ if((st.k=='g'||st.k=='p')&&s.snap[j])a=GSV(s.snap[j]);
+ return a+`<button class="go" onclick="toCur()">回到目前步驟</button>`}
+function showCele(){const el=$('cele');if(cele!=1){el.className='';el.innerHTML='';return}
+ el.className='on';el.innerHTML=`<div class="box"><h2>🎉 恭喜完成！</h2><p>所有題目的每個步驟都已完成。</p><div class="gr">${P.map((q,j)=>`<div class="it"><b>${P[j].t}</b> ${q.ans}</div>`).join('')}</div><div class="bt"><button onclick="cele=2;render()">回顧解題過程</button><button class="pri" onclick="S=mkS();p=0;cele=0;render()">重新練習</button></div></div>`}
+function END(){document.querySelectorAll('sup').forEach(e=>{if(e.querySelector('.fr'))e.classList.add('exf')});showCele()}
+
+const W=480,H=420,Mg={l:16,r:28,t:26,b:16},PW=W-Mg.l-Mg.r,PH=H-Mg.t-Mg.b,GV={x:[-4,4],y:[-1,9],sn:.5},CC=['#2f5bea','#c2410c'];
+const it=t=>t.replace(/<[^>]+>/g,'').replace(/[xy]/g,m=>`<tspan font-style="italic" font-family="Times New Roman,serif">${m}</tspan>`);
+const px=x=>Mg.l+(x+4)/8*PW,py=y=>Mg.t+PH-(y+1)/10*PH;
+function gsvg(G,act){
+ let o=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;flex:1;min-height:0;background:var(--card);border:1px solid var(--bd);border-radius:12px;touch-action:manipulation;user-select:none;color:var(--ink)"><defs><clipPath id="cp"><rect x="${Mg.l}" y="${Mg.t}" width="${PW}" height="${PH}"/></clipPath></defs>`;
+ for(let i=-4;i<=4;i++){o+=`<line class="gl" x1="${px(i)}" y1="${Mg.t}" x2="${px(i)}" y2="${Mg.t+PH}"/>`;if(i)o+=`<text class="gt" x="${px(i)}" y="${py(0)+15}" text-anchor="middle">${i}</text>`}
+ for(let i=-1;i<=9;i++){o+=`<line class="gl" x1="${Mg.l}" y1="${py(i)}" x2="${Mg.l+PW}" y2="${py(i)}"/>`;if(i)o+=`<text class="gt" x="${px(0)-6}" y="${py(i)+4}" text-anchor="end">${i}</text>`}
+ const ax=px(4)+14,ay=py(9)-14;
+ o+=`<line class="ga" x1="${Mg.l}" y1="${py(0)}" x2="${ax-3}" y2="${py(0)}"/><line class="ga" x1="${px(0)}" y1="${Mg.t+PH}" x2="${px(0)}" y2="${ay+3}"/><polygon class="gf" points="${ax},${py(0)} ${ax-10},${py(0)-4.5} ${ax-10},${py(0)+4.5}"/><polygon class="gf" points="${px(0)},${ay} ${px(0)-4.5},${ay+10} ${px(0)+4.5},${ay+10}"/>`;
+ o+=`<text class="gt" style="font-size:15px;fill:var(--ink)" x="${ax-4}" y="${py(0)+20}">${it('x')}</text><text class="gt" style="font-size:15px;fill:var(--ink)" x="${px(0)+9}" y="${ay+8}">${it('y')}</text><text class="gt" style="font-size:13px;fill:var(--ink)" x="${px(0)-14}" y="${py(0)+15}">O</text><g clip-path="url(#cp)">`;
+ G.cv.forEach((c,i)=>{let d='';for(let x=-4;x<=4.001;x+=.05)d+=(d?'L':'M')+px(x).toFixed(1)+' '+py(Math.pow(c.a,x)).toFixed(1);o+=`<path d="${d}" fill="none" stroke="${CC[i]}" stroke-width="2.5"/>`});
+ o+='</g>';
+ if(act)for(let x=-4;x<=4;x+=.5)for(let y=-1;y<=9;y+=.5)o+=`<circle cx="${px(x)}" cy="${py(y)}" r="1.4" class="gd"/>`;
+ G.pts.forEach(([x,y,i])=>o+=`<circle cx="${px(x)}" cy="${py(y)}" r="5" fill="${CC[i]}" stroke="#fff" stroke-width="1.2"/>`);
+ if(act)o+=`<rect x="${Mg.l-6}" y="${Mg.t-6}" width="${PW+12}" height="${PH+12}" fill="transparent" onpointerdown="gtap(event)"/>`;
+ return o+'</svg>'}
+function gtap(ev){
+ const s=S[p],st=P[p].s[s.i];if(s.ok||st.k!='p')return;
+ const sv=ev.target.ownerSVGElement,pt=sv.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;const c=pt.matrixTransform(sv.getScreenCTM().inverse());
+ let x=-4+(c.x-Mg.l)/PW*8,y=-1+(Mg.t+PH-c.y)/PH*10;x=Math.min(4,Math.max(-4,Math.round(x*2)/2));y=Math.min(9,Math.max(-1,Math.round(y*2)/2));
+ const G=s.G,eq=(u,v)=>Math.abs(u[0]-v[0])<1e-6&&Math.abs(u[1]-v[1])<1e-6;
+ const m=st.pts.find(u=>eq(u,[x,y]));
+ const dup=m&&G.pts.some(u=>u[2]==st.ci&&eq(u,m));
+ if(m&&!dup){G.pts.push([m[0],m[1],st.ci]);const n=G.pts.filter(u=>u[2]==st.ci).length;
+  if(n==st.pts.length){G.cv.push({a:st.a});good()}else{s.cls='';s.fb=`已描出 ${n} / ${st.pts.length} 個點。`;render()}}
+ else if(m){s.cls='';s.fb='這個點已經描過了。';render()}
+ else bad();
+}
+function render(){
+ const q=P[p],s=S[p],st=q.s[s.i];
+ $('tabs').innerHTML='<h1>第5回 測驗卷</h1>'+P.map((o,j)=>`<button class="tab${j==p?' on':''}${S[j].d?' dn':''}" onclick="go(${j})">${o.t}</button>`).join('')+(S.every(x=>x.d)?'<button class="tab" style="margin-left:auto" onclick="cele=1;render()">🎉 完成</button>':'');
+ $('prob').className='card';
+ $('prob').innerHTML=`<div class="lab">${q.t}</div>${q.e}`;
+ const bd=$('board'),oldTop=bd.scrollTop||0,grew=s.L.length>s.pn;
+ bd.className='card'+(s.L.length>7?' cp':'');
+ bd.innerHTML=`<div class="lab">我的解題紀錄（共 ${s.L.length} 項，可上下滑動）</div>`+s.L.map(l=>`<div class="ln">${l}</div>`).join('');
+ bd.scrollTop=grew?bd.scrollHeight:oldTop;s.pn=s.L.length;
+ if(s.v!=null){const sj=q.s[s.v];$('q').innerHTML=`${NAV(`回顧 步驟 ${s.v+1} / ${q.s.length}（已完成）`)}${sj.q}`;$('act').innerHTML=rev(s,sj,s.v);$('fb').className='ok';$('fb').innerHTML=`<b>解題依據：</b>${sj.l}`;END();return}
+ let a='';
+ if(s.d){$('q').innerHTML=`${NAV('完成')}<span class="big">${q.ans}</span><br>回頭看左側紀錄，每一步的依據是什麼？`;
+  a=(p<P.length-1?`<button class="go" onclick="go(${p+1})">前往下一題</button>`:'');}
+ else{
+  $('q').innerHTML=`${NAV(`步驟 ${s.i+1} / ${q.s.length} ${st.k=='p'?'動手畫圖':st.k=='m'?'配對':'思考一下'}`)}${st.q}`;
+  const dis=s.ok?'disabled':'';
+  if(st.k=='p')a=gsvg(s.G,1);
+  if(st.k=='o')a=`<div id="disp" style="font-size:1.05em">${s.ord.map(k=>st.o[k]).join(' &lt; ')||'&nbsp;'}</div><div class="opts" style="grid-template-columns:repeat(3,1fr)">${Object.keys(st.o).map(k=>`<button class="opt" ${dis||(s.ord.includes(k)?'disabled':'')} onclick="ord('${k}')">${st.o[k]}</button>`).join('')}</div><button class="go" style="background:var(--card);color:var(--ink)" ${dis} onclick="S[p].ord=[];S[p].fb='';S[p].cls='';render()">重選</button>`;
+  if(st.k=='c')a=`<div class="opts">${st.o.map((o,j)=>`<button class="opt${s.ok&&j==st.a?' good':''}" ${dis} onclick="pick(${j})">${o}</button>`).join('')}</div>`;
+  if(st.k=='f')a=`<div id="disp">${s.buf.replace('-','−')||'&nbsp;'}</div><div class="pad">${['7','8','9','4','5','6','1','2','3','−','0','⌫'].map(k=>`<button ${dis} onclick="key('${k}')">${k}</button>`).join('')}</div><button class="go" ${dis} onclick="chk()">確認</button>`;
+  if(st.k=='m')a=`<div class="opts" style="align-items:start"><div class="col2">${st.L.map((o,i)=>`<button class="opt${s.pr[i]?' good':s.mt===i?' sel':''}" ${s.pr[i]?'disabled':''} onclick="mL(${i})">${o}</button>`).join('')}</div><div class="col2">${st.sh.map(j=>`<button class="opt${s.pr[j]?' good':''}" ${s.pr[j]?'disabled':''} onclick="mR(${j})">${st.R[j]}</button>`).join('')}</div></div>`;
+  if(s.ok)a+=`<button class="go" onclick="nxt()">${s.i==q.s.length-1?'完成':'下一步'}</button>`;
+ }
+ $('act').innerHTML=a;$('fb').className=s.cls;$('fb').innerHTML=s.fb;
+ END();
+}
+function good(){const s=S[p],st=P[p].s[s.i];s.ok=1;s.cls='ok';s.fb='<b>正確。</b>';s.L.push(st.l);s.snap[s.i]=JSON.stringify(s.G);render()}
+function bad(){const s=S[p],st=P[p].s[s.i];s.cls='no';s.fb=`<b>再想想。</b>${st.h}`;s.buf='';s.mt=null;s.ord=[];render()}
+function pick(j){P[p].s[S[p].i].a==j?good():bad()}
+function key(k){const s=S[p];if(k=='⌫')s.buf=s.buf.slice(0,-1);else if(s.buf.length<4)s.buf+=(k=='−'?'-':k);s.fb='';s.cls='';render()}
+function chk(){const s=S[p];s.buf.replace('−','-')==P[p].s[s.i].a?good():bad()}
+function mL(i){const s=S[p];s.mt=i;s.fb='';s.cls='';render()}
+function mR(j){const s=S[p],st=P[p].s[s.i];if(s.mt===null){s.cls='';s.fb='請先點選左側的算式。';render();return}
+ if(s.mt===j){s.pr[j]=1;s.mt=null;s.fb='';s.cls='';if(Object.keys(s.pr).length==st.L.length)good();else render()}else bad()}
+function ord(k){const s=S[p],st=P[p].s[s.i];s.ord.push(k);if(s.ord.length==Object.keys(st.o).length){st.a.join()==s.ord.join()?good():bad()}else render()}
+function nxt(){const s=S[p];if(s.i==P[p].s.length-1){s.d=1;s.fb='';s.cls='';if(S.every(x=>x.d))cele=1}else{s.i++;s.ok=0;s.fb='';s.cls='';s.buf='';s.mt=null;s.ord=[]}render()}
+function go(j){p=j;render()}
+render();
+</script></body></html>

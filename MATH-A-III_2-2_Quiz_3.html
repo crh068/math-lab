@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>第3回 線性規劃 互動學具</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#1d2433;--mut:#5d6679;--ac:#2f5bea;--acl:#e6ecff;--ok:#1b8a4b;--okl:#e3f6ea;--bad:#c2410c;--badl:#fff0e6;--bd:#d5dbe8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141824;--card:#1f2535;--ink:#eef1f8;--mut:#9aa4bb;--ac:#7b9bff;--acl:#2a3558;--ok:#5fd58f;--okl:#173626;--bad:#ffa066;--badl:#3d2415;--bd:#39425a}}
+*{box-sizing:border-box}html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;font-size:max(2.4vh,13px);display:flex;flex-direction:column;padding:1.2vh 1.6vw;gap:1.2vh}
+#tabs{display:flex;gap:.7vw;align-items:center;height:7vh;flex:none;overflow-x:auto}
+#tabs h1{font-size:1.1em;margin:0 1vw 0 0;white-space:nowrap}
+.tab{flex:none;min-width:6vh;height:6vh;padding:0 1.6vh;border-radius:3vh;border:2px solid var(--bd);background:var(--card);color:var(--ink);font-size:1em;font-weight:700}
+.tab.on{background:var(--ac);color:#fff;border-color:var(--ac)}.tab.dn{border-color:var(--ok);color:var(--ok)}.tab.on.dn{background:var(--ok);color:#fff}
+#main{flex:1;min-height:0;display:grid;grid-template-columns:1.05fr 1fr;gap:1.6vw}
+.col{display:flex;flex-direction:column;gap:1.2vh;min-height:0}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:1.6vh 1.4vw}
+.lab{font-size:.72em;color:var(--mut);font-weight:700;margin-bottom:.8vh}
+#prob{flex:none;font-size:1.1em;line-height:1.85;max-height:34vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#prob.sm{font-size:.88em;line-height:1.7}
+#board{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;font-size:1.05em}#board.cp{font-size:.9em}#board .lab{position:sticky;top:-1.6vh;background:var(--card);padding:.4vh 0;margin:0;z-index:1}
+#board .ln{padding:.4vh 0;border-bottom:1px dashed var(--bd);line-height:1.8}
+#q{flex:none;font-size:1.05em;line-height:1.75;min-height:13vh;max-height:27vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#act{flex:1;min-height:0;display:flex;flex-direction:column;gap:1vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:1.2vh 1vw}
+.opt{border:2px solid var(--bd);background:var(--card);color:var(--ink);border-radius:12px;font-size:1.05em;min-height:8vh;padding:.6vh .6vw;line-height:1.4}
+.opt:active{background:var(--acl);border-color:var(--ac)}
+.opt:disabled{opacity:.5}
+.opt.good{background:var(--okl);border-color:var(--ok);opacity:1}
+#disp{border:2px solid var(--ac);border-radius:12px;font-size:1.3em;text-align:center;min-height:7vh;line-height:7vh;background:var(--card)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:.8vh .6vw}
+.pad button,.go{border:2px solid var(--bd);background:var(--card);color:var(--ink);border-radius:10px;font-size:1.3em;height:6.2vh}
+.go{background:var(--ac);color:#fff;border-color:var(--ac);font-size:1.05em;font-weight:700;width:100%}
+#fb{flex:none;min-height:9vh;border-radius:12px;padding:1vh 1vw;line-height:1.7;font-size:.95em}
+#fb.ok{background:var(--okl);border-left:5px solid var(--ok)}
+#fb.no{background:var(--badl);border-left:5px solid var(--bad)}
+#fb:empty{visibility:hidden}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+i{font-family:"Times New Roman","Noto Serif TC",serif;font-style:italic}
+.big{font-size:1.4em;font-weight:700;color:var(--ok)}
+.gl{stroke:var(--bd);stroke-width:1}.ga{stroke:var(--ink);stroke-width:1.8}.gf{fill:var(--ink)}.gt{fill:var(--mut);font-size:12px}.gd{fill:var(--mut);opacity:.45}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;margin:0 .1em}.fr>span:first-child{border-bottom:.09em solid currentColor;padding:0 .18em .06em}.fr>span:last-child{padding:.06em .18em 0}
+.nvr{display:flex;justify-content:space-between;align-items:center;gap:1vw}.nv{border:1.5px solid var(--bd);background:var(--card);color:var(--ink);border-radius:8px;font-size:1.25em;font-weight:600;padding:.3vh 1vw;min-height:4.4vh;margin-left:.6vw;white-space:nowrap}.nv:disabled{opacity:.3}
+.col2{display:flex;flex-direction:column;gap:1.1vh}
+#cele{display:none}#cele.on{display:flex;position:fixed;inset:0;z-index:50;background:rgba(10,15,30,.55);align-items:center;justify-content:center;padding:3vh 3vw}
+#cele .box{background:var(--card);color:var(--ink);border:1px solid var(--bd);border-radius:18px;padding:3vh 3vw;max-width:78vw;max-height:92vh;overflow:auto;text-align:center}
+#cele h2{margin:0 0 1vh;font-size:2.1em;color:var(--ok)}#cele p{margin:.6vh 0 1.6vh;color:var(--mut)}
+#cele .gr{display:grid;grid-template-columns:1fr 1fr;gap:.9vh 1.2vw;text-align:left;margin-bottom:2vh}
+#cele .it{border:1px solid var(--bd);border-radius:10px;padding:.8vh 1vw;background:var(--okl)}
+#cele .bt{display:flex;gap:1.2vw}#cele .bt button{flex:1;border:2px solid var(--ac);background:var(--card);color:var(--ink);border-radius:12px;font-size:1.05em;min-height:6.4vh;font-weight:700}#cele .bt button.pri{background:var(--ac);color:#fff}
+</style></head>
+<body>
+<div id="tabs"></div>
+<div id="cele"></div>
+<div id="main">
+ <div class="col"><div class="card" id="prob"></div><div class="card" id="board"></div></div>
+ <div class="col"><div class="card" id="q"></div><div id="act"></div><div id="fb"></div></div>
+</div>
+<script>
+const X='<i>x</i>',Y='<i>y</i>',K='<i>k</i>',FX='<i>f</i>(<i>x</i>, <i>y</i>)';
+const V=(a,b)=>`(${a}, ${b})`;
+const FR=(n,d)=>`<span class="fr"><span>${n}</span><span>${d}</span></span>`;
+const fv=(a,b)=>`<i>f</i>${V(a,b)}`;
+
+const P=[
+{t:'選1',e:`在 <i>x</i> + 1 ≥ 0、<i>y</i> ≥ 0、<i>x</i> + <i>y</i> ≤ 5 條件下，所圍的區域面積為何？`,g:{x:[-2,7],y:[-2,8],sn:1},ans:'(B) 18',s:[
+ {k:'g',t:'line',c:[1,0,-1],lab:`<i>x</i> = −1`,q:`畫邊界線 <i>x</i> + 1 = 0 (即 <i>x</i> = −1)。請點選直線上的兩個點。`,h:`這是一條鉛直線，這條線上每個點的 <i>x</i> 坐標固定為 −1。`,l:`邊界 <i>x</i> = −1 已畫出`},
+ {k:'g',t:'line',c:[1,1,5],lab:`<i>x</i> + <i>y</i> = 5`,q:`畫 <i>x</i> + <i>y</i> = 5。請點選直線上的兩個點。`,h:`可以試著分別令 <i>x</i> = 0 以及 <i>y</i> = 0 代入方程式，找出交點。`,l:`邊界 <i>x</i> + <i>y</i> = 5 已畫出`},
+ {k:'g',t:'arrow',c:[1,0,-1,'ge'],lab:`<i>x</i> ≥ −1`,q:`用箭頭標示範圍：<i>x</i> + 1 ≥ 0 即 <i>x</i> ≥ −1。請點選滿足此條件的一點。`,h:`橫坐標要大於或等於 −1，表示在直線的右側。`,l:`箭頭標示 <i>x</i> ≥ −1`},
+ {k:'g',t:'arrow',c:[0,1,0,'ge'],lab:`<i>y</i> ≥ 0`,q:`用箭頭標示 <i>y</i> ≥ 0。邊界是 <i>x</i> 軸。請點選滿足此條件的一點。`,h:`縱坐標要大於或等於 0，表示在 <i>x</i> 軸的上方。`,l:`箭頭標示 <i>y</i> ≥ 0`},
+ {k:'g',t:'arrow',c:[1,1,5,'le'],lab:`<i>x</i> + <i>y</i> ≤ 5`,q:`用箭頭標示 <i>x</i> + <i>y</i> ≤ 5。請點選滿足此條件的一點。`,h:`代入原點 (0,0) 檢驗，0+0 ≤ 5 成立，所以在包含原點的那一側。`,l:`箭頭標示 <i>x</i> + <i>y</i> ≤ 5`},
+ {k:'g',t:'side',cs:[[1,0,-1,'ge'],[0,1,0,'ge'],[1,1,5,'le']],q:`找重疊處：三組箭頭共同指向的區域。請點選該區域內的一點。`,h:`點選被三條邊界線所包圍的直角三角形內部。`,l:`重疊處塗色`},
+ {k:'g',t:'vert',pts:[[-1,0],[5,0],[-1,6]],q:`請標出可行解區域的三個頂點。`,h:`區域邊界線彼此相交的轉角處。`,l:`頂點：(-1,0)、(5,0)、(-1,6)`},
+ {q:`此直角三角形底邊在 <i>x</i> 軸上，從 <i>x</i> = −1 到 <i>x</i> = 5，底邊長度為何？`,k:'f',a:'6',h:`將右邊的坐標減去左邊的坐標來計算距離。`,l:`底邊長度 = 6`},
+ {q:`此直角三角形高在 <i>x</i> = −1 邊界上，從 <i>y</i> = 0 到 <i>y</i> = 6，高度為何？`,k:'f',a:'6',h:`將上面的坐標減去下面的坐標來計算距離。`,l:`高度 = 6`},
+ {q:`請問此三角形的面積為何？`,k:'c',o:['(A) 17','(B) 18','(C) 19','(D) 20'],a:1,h:`套用三角形面積公式：底 × 高 ÷ 2 來計算。`,l:`答案：(B) 面積 = 18`}
+]},
+{t:'選2',e:`承第1題的條件下，<i>f</i>(<i>x</i>, <i>y</i>) = 2<i>x</i> − <i>y</i> 的最小值為何？`,gfrom:0,ans:'(A) -8',s:[
+ {q:`將頂點代入 <i>f</i>(<i>x</i>, <i>y</i>) = 2<i>x</i> − <i>y</i>。首先 <i>f</i>(-1,0) = ?`,k:'f',a:'-2',h:`把 x = -1, y = 0 代入計算。`,l:`<i>f</i>(-1,0) = -2`},
+ {q:`<i>f</i>(5,0) = ?`,k:'f',a:'10',h:`把 x = 5, y = 0 代入計算。`,l:`<i>f</i>(5,0) = 10`},
+ {q:`<i>f</i>(-1,6) = ?`,k:'f',a:'-8',h:`把 x = -1, y = 6 代入計算。`,l:`<i>f</i>(-1,6) = -8`},
+ {q:`比較三個值 (-2, 10, -8)，最小值為何？`,k:'c',o:['(A) -8','(B) -2','(C) 10','(D) 16'],a:0,h:`從中找出數值最小的選項。`,l:`答案：(A) 最小值為 -8`}
+]},
+{t:'選3',e:`承第1題的條件下，<i>f</i>(<i>x</i>, <i>y</i>) = 2<i>x</i> − <i>y</i> 的最大值為何？`,gfrom:0,ans:'(C) 10',s:[
+ {q:`回顧上題，三個頂點代入的值為 -2、10、-8。最大值為何？`,k:'c',o:['(A) -8','(B) -2','(C) 10','(D) 16'],a:2,h:`從中找出數值最大的選項。`,l:`答案：(C) 最大值為 10`}
+]},
+{t:'選4',e:`如圖所示，設 <i>P</i>(<i>x</i>, <i>y</i>) 為四邊形區域內的點，則 2<i>x</i> + 3<i>y</i> 的最大值為何？`,g:{x:[-1,7],y:[-1,8],sn:1},ans:'(D) 22',s:[
+ {k:'g',t:'side',cs:[[1,0,0,'ge'],[0,1,0,'ge'],[3,-2,-6,'ge'],[2,1,10,'le']],q:`根據題目圖形，四邊形由四個頂點 (0,0)、(5,0)、(2,6)、(0,3) 圍成。請點擊此區域內部。`,h:`點選第一象限中被虛線與坐標軸包圍的四邊形內部。`,l:`區域塗色`},
+ {k:'g',t:'vert',pts:[[0,0],[5,0],[2,6],[0,3]],q:`請標出區域的四個頂點。`,h:`找出圖面上的四個頂點：(0,0)、(5,0)、(2,6)、(0,3)。`,l:`標出四個頂點`},
+ {q:`計算 <i>f</i>(0,0) = 2(0) + 3(0) = ?`,k:'f',a:'0',h:`將 x=0, y=0 代入計算。`,l:`<i>f</i>(0,0) = 0`},
+ {q:`計算 <i>f</i>(5,0) = ?`,k:'f',a:'10',h:`將 x=5, y=0 代入計算。`,l:`<i>f</i>(5,0) = 10`},
+ {q:`計算 <i>f</i>(0,3) = ?`,k:'f',a:'9',h:`將 x=0, y=3 代入計算。`,l:`<i>f</i>(0,3) = 9`},
+ {q:`計算 <i>f</i>(2,6) = ?`,k:'f',a:'22',h:`將 x=2, y=6 代入計算。`,l:`<i>f</i>(2,6) = 22`},
+ {q:`比較四個值，2<i>x</i> + 3<i>y</i> 的最大值為何？`,k:'c',o:['(A) 0','(B) 9','(C) 10','(D) 22'],a:3,h:`從中找出數值最大的選項。`,l:`答案：(D) 最大值為 22`}
+]},
+{t:'選5',e:`承第4題的條件下，2<i>x</i> + 3<i>y</i> 的最小值為何？`,gfrom:3,ans:'(A) 0',s:[
+ {q:`回顧上題，四個頂點代入的值為 0、10、9、22。最小值為何？`,k:'c',o:['(A) 0','(B) 9','(C) 10','(D) 22'],a:0,h:`從中找出數值最小的選項。`,l:`答案：(A) 最小值為 0`}
+]},
+{t:'填1',e:`在 0 ≤ <i>x</i> ≤ 6、0 ≤ <i>y</i> ≤ 4 的條件下：(1)所圍的區域面積為？ (2) <i>f</i>(<i>x</i>, <i>y</i>) = <i>x</i> − 3<i>y</i> + 5 的最小值為？ (3) 最大值為？`,g:{x:[-2,8],y:[-2,6],sn:1},ans:'(1) 24 (2) -7 (3) 11',s:[
+ {k:'g',t:'line',c:[1,0,6],lab:`<i>x</i> = 6`,q:`畫出 <i>x</i> = 6 邊界。`,h:`這是一條鉛直線，每個點的橫坐標固定為 6。`,l:`畫出 <i>x</i> = 6`},
+ {k:'g',t:'line',c:[0,1,4],lab:`<i>y</i> = 4`,q:`畫出 <i>y</i> = 4 邊界。`,h:`這是一條水平線，每個點的縱坐標固定為 4。`,l:`畫出 <i>y</i> = 4`},
+ {k:'g',t:'arrow',c:[1,0,0,'ge'],lab:`<i>x</i> ≥ 0`,q:`用箭頭標示 <i>x</i> ≥ 0。請點選滿足的一點。`,h:`橫坐標要大於或等於 0，表示在 <i>y</i> 軸右側。`,l:`箭頭標示 <i>x</i> ≥ 0`},
+ {k:'g',t:'arrow',c:[1,0,6,'le'],lab:`<i>x</i> ≤ 6`,q:`用箭頭標示 <i>x</i> ≤ 6。請點選滿足的一點。`,h:`橫坐標要小於或等於 6，表示在 <i>x</i> = 6 直線的左側。`,l:`箭頭標示 <i>x</i> ≤ 6`},
+ {k:'g',t:'arrow',c:[0,1,0,'ge'],lab:`<i>y</i> ≥ 0`,q:`用箭頭標示 <i>y</i> ≥ 0。請點選滿足的一點。`,h:`縱坐標大於或等於 0，表示在 <i>x</i> 軸上方。`,l:`箭頭標示 <i>y</i> ≥ 0`},
+ {k:'g',t:'arrow',c:[0,1,4,'le'],lab:`<i>y</i> ≤ 4`,q:`用箭頭標示 <i>y</i> ≤ 4。請點選滿足的一點。`,h:`縱坐標小於或等於 4，表示在 <i>y</i> = 4 直線的下方。`,l:`箭頭標示 <i>y</i> ≤ 4`},
+ {k:'g',t:'side',cs:[[1,0,0,'ge'],[1,0,6,'le'],[0,1,0,'ge'],[0,1,4,'le']],q:`找重疊處：四組箭頭共同指向的區域。請點選區域內部。`,h:`點選被四條邊界線包圍出來的長方形內部。`,l:`矩形重疊處塗色`},
+ {k:'g',t:'vert',pts:[[0,0],[6,0],[6,4],[0,4]],q:`請標出矩形的四個頂點。`,h:`長方形的四個轉角處。`,l:`標出頂點：(0,0), (6,0), (6,4), (0,4)`},
+ {q:`此矩形的長（從 <i>x</i> = 0 到 6）為何？`,k:'f',a:'6',h:`相減計算長度。`,l:`長度 = 6`},
+ {q:`此矩形的寬（從 <i>y</i> = 0 到 4）為何？`,k:'f',a:'4',h:`相減計算寬度。`,l:`寬度 = 4`},
+ {q:`(1) 矩形面積為何？`,k:'f',a:'24',h:`矩形面積公式：長 × 寬。`,l:`面積 = 24`},
+ {q:`代入 <i>f</i>(<i>x</i>, <i>y</i>) = <i>x</i> − 3<i>y</i> + 5。<i>f</i>(6,0) = ?`,k:'f',a:'11',h:`把 x=6, y=0 代入目標函數計算。`,l:`<i>f</i>(6,0) = 11`},
+ {q:`<i>f</i>(0,4) = ?`,k:'f',a:'-7',h:`把 x=0, y=4 代入目標函數計算。`,l:`<i>f</i>(0,4) = -7`},
+ {q:`<i>f</i>(6,4) = ?`,k:'f',a:'-1',h:`把 x=6, y=4 代入目標函數計算。`,l:`<i>f</i>(6,4) = -1`},
+ {q:`<i>f</i>(0,0) = ?`,k:'f',a:'5',h:`把 x=0, y=0 代入目標函數計算。`,l:`<i>f</i>(0,0) = 5`},
+ {q:`(2) 比較這四個值，最小值為？`,k:'f',a:'-7',h:`從中找出數值最小的答案。`,l:`最小值為 -7`},
+ {q:`(3) 最大值為？`,k:'f',a:'11',h:`從中找出數值最大的答案。`,l:`最大值為 11`}
+]},
+{t:'填2',e:`設 (<i>x</i>, <i>y</i>) 滿足 <i>y</i> ≥ 0、0 ≤ <i>x</i> ≤ 9、−6 ≤ <i>x</i> − 3<i>y</i> ≤ 6，則 <i>f</i>(<i>x</i>, <i>y</i>) = <i>x</i> − 2<i>y</i> + 1 的最大值為？`,g:{x:[-2,12],y:[-3,7],sn:1},ans:'8',s:[
+ {k:'g',t:'line',c:[1,0,9],lab:`<i>x</i> = 9`,q:`畫出 <i>x</i> = 9 邊界。`,h:`這是一條鉛直線，每個點的橫坐標固定為 9。`,l:`畫出 <i>x</i> = 9`},
+ {k:'g',t:'line',c:[1,-3,-6],lab:`<i>x</i> − 3<i>y</i> = −6`,q:`畫 <i>x</i> − 3<i>y</i> = −6。請點選直線上兩點。`,h:`可以試著令 x = 0 計算 y 是多少，或是令 y = 3 算算看 x。`,l:`畫出 <i>x</i> − 3<i>y</i> = −6`},
+ {k:'g',t:'line',c:[1,-3,6],lab:`<i>x</i> − 3<i>y</i> = 6`,q:`畫 <i>x</i> − 3<i>y</i> = 6。請點選直線上兩點。`,h:`可以試著令 y = 0 計算 x 是多少，或是令 x = 9 算算看 y。`,l:`畫出 <i>x</i> − 3<i>y</i> = 6`},
+ {k:'g',t:'arrow',c:[0,1,0,'ge'],lab:`<i>y</i> ≥ 0`,q:`用箭頭標示 <i>y</i> ≥ 0。`,h:`縱坐標大於或等於 0，表示在 <i>x</i> 軸上方。`,l:`箭頭標示 <i>y</i> ≥ 0`},
+ {k:'g',t:'arrow',c:[1,0,0,'ge'],lab:`<i>x</i> ≥ 0`,q:`用箭頭標示 <i>x</i> ≥ 0 (因為 0 ≤ <i>x</i>)。`,h:`橫坐標大於或等於 0，表示在 <i>y</i> 軸右側。`,l:`箭頭標示 <i>x</i> ≥ 0`},
+ {k:'g',t:'arrow',c:[1,0,9,'le'],lab:`<i>x</i> ≤ 9`,q:`用箭頭標示 <i>x</i> ≤ 9。`,h:`橫坐標小於或等於 9，表示在 <i>x</i> = 9 直線左側。`,l:`箭頭標示 <i>x</i> ≤ 9`},
+ {k:'g',t:'arrow',c:[1,-3,-6,'ge'],lab:`<i>x</i> − 3<i>y</i> ≥ −6`,q:`用箭頭標示 <i>x</i> − 3<i>y</i> ≥ −6。代入原點 (0,0) 成立嗎？`,h:`0 ≥ -6 成立，點選包含原點的那一側。`,l:`箭頭標示 <i>x</i> − 3<i>y</i> ≥ −6`},
+ {k:'g',t:'arrow',c:[1,-3,6,'le'],lab:`<i>x</i> − 3<i>y</i> ≤ 6`,q:`用箭頭標示 <i>x</i> − 3<i>y</i> ≤ 6。代入原點 (0,0) 成立嗎？`,h:`0 ≤ 6 成立，點選包含原點的那一側。`,l:`箭頭標示 <i>x</i> − 3<i>y</i> ≤ 6`},
+ {k:'g',t:'side',cs:[[1,0,0,'ge'],[1,0,9,'le'],[0,1,0,'ge'],[1,-3,-6,'ge'],[1,-3,6,'le']],q:`找重疊處：請點選五組箭頭共同指向的區域內部。`,h:`點選被這五條界線包圍出來的多邊形內部。`,l:`區域塗色`},
+ {q:`求頂點：直線 <i>x</i> = 9 與 <i>x</i> − 3<i>y</i> = 6 的交點，代入得 9 − 3<i>y</i> = 6，整理得 3<i>y</i> = 3，解得 <i>y</i> = ?`,k:'f',a:'1',h:`解一元一次方程式，兩邊同除以 3。`,l:`交點 (9,1)`},
+ {q:`直線 <i>x</i> = 9 與 <i>x</i> − 3<i>y</i> = −6 的交點，代入得 9 − 3<i>y</i> = −6，整理得 3<i>y</i> = 15，解得 <i>y</i> = ?`,k:'f',a:'5',h:`解一元一次方程式，將 15 除以 3。`,l:`交點 (9,5)`},
+ {q:`直線 <i>x</i> = 0 (即 <i>y</i> 軸) 與 <i>x</i> − 3<i>y</i> = −6 的交點，代入得 0 − 3<i>y</i> = −6，整理得 −3<i>y</i> = −6，解得 <i>y</i> = ?`,k:'f',a:'2',h:`兩邊同除以 -3 計算。`,l:`交點 (0,2)`},
+ {q:`直線 <i>y</i> = 0 (即 <i>x</i> 軸) 與 <i>x</i> − 3<i>y</i> = 6 的交點，代入得 <i>x</i> − 3(0) = 6，解得 <i>x</i> = ?`,k:'f',a:'6',h:`直接求出 x 的值即可。`,l:`交點 (6,0)`},
+ {k:'g',t:'vert',pts:[[0,0],[6,0],[9,1],[9,5],[0,2]],q:`請在圖上標出這 5 個頂點 (包含原點 (0,0))。`,h:`找出區域周圍的五個轉角處。`,l:`標出五個頂點`},
+ {q:`代入 <i>f</i>(<i>x</i>, <i>y</i>) = <i>x</i> − 2<i>y</i> + 1。<i>f</i>(9,1) = ?`,k:'f',a:'8',h:`把 x=9, y=1 代入計算。`,l:`<i>f</i>(9,1) = 8`},
+ {q:`<i>f</i>(6,0) = ?`,k:'f',a:'7',h:`把 x=6, y=0 代入計算。`,l:`<i>f</i>(6,0) = 7`},
+ {q:`<i>f</i>(9,5) = ?`,k:'f',a:'0',h:`把 x=9, y=5 代入計算。`,l:`<i>f</i>(9,5) = 0`},
+ {q:`<i>f</i>(0,2) = ?`,k:'f',a:'-3',h:`把 x=0, y=2 代入計算。`,l:`<i>f</i>(0,2) = -3`},
+ {q:`<i>f</i>(0,0) = ?`,k:'f',a:'1',h:`把 x=0, y=0 代入計算。`,l:`<i>f</i>(0,0) = 1`},
+ {q:`比較這五個值，最大值為？`,k:'f',a:'8',h:`從中找出數值最大的結果。`,l:`答案：最大值為 8`}
+]},
+{t:'填3',e:`承第2題的條件下，<i>f</i>(<i>x</i>, <i>y</i>) = <i>x</i> − 2<i>y</i> + 1 的最小值為？`,gfrom:6,ans:'-3',s:[
+ {q:`回顧上題，五個頂點代入的值為 8, 7, 0, -3, 1。最小值為何？`,k:'f',a:'-3',h:`從中找出數值最小的結果。`,l:`答案：最小值為 -3`}
+]},
+{t:'填4-6',e:`鼎利公司生產甲、乙兩種零件，已知甲工資為4萬元，材料費為3萬元；乙工資為3萬元，材料費為6萬元。甲可獲利2萬元，乙獲利3萬元。總工資不超過60萬元，總材料費不超過90萬元，求最大利潤。應生產甲零件多少個？乙零件多少個？最大利潤多少萬？`,sm:1,g:{x:[-4,32],y:[-4,24],sn:1},ans:'甲:6個, 乙:12個, 利潤:48萬',s:[
+ {q:`設生產甲 <i>x</i> 個、乙 <i>y</i> 個。總工資不超過 60 萬元，不等式是？`,k:'c',o:['4<i>x</i> + 3<i>y</i> ≤ 60','3<i>x</i> + 4<i>y</i> ≤ 60'],a:0,h:`甲工資 4 萬對應 <i>x</i>，乙工資 3 萬對應 <i>y</i>。`,l:`工資條件：4<i>x</i> + 3<i>y</i> ≤ 60`},
+ {q:`總材料費不超過 90 萬元，不等式是？`,k:'c',o:['6<i>x</i> + 3<i>y</i> ≤ 90','3<i>x</i> + 6<i>y</i> ≤ 90'],a:1,h:`甲材料 3 萬對應 <i>x</i>，乙材料 6 萬對應 <i>y</i>。`,l:`材料條件：3<i>x</i> + 6<i>y</i> ≤ 90 (約分為 <i>x</i> + 2<i>y</i> ≤ 30)`},
+ {q:`零件生產數量不能為負數，所以必須加入什麼限制條件？`,k:'c',o:['<i>x</i> ≥ 0 且 <i>y</i> ≥ 0','<i>x</i> > 0 且 <i>y</i> > 0'],a:0,h:`可以選擇不生產（數量為 0），但數量不能是負的。`,l:`數量條件：<i>x</i> ≥ 0 且 <i>y</i> ≥ 0`},
+ {q:`目標函數：要計算的總利潤 <i>f</i>(<i>x</i>, <i>y</i>) = ?`,k:'c',o:['2<i>x</i> + 3<i>y</i>','3<i>x</i> + 2<i>y</i>'],a:0,h:`甲每個獲利 2 萬，乙每個獲利 3 萬。`,l:`目標函數：2<i>x</i> + 3<i>y</i>`},
+ {k:'g',t:'line',c:[4,3,60],lab:`4<i>x</i> + 3<i>y</i> = 60`,q:`畫 4<i>x</i> + 3<i>y</i> = 60。請點選直線上兩點。`,h:`可以試著分別令 x = 0 或 y = 0，計算出對應的兩軸交點坐標。`,l:`畫出 4<i>x</i> + 3<i>y</i> = 60`},
+ {k:'g',t:'line',c:[1,2,30],lab:`<i>x</i> + 2<i>y</i> = 30`,q:`畫 <i>x</i> + 2<i>y</i> = 30。請點選直線上兩點。`,h:`可以試著分別令 x = 0 或 y = 0，代入方程式計算出兩點。`,l:`畫出 <i>x</i> + 2<i>y</i> = 30`},
+ {k:'g',t:'arrow',c:[4,3,60,'le'],lab:`4<i>x</i> + 3<i>y</i> ≤ 60`,q:`用箭頭標示 4<i>x</i> + 3<i>y</i> ≤ 60。代入原點 (0,0) 成立嗎？`,h:`代入後 0 ≤ 60 成立，請點選包含原點的那一側。`,l:`箭頭標示 4<i>x</i> + 3<i>y</i> ≤ 60`},
+ {k:'g',t:'arrow',c:[1,2,30,'le'],lab:`<i>x</i> + 2<i>y</i> ≤ 30`,q:`用箭頭標示 <i>x</i> + 2<i>y</i> ≤ 30。代入原點 (0,0) 成立嗎？`,h:`代入後 0 ≤ 30 成立，請點選包含原點的那一側。`,l:`箭頭標示 <i>x</i> + 2<i>y</i> ≤ 30`},
+ {q:`準備畫出 <i>x</i> ≥ 0 的範圍。請問其邊界直線 <i>x</i> = 0 是圖上的哪一條線？`,k:'c',o:['<i>x</i> 軸','<i>y</i> 軸'],a:1,h:`橫坐標永遠是 0 的線是垂直的。`,l:`<i>x</i> = 0 是 <i>y</i> 軸`},
+ {k:'g',t:'arrow',c:[1,0,0,'ge'],lab:`<i>x</i> ≥ 0`,q:`用箭頭標示 <i>x</i> ≥ 0。請在 <i>y</i> 軸 (即 <i>x</i> = 0) 的右側點選一點。`,h:`橫坐標大於或等於 0。`,l:`箭頭標示 <i>x</i> ≥ 0`},
+ {q:`準備畫出 <i>y</i> ≥ 0 的範圍。請問其邊界直線 <i>y</i> = 0 是圖上的哪一條線？`,k:'c',o:['<i>x</i> 軸','<i>y</i> 軸'],a:0,h:`縱坐標永遠是 0 的線是水平的。`,l:`<i>y</i> = 0 是 <i>x</i> 軸`},
+ {k:'g',t:'arrow',c:[0,1,0,'ge'],lab:`<i>y</i> ≥ 0`,q:`用箭頭標示 <i>y</i> ≥ 0。請在 <i>x</i> 軸 (即 <i>y</i> = 0) 的上方點選一點。`,h:`縱坐標大於或等於 0。`,l:`箭頭標示 <i>y</i> ≥ 0`},
+ {k:'g',t:'side',cs:[[4,3,60,'le'],[1,2,30,'le'],[1,0,0,'ge'],[0,1,0,'ge']],q:`找重疊處：請點選四組箭頭共同指向的可行解區域內部。`,h:`點選被兩條斜線與兩條坐標軸包圍出來的四邊形區域。`,l:`區域塗色`},
+ {q:`求交點：聯立 4<i>x</i> + 3<i>y</i> = 60 與 <i>x</i> + 2<i>y</i> = 30。將第二式乘 4 得 4<i>x</i> + 8<i>y</i> = 120，兩式相減得 5<i>y</i> = 60，解得 <i>y</i> = ?`,k:'f',a:'12',h:`解一元一次方程式，計算 60 除以 5。`,l:`交點的 y = 12`},
+ {q:`將 <i>y</i> = 12 代回 <i>x</i> + 2<i>y</i> = 30，得 <i>x</i> + 24 = 30，解得 <i>x</i> = ?`,k:'f',a:'6',h:`移項計算 30 - 24。`,l:`交點 (6,12)`},
+ {k:'g',t:'vert',pts:[[0,0],[15,0],[6,12],[0,15]],q:`請標出區域的四個頂點。`,h:`找出圖面上的四個交角處。`,l:`標出四個頂點`},
+ {q:`代入 <i>f</i>(<i>x</i>, <i>y</i>) = 2<i>x</i> + 3<i>y</i>。交點 (6,12) 的利潤 = 2(6) + 3(12) = ?`,k:'f',a:'48',h:`算出 12 + 36 的結果。`,l:`<i>f</i>(6,12) = 48`},
+ {q:`其他頂點 <i>f</i>(15,0) = 30，<i>f</i>(0,15) = 45，<i>f</i>(0,0) = 0。所以最大利潤為？`,k:'f',a:'48',h:`比較這四個結果，找出最大值。`,l:`(6) 最大利潤為 48 萬元`},
+ {q:`發生最大利潤時，甲零件 (對應 <i>x</i>) 應生產多少個？`,k:'f',a:'6',h:`對應產生最大利潤點的 <i>x</i> 坐標。`,l:`(4) 甲生產 6 個`},
+ {q:`乙零件 (對應 <i>y</i>) 應生產多少個？`,k:'f',a:'12',h:`對應產生最大利潤點的 <i>y</i> 坐標。`,l:`(5) 乙生產 12 個`}
+]},
+{t:'計1',e:`△ABC 三頂點 <i>A</i>(2, 1)、<i>B</i>(−5, 3)、<i>C</i>(6, 5)，試求 <i>f</i>(<i>x</i>, <i>y</i>) = 4<i>x</i> − 3<i>y</i> + 1 在△ABC所圍區域內的最大值。`,g:{x:[-7,8],y:[-2,8],sn:1},ans:'10',s:[
+ {k:'g',t:'vert',pts:[[2,1],[-5,3],[6,5]],q:`極值發生在頂點上。請在圖上直接標出這三個頂點 <i>A</i>(2, 1)、<i>B</i>(−5, 3)、<i>C</i>(6, 5)。`,h:`觀察這三個給定的坐標，在圖面上找出對應的位置並點擊。`,l:`標出三個頂點`},
+ {q:`代入 <i>A</i>(2, 1) 至 <i>f</i>(<i>x</i>, <i>y</i>) = 4<i>x</i> − 3<i>y</i> + 1：4(2) − 3(1) + 1 = ?`,k:'f',a:'6',h:`計算 8 - 3 + 1。`,l:`<i>f</i>(2,1) = 6`},
+ {q:`代入 <i>B</i>(−5, 3)：4(−5) − 3(3) + 1 = ?`,k:'f',a:'-28',h:`計算 -20 - 9 + 1。`,l:`<i>f</i>(-5,3) = -28`},
+ {q:`代入 <i>C</i>(6, 5)：4(6) − 3(5) + 1 = ?`,k:'f',a:'10',h:`計算 24 - 15 + 1。`,l:`<i>f</i>(6,5) = 10`},
+ {q:`比較三個值 (6, -28, 10)，最大值為？`,k:'f',a:'10',h:`從中找出數值最大的結果。`,l:`答案：最大值為 10`}
+]},
+{t:'計2',e:`圖解 <i>x</i> ≥ 0、<i>y</i> ≥ 0、<i>x</i> + <i>y</i> ≤ 4、2<i>x</i> + <i>y</i> ≤ 6，並求出所圍區域的四個頂點坐標。`,g:{x:[-2,7],y:[-2,9],sn:1},ans:'(0,0), (3,0), (2,2), (0,4)',s:[
+ {k:'g',t:'line',c:[1,1,4],lab:`<i>x</i> + <i>y</i> = 4`,q:`畫出 <i>x</i> + <i>y</i> = 4 邊界。請點選直線上兩點。`,h:`找兩坐標相加等於 4 的點，可以試著分別令 x = 0 與 y = 0。`,l:`畫出 <i>x</i> + <i>y</i> = 4`},
+ {k:'g',t:'line',c:[2,1,6],lab:`2<i>x</i> + <i>y</i> = 6`,q:`畫出 2<i>x</i> + <i>y</i> = 6 邊界。請點選直線上兩點。`,h:`可以試著分別令 x = 0 與 y = 0 代入方程式計算出兩點。`,l:`畫出 2<i>x</i> + <i>y</i> = 6`},
+ {k:'g',t:'arrow',c:[1,1,4,'le'],lab:`<i>x</i> + <i>y</i> ≤ 4`,q:`用箭頭標示 <i>x</i> + <i>y</i> ≤ 4。`,h:`代入原點測試是否成立，若成立則點選包含原點的那一側。`,l:`箭頭標示 <i>x</i> + <i>y</i> ≤ 4`},
+ {k:'g',t:'arrow',c:[2,1,6,'le'],lab:`2<i>x</i> + <i>y</i> ≤ 6`,q:`用箭頭標示 2<i>x</i> + <i>y</i> ≤ 6。`,h:`代入原點測試是否成立，若成立則點選包含原點的那一側。`,l:`箭頭標示 2<i>x</i> + <i>y</i> ≤ 6`},
+ {k:'g',t:'arrow',c:[1,0,0,'ge'],lab:`<i>x</i> ≥ 0`,q:`用箭頭標示 <i>x</i> ≥ 0。`,h:`橫坐標大於或等於 0，表示在 <i>y</i> 軸的右側。`,l:`箭頭標示 <i>x</i> ≥ 0`},
+ {k:'g',t:'arrow',c:[0,1,0,'ge'],lab:`<i>y</i> ≥ 0`,q:`用箭頭標示 <i>y</i> ≥ 0。`,h:`縱坐標大於或等於 0，表示在 <i>x</i> 軸的上方。`,l:`箭頭標示 <i>y</i> ≥ 0`},
+ {k:'g',t:'side',cs:[[1,1,4,'le'],[2,1,6,'le'],[1,0,0,'ge'],[0,1,0,'ge']],q:`找重疊處：請點選共同指向的區域。`,h:`點選包含原點的四邊形內部。`,l:`區域塗色`},
+ {q:`求交點：聯立 <i>x</i> + <i>y</i> = 4 與 2<i>x</i> + <i>y</i> = 6。將兩式相減 (下減上) 得 <i>x</i> = ?`,k:'f',a:'2',h:`解方程式，計算出 6 - 4 的值。`,l:`交點的 x = 2`},
+ {q:`將 <i>x</i> = 2 代回 <i>x</i> + <i>y</i> = 4，解得 <i>y</i> = ?`,k:'f',a:'2',h:`移項計算 4 - 2。`,l:`交點 (2,2)`},
+ {k:'g',t:'vert',pts:[[0,0],[3,0],[2,2],[0,4]],q:`請標出區域的四個頂點。`,h:`找出區域周邊的四個交角處。`,l:`頂點：(0,0)、(3,0)、(2,2)、(0,4)`},
+ {q:`請依圖示，四個頂點坐標為？`,k:'c',o:['(0,0), (3,0), (2,2), (0,4)','(0,0), (4,0), (2,2), (0,6)'],a:0,h:`觀察圖形上標出的四個綠色端點的坐標。`,l:`答案：(0,0), (3,0), (2,2), (0,4)`}
+]},
+{t:'計3',e:`已知 <i>x</i> ≥ 0、<i>y</i> ≥ 0、5<i>x</i> + 3<i>y</i> ≥ 21、<i>x</i> + 3<i>y</i> ≥ 9，試求 2<i>x</i> + 5<i>y</i> 的最小值。`,g:{x:[-2,11],y:[-2,9],sn:1},ans:'16',s:[
+ {k:'g',t:'line',c:[5,3,21],lab:`5<i>x</i> + 3<i>y</i> = 21`,q:`畫 5<i>x</i> + 3<i>y</i> = 21。請點選直線上兩點。`,h:`這題找整數點比較好畫，可以試著分別令 x = 0 以及令 x = 3 代入計算看看。`,l:`畫出 5<i>x</i> + 3<i>y</i> = 21`},
+ {k:'g',t:'line',c:[1,3,9],lab:`<i>x</i> + 3<i>y</i> = 9`,q:`畫 <i>x</i> + 3<i>y</i> = 9。請點選直線上兩點。`,h:`可以試著分別令 x = 0 與 y = 0 代入方程式計算。`,l:`畫出 <i>x</i> + 3<i>y</i> = 9`},
+ {k:'g',t:'arrow',c:[5,3,21,'ge'],lab:`5<i>x</i> + 3<i>y</i> ≥ 21`,q:`用箭頭標示 5<i>x</i> + 3<i>y</i> ≥ 21。代入原點 (0,0) 成立嗎？`,h:`代入後 0 ≥ 21 不成立，請點選不包含原點的那一側。`,l:`箭頭標示 5<i>x</i> + 3<i>y</i> ≥ 21`},
+ {k:'g',t:'arrow',c:[1,3,9,'ge'],lab:`<i>x</i> + 3<i>y</i> ≥ 9`,q:`用箭頭標示 <i>x</i> + 3<i>y</i> ≥ 9。`,h:`代入原點後 0 ≥ 9 不成立，請點選不包含原點的那一側。`,l:`箭頭標示 <i>x</i> + 3<i>y</i> ≥ 9`},
+ {k:'g',t:'arrow',c:[1,0,0,'ge'],lab:`<i>x</i> ≥ 0`,q:`用箭頭標示 <i>x</i> ≥ 0。`,h:`橫坐標大於或等於 0，表示在 <i>y</i> 軸的右側。`,l:`箭頭標示 <i>x</i> ≥ 0`},
+ {k:'g',t:'arrow',c:[0,1,0,'ge'],lab:`<i>y</i> ≥ 0`,q:`用箭頭標示 <i>y</i> ≥ 0。`,h:`縱坐標大於或等於 0，表示在 <i>x</i> 軸的上方。`,l:`箭頭標示 <i>y</i> ≥ 0`},
+ {k:'g',t:'side',cs:[[5,3,21,'ge'],[1,3,9,'ge'],[1,0,0,'ge'],[0,1,0,'ge']],q:`找重疊處：點選四組箭頭共同指向的區域。`,h:`點選位於右上角、不包含原點的開放區域。`,l:`區域塗色`},
+ {q:`求交點：聯立 5<i>x</i> + 3<i>y</i> = 21 與 <i>x</i> + 3<i>y</i> = 9。兩式相減得 4<i>x</i> = 12，解得 <i>x</i> = ?`,k:'f',a:'3',h:`解一元一次方程式，將兩邊同除以 4。`,l:`交點的 x = 3`},
+ {q:`將 <i>x</i> = 3 代回 <i>x</i> + 3<i>y</i> = 9，得 3 + 3<i>y</i> = 9，解得 <i>y</i> = ?`,k:'f',a:'2',h:`先移項得到 3y = 6，再求出 y 的值。`,l:`交點 (3,2)`},
+ {k:'g',t:'vert',pts:[[0,7],[3,2],[9,0]],q:`請標出區域的三個頂點。`,h:`找出此開放區域邊界上的三個轉角處。`,l:`標出三個頂點 (0,7), (3,2), (9,0)`},
+ {q:`代入目標函數 2<i>x</i> + 5<i>y</i>。<i>f</i>(0,7) = ?`,k:'f',a:'35',h:`把 x=0, y=7 代入計算。`,l:`<i>f</i>(0,7) = 35`},
+ {q:`<i>f</i>(3,2) = 2(3) + 5(2) = ?`,k:'f',a:'16',h:`把 x=3, y=2 代入計算。`,l:`<i>f</i>(3,2) = 16`},
+ {q:`<i>f</i>(9,0) = ?`,k:'f',a:'18',h:`把 x=9, y=0 代入計算。`,l:`<i>f</i>(9,0) = 18`},
+ {q:`比較三個值，最小值為？`,k:'f',a:'16',h:`從中找出數值最小的結果。`,l:`答案：最小值為 16`}
+]},
+{t:'計4',e:`設 <i>x</i>、<i>y</i> 滿足不等式 2 ≤ <i>x</i> ≤ 5、<i>x</i> + <i>y</i> ≤ 9、<i>y</i> ≥ 0，試求 <i>f</i>(<i>x</i>, <i>y</i>) = 3<i>x</i> − <i>y</i> + 2 的最小值。`,g:{x:[-2,11],y:[-2,11],sn:1},ans:'1',s:[
+ {k:'g',t:'line',c:[1,0,2],lab:`<i>x</i> = 2`,q:`畫出 <i>x</i> = 2 邊界。`,h:`這是一條鉛直線，每個點的橫坐標固定為 2。`,l:`畫出 <i>x</i> = 2`},
+ {k:'g',t:'line',c:[1,0,5],lab:`<i>x</i> = 5`,q:`畫出 <i>x</i> = 5 邊界。`,h:`這是一條鉛直線，每個點的橫坐標固定為 5。`,l:`畫出 <i>x</i> = 5`},
+ {k:'g',t:'line',c:[1,1,9],lab:`<i>x</i> + <i>y</i> = 9`,q:`畫出 <i>x</i> + <i>y</i> = 9 邊界。請點選直線上兩點。`,h:`可以試著分別令 x = 0 與 y = 0，求出與坐標軸的交點。`,l:`畫出 <i>x</i> + <i>y</i> = 9`},
+ {k:'g',t:'arrow',c:[1,0,2,'ge'],lab:`<i>x</i> ≥ 2`,q:`用箭頭標示 <i>x</i> ≥ 2。`,h:`橫坐標大於或等於 2，表示在 <i>x</i> = 2 直線的右側。`,l:`箭頭標示 <i>x</i> ≥ 2`},
+ {k:'g',t:'arrow',c:[1,0,5,'le'],lab:`<i>x</i> ≤ 5`,q:`用箭頭標示 <i>x</i> ≤ 5。`,h:`橫坐標小於或等於 5，表示在 <i>x</i> = 5 直線的左側。`,l:`箭頭標示 <i>x</i> ≤ 5`},
+ {k:'g',t:'arrow',c:[1,1,9,'le'],lab:`<i>x</i> + <i>y</i> ≤ 9`,q:`用箭頭標示 <i>x</i> + <i>y</i> ≤ 9。`,h:`代入原點檢驗是否成立，若成立請選包含原點的那一側。`,l:`箭頭標示 <i>x</i> + <i>y</i> ≤ 9`},
+ {k:'g',t:'arrow',c:[0,1,0,'ge'],lab:`<i>y</i> ≥ 0`,q:`用箭頭標示 <i>y</i> ≥ 0。`,h:`縱坐標大於或等於 0，表示在 <i>x</i> 軸的上方。`,l:`箭頭標示 <i>y</i> ≥ 0`},
+ {k:'g',t:'side',cs:[[1,0,2,'ge'],[1,0,5,'le'],[1,1,9,'le'],[0,1,0,'ge']],q:`找重疊處：點選四組箭頭共同指向的區域。`,h:`點選被這幾條邊界線圍起來的梯形內部。`,l:`區域塗色`},
+ {q:`求交點：直線 <i>x</i> = 2 與 <i>x</i> + <i>y</i> = 9 交點。代入得 2 + <i>y</i> = 9，解得 <i>y</i> = ?`,k:'f',a:'7',h:`移項計算 9 - 2。`,l:`交點 (2,7)`},
+ {q:`直線 <i>x</i> = 5 與 <i>x</i> + <i>y</i> = 9 交點。代入得 5 + <i>y</i> = 9，解得 <i>y</i> = ?`,k:'f',a:'4',h:`移項計算 9 - 5。`,l:`交點 (5,4)`},
+ {k:'g',t:'vert',pts:[[2,0],[5,0],[5,4],[2,7]],q:`請標出區域的四個頂點。`,h:`找出區域周圍的四個交點。`,l:`標出四個頂點`},
+ {q:`代入 <i>f</i>(<i>x</i>, <i>y</i>) = 3<i>x</i> − <i>y</i> + 2。<i>f</i>(2,7) = 3(2) − 7 + 2 = ?`,k:'f',a:'1',h:`把 x=2, y=7 代入計算。`,l:`<i>f</i>(2,7) = 1`},
+ {q:`<i>f</i>(5,4) = 3(5) − 4 + 2 = ?`,k:'f',a:'13',h:`把 x=5, y=4 代入計算。`,l:`<i>f</i>(5,4) = 13`},
+ {q:`其他兩點：<i>f</i>(2,0) = 8，<i>f</i>(5,0) = 17。比較後最小值為？`,k:'f',a:'1',h:`從這四個計算結果中找出數值最小的。`,l:`答案：最小值為 1`}
+]}
+];
+const nG=()=>({lines:[],shades:[],v:[],tmp:[],t:[],arrows:[]});
+const mkS=()=>P.map(q=>({v:null,snap:{},i:0,L:(q.L0||[]).slice(),d:0,fb:'',cls:'',ok:0,buf:'',ord:[],G:nG()}));
+let S=mkS(),cele=0;
+let p=0;
+const $=id=>document.getElementById(id);
+const fcur=()=>{const s=S[p];return s.d?P[p].s.length:s.i};
+function NAV(label){const s=S[p],bk=(s.v==null?fcur():s.v)<=0;return `<div class="lab nvr"><span>${label}</span><span><button class="nv" ${bk?'disabled':''} onclick="back()">‹ 上一步</button><button class="nv" ${s.v==null?'disabled':''} onclick="fwd()">下一步 ›</button></span></div>`}
+function back(){const s=S[p],v=(s.v==null?fcur():s.v)-1;if(v>=0){s.v=v;render()}}
+function fwd(){const s=S[p];if(s.v==null)return;const v=s.v+1;s.v=v>=fcur()?null:v;render()}
+function toCur(){S[p].v=null;render()}
+const GSV=sn=>gsvg(P[p].g,JSON.parse(sn),0);
+function rev(s,st,j){let a='';
+ if(st.k=='c')a=`<div class="opts">${st.o.map((o,k)=>`<button class="opt${k==st.a?' good':''}" disabled>${o}</button>`).join('')}</div>`;
+ if(st.k=='f')a=`<div id="disp">${st.a.replace('-','−')}</div>`;
+ if(st.k=='o')a=`<div id="disp" style="font-size:1.05em">${st.a.map(k=>st.o[k]).join(st.sep)}</div>`;
+ if(st.k=='m')a=`<div class="opts" style="align-items:start"><div class="col2">${st.L.map(o=>`<button class="opt good" disabled>${o}</button>`).join('')}</div><div class="col2">${st.R.map(o=>`<button class="opt good" disabled>${o}</button>`).join('')}</div></div>`;
+ if((st.k=='g'||st.k=='p')&&s.snap[j])a=GSV(s.snap[j]);
+ return a+`<button class="go" onclick="toCur()">回到目前步驟</button>`}
+function showCele(){const el=$('cele');if(cele!=1){el.className='';el.innerHTML='';return}
+ el.className='on';el.innerHTML=`<div class="box"><h2>🎉 恭喜完成！</h2><p>所有題目的每個步驟都已完成。</p><div class="gr">${P.map((q,j)=>`<div class="it"><b>${P[j].t}</b> ${q.ans}</div>`).join('')}</div><div class="bt"><button onclick="cele=2;render()">回顧解題過程</button><button class="pri" onclick="S=mkS();p=0;cele=0;render()">重新練習</button></div></div>`}
+function END(){showCele()}
+
+const W=480,H=420,M={l:16,r:28,t:26,b:16},PW=W-M.l-M.r,PH=H-M.t-M.b,COL=['#2f5bea','#c2410c','#1b8a4b'];
+const acol=(ar,G)=>{const[a,b,k]=ar.c,i=G.lines.findIndex(l=>{const[p,q,r]=l.c;return Math.abs(a*q-b*p)<1e-9&&Math.abs(a*r-k*p)<1e-9&&Math.abs(b*r-k*q)<1e-9});return i<0?'currentColor':COL[i%3]};
+function segPts(g,a,b,k,n){const c=[],ok=(u,v)=>u>=g.x[0]-1e-9&&u<=g.x[1]+1e-9&&v>=g.y[0]-1e-9&&v<=g.y[1]+1e-9;
+ if(b)g.x.forEach(x=>{const y=(k-a*x)/b;if(ok(x,y))c.push([x,y])});if(a)g.y.forEach(y=>{const x=(k-b*y)/a;if(ok(x,y))c.push([x,y])});
+ c.sort((u,v)=>u[0]-v[0]||u[1]-v[1]);const A=c[0],B=c[c.length-1];return Array.from({length:n},(_,i)=>{const t=(i+.5)/n;return[A[0]+t*(B[0]-A[0]),A[1]+t*(B[1]-A[1])]})}
+const GX=q=>q.g||P[q.gfrom].g;
+const it=t=>t.replace(/<[^>]+>/g,'').replace(/[xy]/g,m=>`<tspan font-style="italic" font-family="Times New Roman,serif">${m}</tspan>`);
+function clip(Pl,a,b,c,op){const sg=op=='ge'?1:-1,d=u=>sg*(a*u[0]+b*u[1]-c),o=[];
+ Pl.forEach((u,i)=>{const n=Pl[(i+1)%Pl.length],du=d(u),dn=d(n);if(du>=-1e-9)o.push(u);
+  if((du>1e-9&&dn<-1e-9)||(du<-1e-9&&dn>1e-9)){const t=du/(du-dn);o.push([u[0]+t*(n[0]-u[0]),u[1]+t*(n[1]-u[1])])}});return o}
+function poly(g,cs){let Pl=[[g.x[0],g.y[0]],[g.x[1],g.y[0]],[g.x[1],g.y[1]],[g.x[0],g.y[1]]];cs.forEach(c=>Pl=clip(Pl,...c));return Pl}
+function gfull(j){const G=nG(),g=P[j].g;P[j].s.forEach(st=>{if(st.k!='g')return;if(st.t=='line')G.lines.push(st);if(st.t=='arrow'){if(st.clear)G.shades=[];G.arrows.push(st)}if(st.t=='side')G.shades.push(poly(g,st.cs));if(st.t=='vert')G.v.push(...st.pts)});return G}
+function gsvg(g,G,act){
+ const xr=g.x[1]-g.x[0],yr=g.y[1]-g.y[0],px=x=>M.l+(x-g.x[0])/xr*PW,py=y=>M.t+PH-(y-g.y[0])/yr*PH;
+ let o=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;flex:1;min-height:20vh;background:var(--card);border:1px solid var(--bd);border-radius:12px;touch-action:manipulation;user-select:none;color:var(--ink)"><defs><clipPath id="cp"><rect x="${M.l}" y="${M.t}" width="${PW}" height="${PH}"/></clipPath></defs>`;
+ const x0=Math.ceil(g.x[0]),y0=Math.ceil(g.y[0]);
+ const tx = xr > 20 ? 5 : (xr > 12 ? 2 : 1);
+ const ty = yr > 20 ? 5 : (yr > 12 ? 2 : 1);
+ for(let i=x0;i<=g.x[1];i++){
+  o+=`<line class="gl" x1="${px(i)}" y1="${M.t}" x2="${px(i)}" y2="${M.t+PH}"/>`;
+  if(i!==0 && i%tx===0) o+=`<text class="gt" x="${px(i)}" y="${py(0)+15}" text-anchor="middle">${i}</text>`;
+ }
+ for(let i=y0;i<=g.y[1];i++){
+  o+=`<line class="gl" x1="${M.l}" y1="${py(i)}" x2="${M.l+PW}" y2="${py(i)}"/>`;
+  if(i!==0 && i%ty===0) o+=`<text class="gt" x="${px(0)-6}" y="${py(i)+4}" text-anchor="end">${i}</text>`;
+ }
+ const ax=px(g.x[1])+14,ay=py(g.y[1])-14;
+ o+=`<line class="ga" x1="${M.l}" y1="${py(0)}" x2="${ax-3}" y2="${py(0)}"/><line class="ga" x1="${px(0)}" y1="${M.t+PH}" x2="${px(0)}" y2="${ay+3}"/>`;
+ o+=`<polygon class="gf" points="${ax},${py(0)} ${ax-10},${py(0)-4.5} ${ax-10},${py(0)+4.5}"/><polygon class="gf" points="${px(0)},${ay} ${px(0)-4.5},${ay+10} ${px(0)+4.5},${ay+10}"/>`;
+ o+=`<text class="gt" style="font-size:15px;fill:var(--ink)" x="${ax-4}" y="${py(0)+20}">${it('x')}</text><text class="gt" style="font-size:15px;fill:var(--ink)" x="${px(0)+9}" y="${ay+8}">${it('y')}</text><text class="gt" style="font-size:13px;fill:var(--ink)" x="${px(0)-14}" y="${py(0)+15}">O</text><g clip-path="url(#cp)">`;
+ G.shades.forEach(Pl=>o+=`<polygon points="${Pl.map(u=>px(u[0])+','+py(u[1])).join(' ')}" fill="#2f5bea" fill-opacity=".2"/>`);
+ G.lines.forEach((l,i)=>{const[a,b,c]=l.c;let u,w;if(!b){u=[c/a,g.y[0]-1];w=[c/a,g.y[1]+1]}else{const x0=g.x[0]-1,x1=g.x[1]+1;u=[x0,(c-a*x0)/b];w=[x1,(c-a*x1)/b]}
+  o+=`<line x1="${px(u[0])}" y1="${py(u[1])}" x2="${px(w[0])}" y2="${py(w[1])}" stroke="${COL[i%3]}" stroke-width="2.5"/>`});
+ o+='</g>';
+ const sx=PW/xr,sy=PH/yr;
+ G.arrows.forEach((ar,ai)=>{const[a,b,k,op]=ar.c,sg=op=='ge'?1:-1;let dx=sg*a/sx,dy=-sg*b/sy;const n=Math.hypot(dx,dy);dx/=n;dy/=n;const cl=acol(ar,G);
+  segPts(g,a,b,k,5).forEach(u=>{const X0=px(u[0]),Y0=py(u[1]),X1=X0+24*dx,Y1=Y0+24*dy,hx=X1-7*dx,hy=Y1-7*dy;o+=`<line x1="${X0}" y1="${Y0}" x2="${hx}" y2="${hy}" stroke="${cl}" stroke-width="2.2"/><polygon points="${X1},${Y1} ${hx-3.5*dy},${hy+3.5*dx} ${hx+3.5*dy},${hy-3.5*dx}" fill="${cl}"/>`})});
+ {let r=0;const row=(t,c)=>o+=`<text x="${M.l+PW-6}" y="${M.t+18+(r++)*18}" text-anchor="end" font-size="14" fill="${c}">${it(t)}</text>`;
+  G.lines.forEach((l,i)=>{if(!G.arrows.some(ar=>acol(ar,G)==COL[i%3]))row(l.lab,COL[i%3])});
+  G.arrows.forEach(ar=>row(ar.lab,acol(ar,G)))}
+ if(act){for(let x=g.x[0];x<=g.x[1]+1e-9;x+=g.sn)for(let y=g.y[0];y<=g.y[1]+1e-9;y+=g.sn)o+=`<circle cx="${px(x)}" cy="${py(y)}" r="1.5" class="gd"/>`}
+ G.tmp.concat(G.t).forEach(u=>o+=`<circle cx="${px(u[0])}" cy="${py(u[1])}" r="4.5" fill="#2f5bea"/>`);
+ const vl=(cx,cy,u)=>{const st='class="gt" style="fill:var(--ink);font-size:13px"';
+  if(Number.isInteger(u[1])){const e=cx>W-90;return `<text ${st} x="${cx+(e?-9:9)}" y="${cy-8}" text-anchor="${e?'end':'start'}">(${u[0]}, ${u[1]})</text>`}
+  const n=Math.round(u[1]*2),x0=cx+9,y0=cy-8,xs=`(${u[0]}, `,w=xs.length*6;
+  return `<text ${st} x="${x0}" y="${y0}">${xs}</text><text ${st} x="${x0+w+8}" y="${y0-5}" text-anchor="middle" style="font-size:11px">${n}</text><line x1="${x0+w}" y1="${y0-3.5}" x2="${x0+w+16}" y2="${y0-3.5}" stroke="currentColor" stroke-width="1.2"/><text ${st} x="${x0+w+8}" y="${y0+8}" text-anchor="middle" style="font-size:11px">2</text><text ${st} x="${x0+w+19}" y="${y0}">)</text>`};
+ G.v.forEach(u=>{const cx=px(u[0]),cy=py(u[1]);o+=`<circle cx="${cx}" cy="${cy}" r="6" fill="#1b8a4b" stroke="#fff" stroke-width="1.5"/>${vl(cx,cy,u)}`});
+ if(act)o+=`<rect x="${M.l-6}" y="${M.t-6}" width="${PW+12}" height="${PH+12}" fill="transparent" onpointerdown="gtap(event)"/>`;
+ return o+'</svg>'}
+function gtap(ev){
+ const s=S[p],q=P[p],st=q.s[s.i],g=q.g;if(s.ok)return;
+ const sv=ev.target.ownerSVGElement,pt=sv.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;const c=pt.matrixTransform(sv.getScreenCTM().inverse());
+ const sn=g.sn;let x=g.x[0]+(c.x-M.l)/PW*(g.x[1]-g.x[0]),y=g.y[0]+(M.t+PH-c.y)/PH*(g.y[1]-g.y[0]);
+ x=Math.min(g.x[1],Math.max(g.x[0],Math.round(x/sn)*sn));y=Math.min(g.y[1],Math.max(g.y[0],Math.round(y/sn)*sn));
+ const G=s.G,eq=(u,v)=>Math.abs(u[0]-v[0])<1e-6&&Math.abs(u[1]-v[1])<1e-6;
+ if(st.t=='line'){const[a,b,k]=st.c;if(Math.abs(a*x+b*y-k)>1e-6){bad();return}
+  if(G.tmp.some(u=>eq(u,[x,y]))){s.cls='no';s.fb='請選擇另一個不同的點。';render();return}
+  G.tmp.push([x,y]);if(G.tmp.length==2){G.lines.push(st);G.tmp=[];good()}else{s.cls='';s.fb='已選第 1 點，請再選第 2 個點。';render()}}
+ if(st.t=='arrow'){const[a,b,k,op]=st.c;if(op=='ge'?a*x+b*y>=k-1e-9:a*x+b*y<=k+1e-9){if(st.clear)G.shades=[];G.arrows.push(st);good()}else bad()}
+ if(st.t=='side'){if(st.cs.every(([a,b,k,op])=>op=='ge'?a*x+b*y>=k-1e-9:a*x+b*y<=k+1e-9)){G.shades.push(poly(g,st.cs));G.t.push([x,y]);good()}else bad()}
+ if(st.t=='vert'){const m=st.pts.find(u=>eq(u,[x,y]));if(m&&!G.v.some(u=>eq(u,m))){G.v.push(m);if(G.v.length==st.pts.length)good();else{s.cls='';s.fb=`已標出 ${G.v.length} / ${st.pts.length} 個頂點。`;render()}}else bad()}
+}
+function render(){
+ const q=P[p],s=S[p],st=q.s[s.i];
+ $('tabs').innerHTML='<h1>第3回 測驗卷</h1>'+P.map((o,j)=>`<button class="tab${j==p?' on':''}${S[j].d?' dn':''}" onclick="go(${j})">${o.t}</button>`).join('')+(S.every(x=>x.d)?'<button class="tab" style="margin-left:auto" onclick="cele=1;render()">🎉 完成</button>':'');
+ $('prob').className='card'+(q.sm?' sm':'');
+ $('prob').innerHTML=`<div class="lab">${q.t}</div>${q.e}`;
+ const bd=$('board'),oldTop=bd.scrollTop||0,grew=s.L.length>(s.pn||0);
+ bd.className='card'+(s.L.length>7?' cp':'');
+ bd.innerHTML=`<div class="lab">我的解題紀錄（共 ${s.L.length} 項，可上下滑動）</div>`+s.L.map(l=>`<div class="ln">${l}</div>`).join('');
+ bd.scrollTop=grew?bd.scrollHeight:oldTop;s.pn=s.L.length;
+ if(s.v!=null){const sj=q.s[s.v];$('q').innerHTML=`${NAV(`回顧 步驟 ${s.v+1} / ${q.s.length}（已完成）`)}${sj.q}`;$('act').innerHTML=rev(s,sj,s.v);$('fb').className='ok';$('fb').innerHTML=`<b>解題依據：</b>${sj.l}`;END();return}
+ 
+ let a='';
+ if(s.d){$('q').innerHTML=`${NAV('完成')}<span class="big">${q.ans}</span><br>回頭看左側紀錄與下方圖形，每一步的依據是什麼？`;
+  const j=q.gfrom!=null?q.gfrom:p;a=gsvg(GX(q),gfull(j),0)+(p<P.length-1?`<button class="go" style="margin-top:1.2vh" onclick="go(${p+1})">前往下一題</button>`:'');}
+ else{
+  $('q').innerHTML=`${NAV(`步驟 ${s.i+1} / ${q.s.length} ${st.k=='g'?'動手畫圖':'思考一下'}`)}${st.q}`;
+  const dis=s.ok?'disabled':'';
+  
+  // 保障繪圖進度在所有步驟都可見
+  if (q.gfrom != null) {
+      a = gsvg(GX(q), gfull(q.gfrom), 0);
+  } else if (q.g != null) {
+      a = gsvg(q.g, s.G, st.k=='g'?1:0);
+  }
+
+  if(st.k=='c')a+=`<div class="opts" style="margin-top:1.2vh">${st.o.map((o,j)=>`<button class="opt${s.ok&&j==st.a?' good':''}" ${dis} onclick="pick(${j})">${o}</button>`).join('')}</div>`;
+  if(st.k=='f')a+=`<div id="disp" style="margin-top:1.2vh">${s.buf.replace('-','−')||'&nbsp;'}</div><div class="pad" style="margin-top:1.2vh">${['7','8','9','4','5','6','1','2','3','−','0','⌫'].map(k=>`<button ${dis} onclick="key('${k}')">${k}</button>`).join('')}</div><button class="go" style="margin-top:1.2vh" ${dis} onclick="chk()">確認</button>`;
+  if(st.k=='o')a+=`<div id="disp" style="font-size:1.05em;margin-top:1.2vh">${s.ord.map(k=>st.o[k]).join(st.sep)||'&nbsp;'}</div><div class="opts" style="grid-template-columns:repeat(3,1fr);margin-top:1.2vh">${Object.keys(st.o).map(k=>`<button class="opt" ${dis||(s.ord.includes(k)?'disabled':'')} onclick="ord('${k}')">${st.o[k]}</button>`).join('')}</div><button class="go" style="background:var(--card);color:var(--ink);margin-top:1.2vh" ${dis} onclick="S[p].ord=[];S[p].fb='';S[p].cls='';render()">重選</button>`;
+  if(s.ok)a+=`<button class="go" style="margin-top:1.2vh" onclick="nxt()">${s.i==q.s.length-1?'完成':'下一步'}</button>`;
+ }
+ $('act').innerHTML=a;$('fb').className=s.cls;$('fb').innerHTML=s.fb;
+ END();
+}
+function good(){const s=S[p],st=P[p].s[s.i];s.ok=1;s.cls='ok';s.fb='<b>正確。</b>';s.L.push(st.l);s.snap[s.i]=JSON.stringify(s.G);render()}
+function bad(){const s=S[p],st=P[p].s[s.i];s.cls='no';s.fb=`<b>再想想。</b>${st.h}`;s.ord=[];s.buf='';s.G.tmp=[];render()}
+function pick(j){P[p].s[S[p].i].a==j?good():bad()}
+function key(k){const s=S[p];if(k=='⌫')s.buf=s.buf.slice(0,-1);else if(s.buf.length<4)s.buf+=(k=='−'?'-':k);s.fb='';s.cls='';render()}
+function chk(){const s=S[p];s.buf.replace('−','-')==P[p].s[s.i].a?good():bad()}
+function ord(k){const s=S[p],st=P[p].s[s.i];s.ord.push(k);if(s.ord.length==Object.keys(st.o).length){st.a.join()==s.ord.join()?good():bad()}else render()}
+function nxt(){const s=S[p];if(s.i==P[p].s.length-1){s.d=1;s.fb='';s.cls='';if(S.every(x=>x.d))cele=1}else{s.i++;s.ok=0;s.fb='';s.cls='';s.buf='';s.ord=[]}render()}
+function go(j){p=j;render()}
+render();
+</script></body></html>
